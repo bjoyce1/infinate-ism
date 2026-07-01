@@ -131,9 +131,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {hideCode ? (
-                    <>hides {filterStats.codeNodes} nodes · {filterStats.codeLinks} links</>
+                    <>hides {filterStats.codeNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a code-category node.">{filterStats.codeLinks} links</LinkCount></>
                   ) : (
-                    <>{filterStats.codeNodes} code nodes · {filterStats.codeLinks} links shown</>
+                    <>{filterStats.codeNodes} code nodes · <LinkCount tip="Links are hidden when either endpoint is a code-category node.">{filterStats.codeLinks} links shown</LinkCount></>
                   )}
                 </div>
               </div>
