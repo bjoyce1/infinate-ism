@@ -50,6 +50,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
+  const recenterToken = useGraphStore((s) => s.recenterToken);
   const showLabels = useGraphStore((s) => s.showLabels);
   const labelSize = useGraphStore((s) => s.labelSize);
   const labelDensity = useGraphStore((s) => s.labelDensity);
@@ -149,6 +150,32 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     fgRef.current.cameraPosition({ x: 0, y: 0, z: 400 }, { x: 0, y: 0, z: 0 }, 800);
     setTimeout(() => fgRef.current?.zoomToFit(600, 60), 850);
   }, [cameraResetToken]);
+
+  // Re-center on the mrcap1.com hub node (position computed by the sim).
+  useEffect(() => {
+    if (!recenterToken || !fgRef.current) return;
+    const hub = data.nodes.find((n) => n.id === "site_mrcap1_com") as
+      | NodeWithCoords
+      | undefined;
+    if (!hub || hub.x == null) {
+      fgRef.current.zoomToFit(600, 60);
+      return;
+    }
+    const x = hub.x;
+    const y = hub.y ?? 0;
+    const z = hub.z ?? 0;
+    const distance = 220;
+    const norm = Math.hypot(x, y, z) || 1;
+    fgRef.current.cameraPosition(
+      {
+        x: x + (x / norm) * distance,
+        y: y + (y / norm) * distance,
+        z: z + (z / norm) * distance,
+      },
+      { x, y, z },
+      800,
+    );
+  }, [recenterToken, data]);
 
   // Collision-aware label loop: project every labeled node to screen space,
   // sort by importance, and hide labels whose bounding box overlaps a
