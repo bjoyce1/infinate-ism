@@ -12,7 +12,6 @@ import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import { useTour } from "@/lib/graph/useTour";
 
 const searchSchema = z.object({
   view: fallback(z.enum(["2d", "3d"]), "2d").default("2d"),
@@ -44,8 +43,6 @@ function Index() {
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  // Drives the fly-through tour whenever graph is loaded.
-  useTour(graph ?? { nodes: [], links: [], neighbors: new Map(), byId: new Map(), communities: [], categoryCounts: { code: 0, blog: 0, music: 0, image: 0, other: 0 } });
 
   useEffect(() => {
     let cancelled = false;

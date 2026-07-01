@@ -9,19 +9,6 @@ export function isTsSourceNode(n: { label?: string | null; source_file?: string 
 }
 
 function deriveCommunityLabel(id: number, members: GraphNode[]): string {
-  // Prefer authoritative community_name from the data — majority wins.
-  const nameCounts = new Map<string, number>();
-  for (const m of members) {
-    const nm = m.community_name?.trim();
-    if (nm) nameCounts.set(nm, (nameCounts.get(nm) ?? 0) + 1);
-  }
-  if (nameCounts.size > 0) {
-    let best = "";
-    let bestC = 0;
-    for (const [k, v] of nameCounts) if (v > bestC) { best = k; bestC = v; }
-    return best;
-  }
-
   if (id === 200) return "mrcap1.com · Artist Site";
   if (id === 201) return "Self Love Project · NFT Gallery";
   if (id === 202) return "MAASA Project · Witness Archive";
@@ -150,6 +137,6 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   code: "#3DED97",
   blog: "#A78BFA",
   music: "#F59E0B",
-  image: "#FFC23C",
+  image: "#60A5FA",
   other: "#8E9196",
 };

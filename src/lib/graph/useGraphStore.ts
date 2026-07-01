@@ -19,9 +19,6 @@ type State = {
   hideCode: boolean;
   includeTsFiles: boolean;
   autoRotate: boolean;
-  tourActive: boolean;
-  flyToId: string | null;
-  flyToToken: number;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -42,9 +39,6 @@ type State = {
   setIncludeTsFiles: (v: boolean) => void;
   toggleAutoRotate: () => void;
   setAutoRotate: (v: boolean) => void;
-  toggleTour: () => void;
-  setTour: (v: boolean) => void;
-  flyTo: (id: string) => void;
   reset: () => void;
 };
 
@@ -66,9 +60,6 @@ export const useGraphStore = create<State>((set) => ({
   hideCode: false,
   includeTsFiles: false,
   autoRotate: false,
-  tourActive: false,
-  flyToId: null,
-  flyToToken: 0,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -96,11 +87,6 @@ export const useGraphStore = create<State>((set) => ({
   setIncludeTsFiles: (v) => set({ includeTsFiles: v }),
   toggleAutoRotate: () => set((s) => ({ autoRotate: !s.autoRotate })),
   setAutoRotate: (v) => set({ autoRotate: v }),
-  // Tour and auto-rotate are mutually exclusive so they don't fight over the camera.
-  toggleTour: () =>
-    set((s) => ({ tourActive: !s.tourActive, autoRotate: !s.tourActive ? false : s.autoRotate })),
-  setTour: (v) => set((s) => ({ tourActive: v, autoRotate: v ? false : s.autoRotate })),
-  flyTo: (id) => set((s) => ({ flyToId: id, flyToToken: s.flyToToken + 1 })),
   reset: () =>
     set({
       selectedId: null,
@@ -108,6 +94,5 @@ export const useGraphStore = create<State>((set) => ({
       focusMode: false,
       activeCommunity: null,
       activeCategories: new Set(),
-      tourActive: false,
     }),
 }));
