@@ -128,6 +128,30 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           }}
           linkColor={linkColor}
           linkWidth={0.6}
+          linkDirectionalParticles={(link: { source: GraphNode | string; target: GraphNode | string }) => {
+            if (!highlightSet) return 1;
+            const s = typeof link.source === "string" ? link.source : link.source.id;
+            const t = typeof link.target === "string" ? link.target : link.target.id;
+            return highlightSet.has(s) && highlightSet.has(t) ? 4 : 0;
+          }}
+          linkDirectionalParticleSpeed={(link: { source: GraphNode | string; target: GraphNode | string }) => {
+            if (!highlightSet) return 0.004;
+            const s = typeof link.source === "string" ? link.source : link.source.id;
+            const t = typeof link.target === "string" ? link.target : link.target.id;
+            return highlightSet.has(s) && highlightSet.has(t) ? 0.008 : 0.004;
+          }}
+          linkDirectionalParticleWidth={(link: { source: GraphNode | string; target: GraphNode | string }) => {
+            if (!highlightSet) return 1.4;
+            const s = typeof link.source === "string" ? link.source : link.source.id;
+            const t = typeof link.target === "string" ? link.target : link.target.id;
+            return highlightSet.has(s) && highlightSet.has(t) ? 2.4 : 0;
+          }}
+          linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
+            if (!highlightSet) return "rgba(228,228,231,0.55)";
+            const s = typeof link.source === "string" ? link.source : link.source.id;
+            const t = typeof link.target === "string" ? link.target : link.target.id;
+            return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
+          }}
           cooldownTicks={100}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
