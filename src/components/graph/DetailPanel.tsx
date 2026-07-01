@@ -4,10 +4,15 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 
 export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
+  const hoveredId = useGraphStore((s) => s.hoveredId);
   const select = useGraphStore((s) => s.select);
   const focusMode = useGraphStore((s) => s.focusMode);
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
-  const node = selectedId ? graph.byId.get(selectedId) : null;
+  // Hover previews the node; clicking pins it. Hover wins when both exist.
+  const activeId = hoveredId ?? selectedId;
+  const node = activeId ? graph.byId.get(activeId) : null;
+  const isPinned = Boolean(selectedId && selectedId === activeId);
+  const isPreview = Boolean(hoveredId && hoveredId !== selectedId);
 
   if (!node) {
     return (
@@ -55,10 +60,31 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     return String(v);
   };
 
+  // Pick a primary outbound URL for the node so the header + open button link
+  // somewhere meaningful. Prefer explicit URL-shaped properties, then fall back
+  // to a URL-looking id/label/source_file.
+  const isHttp = (v: unknown): v is string =>
+    typeof v === "string" && /^https?:\/\//i.test(v);
+  const record = node as Record<string, unknown>;
+  const primaryUrl: string | null = (() => {
+    for (const key of ["url", "href", "link", "permalink", "canonical_url"]) {
+      const v = record[key];
+      if (isHttp(v)) return v;
+    }
+    if (isHttp(record.source_file)) return record.source_file as string;
+    if (isHttp(node.id)) return node.id;
+    // Domain-looking labels (e.g. "mrcap1.com") → https://
+    if (typeof node.label === "string" && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(node.label)) {
+      return `https://${node.label.replace(/^https?:\/\//, "")}`;
+    }
+    return null;
+  })();
+  const sourceFileIsUrl = isHttp(node.source_file);
+
   return (
     <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full overflow-y-auto">
       <div className="p-8">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <span
             className="px-2 py-0.5 border rounded text-[10px] font-mono uppercase"
             style={{
@@ -72,9 +98,43 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
           <span className="text-xs text-muted-text font-mono">
             deg {node.degree} · c{node.community ?? "—"}
           </span>
+          <span
+            className={`px-1.5 py-0.5 rounded-full border text-[9px] font-mono uppercase tracking-widest ml-auto ${
+              isPreview
+                ? "border-white/20 text-white/60 bg-white/5"
+                : isPinned
+                  ? "border-neon-primary/40 text-neon-primary bg-neon-primary/10"
+                  : "border-white/10 text-muted-text bg-white/5"
+            }`}
+          >
+            {isPreview ? "hover" : isPinned ? "pinned" : "idle"}
+          </span>
         </div>
 
-        <h2 className="text-2xl font-light mb-2 leading-tight break-words">{node.label}</h2>
+        <h2 className="text-2xl font-light mb-2 leading-tight break-words">
+          {primaryUrl ? (
+            <a
+              href={primaryUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-white hover:text-neon-primary transition-colors underline decoration-white/20 hover:decoration-neon-primary underline-offset-4"
+            >
+              {node.label}
+            </a>
+          ) : (
+            node.label
+          )}
+        </h2>
+        {primaryUrl && (
+          <a
+            href={primaryUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 mb-4 text-[10px] font-mono uppercase tracking-widest text-neon-primary hover:underline"
+          >
+            Open ↗ <span className="text-muted-text normal-case tracking-normal truncate max-w-[220px]">{primaryUrl}</span>
+          </a>
+        )}
         {node.image && (
           <div className="mb-6 mt-4 rounded-lg overflow-hidden border border-obsidian-border bg-black/40">
             <img
@@ -87,7 +147,18 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
         )}
         {node.source_file && (
           <p className="text-sm text-muted-text leading-relaxed mb-8 font-mono break-all">
-            {node.source_file}
+            {sourceFileIsUrl ? (
+              <a
+                href={node.source_file}
+                target="_blank"
+                rel="noreferrer"
+                className="text-neon-primary hover:underline"
+              >
+                {node.source_file}
+              </a>
+            ) : (
+              node.source_file
+            )}
             {node.source_location ? `:${node.source_location}` : ""}
           </p>
         )}
