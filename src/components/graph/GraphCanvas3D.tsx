@@ -289,7 +289,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           nodeColor={nodeColor}
           nodeOpacity={0.95}
           nodeResolution={12}
-          nodeLabel={(n: GraphNode) => n.label ?? n.id}
+          nodeLabel={() => ""}
           linkColor={linkColor}
           linkOpacity={Math.min(1, 0.6 * linkIntensity)}
           linkWidth={0.4 * linkIntensity}
@@ -334,6 +334,22 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             return sprite;
           }}
         />
+      )}
+      {tooltip && (
+        <div
+          className="pointer-events-none absolute z-20 rounded border border-white/10 bg-black/85 px-2 py-1 font-mono text-[11px] text-zinc-100 shadow-lg backdrop-blur-sm"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: "translate(12px, -50%)",
+            maxWidth: 320,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {tooltip.text}
+        </div>
       )}
       {!ForceGraph3D && (
         <div className="absolute inset-0 grid place-items-center text-muted-text font-mono text-xs">
