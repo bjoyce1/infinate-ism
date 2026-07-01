@@ -22,6 +22,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const activeCategories = useGraphStore((s) => s.activeCategories);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
+  const particleIntensity = useGraphStore((s) => s.particleIntensity);
+  const linkIntensity = useGraphStore((s) => s.linkIntensity);
 
   useEffect(() => {
     let cancelled = false;
@@ -127,12 +129,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             ctx.fill();
           }}
           linkColor={linkColor}
-          linkWidth={0.6}
+          linkWidth={0.6 * linkIntensity}
           linkDirectionalParticles={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return 1;
+            const base = highlightSet ? 0 : 1;
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? 4 : 0;
+            const hi = highlightSet && highlightSet.has(s) && highlightSet.has(t) ? 4 : base;
+            return Math.round(hi * particleIntensity);
           }}
           linkDirectionalParticleSpeed={(link: { source: GraphNode | string; target: GraphNode | string }) => {
             if (!highlightSet) return 0.004;
@@ -141,10 +144,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             return highlightSet.has(s) && highlightSet.has(t) ? 0.008 : 0.004;
           }}
           linkDirectionalParticleWidth={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return 1.4;
+            if (!highlightSet) return 1.4 * particleIntensity;
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? 2.4 : 0;
+            return highlightSet.has(s) && highlightSet.has(t) ? 2.4 * particleIntensity : 0;
           }}
           linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
             if (!highlightSet) return "rgba(228,228,231,0.55)";
