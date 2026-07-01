@@ -331,7 +331,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const nodeColor = useCallback((n: GraphNode) => {
     const highlightSet = highlightRef.current;
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";
-    return CATEGORY_COLORS[n.category];
+    return n.color ?? CATEGORY_COLORS[n.category];
   }, []);
   const linkColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
     const highlightSet = highlightRef.current;
