@@ -1,4 +1,5 @@
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { toast } from "sonner";
 
 export function TopBar() {
   const setSearchOpen = useGraphStore((s) => s.setSearchOpen);
@@ -9,6 +10,16 @@ export function TopBar() {
   const viewMode = useGraphStore((s) => s.viewMode);
   const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const resetCamera = useGraphStore((s) => s.resetCamera);
+
+  const copyPermalink = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Permalink copied", { description: "Share this URL to open the same view." });
+    } catch {
+      toast.error("Couldn't copy link", { description: url });
+    }
+  };
 
   return (
     <header className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10 pointer-events-none">
@@ -29,6 +40,14 @@ export function TopBar() {
           className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium hover:bg-white/5 transition-colors cursor-pointer"
         >
           RESET
+        </button>
+        <button
+          type="button"
+          onClick={copyPermalink}
+          className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium hover:border-neon-primary transition-colors cursor-pointer"
+          title="Copy a link that preserves the current view and selection"
+        >
+          SHARE VIEW
         </button>
         {viewMode === "3d" && (
           <button
