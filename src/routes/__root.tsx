@@ -78,18 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Mnemosyne — Second Brain" },
       { name: "description", content: "A dark-mode explorer for your knowledge graph." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "Cornelius A. Pratt" },
+      { property: "og:title", content: "Mnemosyne — Second Brain" },
       { property: "og:description", content: "A dark-mode explorer for your knowledge graph." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:site", content: "@mrcap1" },
+      { name: "twitter:title", content: "Mnemosyne — Second Brain" },
       { name: "twitter:description", content: "A dark-mode explorer for your knowledge graph." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfeba043-43a3-49a2-bdfe-aeb5a9697aeb/id-preview-2b9671d8--76e72616-1576-4e92-82ec-fd229a58d054.lovable.app-1782891947179.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfeba043-43a3-49a2-bdfe-aeb5a9697aeb/id-preview-2b9671d8--76e72616-1576-4e92-82ec-fd229a58d054.lovable.app-1782891947179.png" },
     ],
     links: [
       {
