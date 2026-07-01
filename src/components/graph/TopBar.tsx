@@ -11,6 +11,8 @@ export function TopBar() {
   const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const resetCamera = useGraphStore((s) => s.resetCamera);
   const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
+  const autoRotate = useGraphStore((s) => s.autoRotate);
+  const toggleAutoRotate = useGraphStore((s) => s.toggleAutoRotate);
   const handleRecenter = () => {
     recenterOnHub();
     toast.success("Re-centering on mrcap1.com", {
@@ -80,6 +82,18 @@ export function TopBar() {
           title="Toggle 2D / 3D view"
         >
           {viewMode === "2d" ? "2D VIEW" : "3D VIEW"}
+        </button>
+        <button
+          type="button"
+          onClick={toggleAutoRotate}
+          className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+            autoRotate
+              ? "bg-cyan-500/20 border-cyan-400 text-cyan-200"
+              : "bg-obsidian-surface border-obsidian-border hover:border-neon-primary"
+          }`}
+          title="Slowly rotate the graph"
+        >
+          {autoRotate ? "↻ ROTATE ON" : "↻ ROTATE OFF"}
         </button>
         <button
           type="button"

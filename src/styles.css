@@ -4,6 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes graph-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @theme {
   --color-obsidian-bg: #0A0A0B;
   --color-obsidian-surface: #161618;

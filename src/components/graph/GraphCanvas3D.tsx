@@ -26,6 +26,7 @@ type FgHandle = {
   renderer: () => { domElement: HTMLCanvasElement };
   graph2ScreenCoords: (x: number, y: number, z: number) => ScreenPos;
   refresh?: () => void;
+  controls?: () => { autoRotate: boolean; autoRotateSpeed: number; enableDamping?: boolean };
 };
 
 const getLinkEndpointId = (endpoint: GraphNode | string) =>
@@ -51,6 +52,14 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
   const recenterToken = useGraphStore((s) => s.recenterToken);
+  const autoRotate = useGraphStore((s) => s.autoRotate);
+
+  useEffect(() => {
+    const ctrls = fgRef.current?.controls?.();
+    if (!ctrls) return;
+    ctrls.autoRotate = autoRotate;
+    ctrls.autoRotateSpeed = 0.6;
+  }, [autoRotate, ForceGraph3D]);
   const showLabels = useGraphStore((s) => s.showLabels);
   const labelSize = useGraphStore((s) => s.labelSize);
   const labelDensity = useGraphStore((s) => s.labelDensity);

@@ -18,6 +18,7 @@ type State = {
   recenterToken: number;
   hideCode: boolean;
   includeTsFiles: boolean;
+  autoRotate: boolean;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -36,6 +37,8 @@ type State = {
   setHideCode: (v: boolean) => void;
   toggleIncludeTsFiles: () => void;
   setIncludeTsFiles: (v: boolean) => void;
+  toggleAutoRotate: () => void;
+  setAutoRotate: (v: boolean) => void;
   reset: () => void;
 };
 
@@ -56,6 +59,7 @@ export const useGraphStore = create<State>((set) => ({
   recenterToken: 0,
   hideCode: false,
   includeTsFiles: false,
+  autoRotate: false,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -81,6 +85,8 @@ export const useGraphStore = create<State>((set) => ({
   setHideCode: (v) => set({ hideCode: v }),
   toggleIncludeTsFiles: () => set((s) => ({ includeTsFiles: !s.includeTsFiles })),
   setIncludeTsFiles: (v) => set({ includeTsFiles: v }),
+  toggleAutoRotate: () => set((s) => ({ autoRotate: !s.autoRotate })),
+  setAutoRotate: (v) => set({ autoRotate: v }),
   reset: () =>
     set({
       selectedId: null,
