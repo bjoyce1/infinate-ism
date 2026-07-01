@@ -107,6 +107,49 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
     };
   }, [graph.nodes, graph.links, hideCode, includeTsFiles]);
 
+  const HUB_ID = "site_mrcap1_com";
+  const hubStats = useMemo(() => {
+    const hub = graph.byId.get(HUB_ID);
+    if (!hub) return null;
+
+    const codeIds = new Set<string>();
+    const tsIds = new Set<string>();
+    for (const n of graph.nodes) {
+      if (n.category === "code") codeIds.add(n.id);
+      if (isTsSourceNode(n)) tsIds.add(n.id);
+    }
+    const hiddenIds = new Set<string>();
+    if (hideCode) for (const id of codeIds) hiddenIds.add(id);
+    if (!includeTsFiles) for (const id of tsIds) hiddenIds.add(id);
+
+    const neighbors = graph.neighbors.get(HUB_ID) ?? new Set<string>();
+    let neighborsVisible = 0;
+    for (const id of neighbors) if (!hiddenIds.has(id)) neighborsVisible += 1;
+    const neighborsHidden = neighbors.size - neighborsVisible;
+
+    let spawnTotal = 0;
+    let spawnActive = 0;
+    for (const l of graph.links) {
+      const s = l.source as unknown as string;
+      const t = l.target as unknown as string;
+      if (s !== HUB_ID && t !== HUB_ID) continue;
+      spawnTotal += 1;
+      if (!hiddenIds.has(s) && !hiddenIds.has(t)) spawnActive += 1;
+    }
+
+    const hubHidden = hiddenIds.has(HUB_ID);
+    return {
+      label: hub.label,
+      hubHidden,
+      neighborsTotal: neighbors.size,
+      neighborsVisible,
+      neighborsHidden,
+      spawnTotal,
+      spawnActive,
+      spawnHidden: spawnTotal - spawnActive,
+    };
+  }, [graph, hideCode, includeTsFiles]);
+
   const selected = selectedId ? graph.byId.get(selectedId) : null;
   const focusLabel = focusMode && selected ? selected.label : null;
 
@@ -219,6 +262,43 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
               </span>
             </div>
           </div>
+
+          {hubStats && (
+            <div className="px-3 py-2 rounded-lg border border-amber-500/30 bg-amber-500/[0.05] font-mono text-[10px] leading-relaxed">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="uppercase tracking-widest text-amber-400/80">Hub · {hubStats.label}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full border text-[9px] ${
+                    hubStats.hubHidden
+                      ? "border-white/20 text-muted-text bg-white/5"
+                      : "border-amber-500/40 text-amber-300 bg-amber-500/10"
+                  }`}
+                >
+                  {hubStats.hubHidden ? "hidden" : "live"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-text">Spawned nodes</span>
+                <span>
+                  <span className="text-amber-300">{hubStats.neighborsVisible}</span>
+                  <span className="text-muted-text">
+                    {" "}/ {hubStats.neighborsTotal} · {hubStats.neighborsHidden} hidden
+                  </span>
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-text">Spawn-links</span>
+                <span>
+                  <LinkCount tip="Spawn-links are edges attached to the mrcap1.com hub. A spawn-link is active only when both endpoints (the hub and its neighbor) pass the current filters.">
+                    <span className="text-amber-300">{hubStats.spawnActive}</span>
+                  </LinkCount>
+                  <span className="text-muted-text">
+                    {" "}/ {hubStats.spawnTotal} · <LinkCount tip="A spawn-link is hidden when its neighbor endpoint (or the hub itself) is filtered out.">{hubStats.spawnHidden} hidden</LinkCount>
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
 
           <div>
             <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-4">
