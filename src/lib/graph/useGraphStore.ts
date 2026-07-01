@@ -15,6 +15,7 @@ type State = {
   labelSize: number;
   labelDensity: number;
   cameraResetToken: number;
+  recenterToken: number;
   hideCode: boolean;
   includeTsFiles: boolean;
   select: (id: string | null) => void;
@@ -30,6 +31,7 @@ type State = {
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
   resetCamera: () => void;
+  recenterOnHub: () => void;
   toggleHideCode: () => void;
   setHideCode: (v: boolean) => void;
   toggleIncludeTsFiles: () => void;
@@ -51,6 +53,7 @@ export const useGraphStore = create<State>((set) => ({
   labelSize: 1,
   labelDensity: 1,
   cameraResetToken: 0,
+  recenterToken: 0,
   hideCode: false,
   includeTsFiles: false,
   select: (id) => set({ selectedId: id }),
@@ -73,6 +76,7 @@ export const useGraphStore = create<State>((set) => ({
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
   resetCamera: () => set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
+  recenterOnHub: () => set((s) => ({ recenterToken: s.recenterToken + 1 })),
   toggleHideCode: () => set((s) => ({ hideCode: !s.hideCode })),
   setHideCode: (v) => set({ hideCode: v }),
   toggleIncludeTsFiles: () => set((s) => ({ includeTsFiles: !s.includeTsFiles })),
