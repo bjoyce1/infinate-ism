@@ -6,6 +6,7 @@ export type RawNode = {
   source_location?: string;
   _origin?: string;
   community?: number;
+  community_name?: string;
   norm_label?: string;
   image?: string;
   artwork?: string;
