@@ -32,6 +32,29 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
 
   const color = CATEGORY_COLORS[node.category];
 
+  const edges = graph.links.filter((l) => l.source === node.id || l.target === node.id);
+  const knownKeys = new Set([
+    "id",
+    "label",
+    "category",
+    "degree",
+    "file_type",
+    "source_file",
+    "source_location",
+    "_origin",
+    "community",
+    "norm_label",
+  ]);
+  const extraEntries = Object.entries(node as Record<string, unknown>).filter(
+    ([k, v]) => !knownKeys.has(k) && v !== undefined && v !== null && v !== "",
+  );
+
+  const formatValue = (v: unknown): string => {
+    if (v === null || v === undefined) return "—";
+    if (typeof v === "object") return JSON.stringify(v, null, 2);
+    return String(v);
+  };
+
   return (
     <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full overflow-y-auto">
       <div className="p-8">
@@ -62,6 +85,69 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
         <div className="space-y-6">
           <section>
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
+              All Properties
+            </h4>
+            <div className="space-y-2">
+              <PropRow label="ID" value={node.id} mono />
+              <PropRow label="Label" value={node.label} />
+              <PropRow label="Category" value={node.category} />
+              <PropRow label="File Type" value={node.file_type ?? "—"} />
+              <PropRow label="Community" value={node.community != null ? String(node.community) : "—"} />
+              <PropRow label="Degree" value={String(node.degree)} />
+              <PropRow label="Origin" value={node._origin ?? "—"} />
+              <PropRow label="Norm Label" value={node.norm_label ?? "—"} mono />
+              <PropRow label="Source File" value={node.source_file ?? "—"} mono />
+              <PropRow label="Source Location" value={node.source_location ?? "—"} mono />
+              {extraEntries.map(([k, v]) => (
+                <PropRow key={k} label={k} value={formatValue(v)} mono />
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
+              Connections ({edges.length})
+            </h4>
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {edges.length === 0 && (
+                <div className="text-xs text-muted-text font-mono">no edges</div>
+              )}
+              {edges.map((l, i) => {
+                const otherId = l.source === node.id ? l.target : l.source;
+                const dir = l.source === node.id ? "→" : "←";
+                const other = graph.byId.get(otherId);
+                if (!other) return null;
+                return (
+                  <button
+                    key={`${otherId}-${i}`}
+                    type="button"
+                    onClick={() => select(other.id)}
+                    className="w-full p-3 bg-white/5 border border-obsidian-border rounded-lg hover:border-white/20 cursor-pointer transition-colors text-left"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs truncate">
+                        <span className="text-muted-text font-mono mr-1">{dir}</span>
+                        {other.label}
+                      </span>
+                      <div
+                        className="size-1.5 rounded-full shrink-0"
+                        style={{ backgroundColor: CATEGORY_COLORS[other.category] }}
+                      />
+                    </div>
+                    {(l.relation || l.weight != null) && (
+                      <div className="mt-1 text-[10px] font-mono text-muted-text">
+                        {l.relation ?? "link"}
+                        {l.weight != null ? ` · w${l.weight}` : ""}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section>
+            <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
               Direct Neighbors ({neighbors.length})
             </h4>
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
@@ -82,28 +168,6 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                   />
                 </button>
               ))}
-            </div>
-          </section>
-
-          <section>
-            <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
-              Metadata
-            </h4>
-            <div className="grid grid-cols-2 gap-y-4">
-              <div>
-                <div className="text-[10px] text-muted-text mb-1">Origin</div>
-                <div className="text-xs font-mono">{node._origin ?? "—"}</div>
-              </div>
-              <div>
-                <div className="text-[10px] text-muted-text mb-1">Community</div>
-                <div className="text-xs font-mono">
-                  {node.community != null ? String(node.community).padStart(3, "0") : "—"}
-                </div>
-              </div>
-              <div className="col-span-2">
-                <div className="text-[10px] text-muted-text mb-1">Node ID</div>
-                <div className="text-[10px] font-mono text-white/60 break-all">{node.id}</div>
-              </div>
             </div>
           </section>
         </div>
@@ -137,5 +201,30 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
         </button>
       </div>
     </aside>
+  );
+}
+
+function PropRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  const isUrl = /^https?:\/\//.test(value);
+  return (
+    <div className="grid grid-cols-[110px_1fr] gap-3 items-start py-1.5 border-b border-white/5">
+      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-text pt-0.5">
+        {label}
+      </div>
+      {isUrl ? (
+        <a
+          href={value}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs font-mono text-neon-primary break-all hover:underline"
+        >
+          {value}
+        </a>
+      ) : (
+        <div className={`text-xs break-all ${mono ? "font-mono text-white/80" : "text-white"}`}>
+          {value}
+        </div>
+      )}
+    </div>
   );
 }
