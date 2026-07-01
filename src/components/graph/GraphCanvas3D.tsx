@@ -134,11 +134,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   }, [highlightSet, selectedId, focusMode, graph.neighbors]);
 
   // Hover tooltip: track hovered node's screen position each frame.
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const hoveredRef = useRef(hoveredId);
   useEffect(() => {
     hoveredRef.current = hoveredId;
-    if (!hoveredId) setTooltip(null);
+    const el = tooltipRef.current;
+    if (el && !hoveredId) el.style.display = "none";
   }, [hoveredId]);
 
   useEffect(() => {
@@ -257,10 +258,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             }
           }
 
-          // Update hover tooltip position from the currently hovered node.
+          // Update hover tooltip position imperatively — avoid React re-renders
+          // per frame, which would rebuild ForceGraph3D scene props and freeze.
           const hid = hoveredRef.current;
-          if (hid) {
-            const hoveredNode = sprites.get(hid)?.__node;
+          const tipEl = tooltipRef.current;
+          if (tipEl) {
+            const hoveredNode = hid ? sprites.get(hid)?.__node : null;
             if (hoveredNode && hoveredNode.x != null) {
               const p = fg.graph2ScreenCoords(
                 hoveredNode.x,
@@ -268,14 +271,15 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
                 hoveredNode.z ?? 0,
               );
               if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) {
-                setTooltip((prev) => {
-                  const text = hoveredNode.label ?? hoveredNode.id;
-                  const nx = Math.round(p.x);
-                  const ny = Math.round(p.y);
-                  if (prev && prev.x === nx && prev.y === ny && prev.text === text) return prev;
-                  return { x: nx, y: ny, text };
-                });
+                const text = hoveredNode.label ?? hoveredNode.id;
+                if (tipEl.textContent !== text) tipEl.textContent = text;
+                tipEl.style.transform = `translate(${Math.round(p.x) + 12}px, ${Math.round(p.y)}px) translateY(-50%)`;
+                tipEl.style.display = "block";
+              } else {
+                tipEl.style.display = "none";
               }
+            } else {
+              tipEl.style.display = "none";
             }
           }
         } catch {
