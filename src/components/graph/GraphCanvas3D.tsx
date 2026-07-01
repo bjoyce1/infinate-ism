@@ -3,10 +3,14 @@ import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import SpriteText from "three-spritetext";
 
-type LabelSprite = SpriteText & {
+type LabelSprite = {
   visible: boolean;
+  textHeight: number;
+  color: string;
+  backgroundColor: string;
+  padding: number;
+  borderRadius: number;
   material: { opacity: number; transparent: boolean; depthWrite: boolean };
   center: { set: (x: number, y: number) => void };
   raycast: () => void;
@@ -15,6 +19,7 @@ type LabelSprite = SpriteText & {
 };
 type NodeWithCoords = GraphNode & { x?: number; y?: number; z?: number };
 type ScreenPos = { x: number; y: number };
+type SpriteTextConstructor = new (text: string) => LabelSprite;
 type FgHandle = {
   zoomToFit: (ms?: number, padding?: number) => void;
   cameraPosition: (
@@ -37,6 +42,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<FgHandle | null>(null);
   const [ForceGraph3D, setForceGraph3D] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
+  const SpriteTextCtorRef = useRef<SpriteTextConstructor | null>(null);
   const spritesRef = useRef<Map<string, LabelSprite>>(new Map());
   const rafRef = useRef<number | null>(null);
 
@@ -79,8 +85,10 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
 
   useEffect(() => {
     let cancelled = false;
-    import("react-force-graph-3d").then((m) => {
-      if (!cancelled) setForceGraph3D(() => m.default as React.ComponentType<Record<string, unknown>>);
+    Promise.all([import("react-force-graph-3d"), import("three-spritetext")]).then(([fgModule, spriteModule]) => {
+      if (cancelled) return;
+      SpriteTextCtorRef.current = (spriteModule.default ?? spriteModule) as unknown as SpriteTextConstructor;
+      setForceGraph3D(() => fgModule.default as React.ComponentType<Record<string, unknown>>);
     });
     return () => {
       cancelled = true;
@@ -414,6 +422,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           showNavInfo={false}
           nodeThreeObjectExtend={true}
           nodeThreeObject={(node: NodeWithCoords) => {
+            const SpriteText = SpriteTextCtorRef.current;
+            if (!SpriteText) return null;
             const label = node.label ?? node.id;
             const sprite = new SpriteText(label) as LabelSprite;
             sprite.color = "#E4E4E7";
