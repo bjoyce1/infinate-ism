@@ -223,6 +223,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           Initializing graph engine…
         </div>
       )}
+      </div>
     </div>
   );
 }
