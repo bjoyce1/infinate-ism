@@ -150,6 +150,6 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   code: "#3DED97",
   blog: "#A78BFA",
   music: "#F59E0B",
-  image: "#60A5FA",
+  image: "#FFC23C",
   other: "#8E9196",
 };
