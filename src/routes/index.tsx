@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { loadGraph } from "@/lib/graph/loadGraph";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
@@ -10,7 +12,14 @@ import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 
+const searchSchema = z.object({
+  view: fallback(z.enum(["2d", "3d"]), "2d").default("2d"),
+  node: fallback(z.string(), "").default(""),
+  focus: fallback(z.coerce.boolean(), false).default(false),
+});
+
 export const Route = createFileRoute("/")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "Mnemosyne — Second Brain" },
@@ -26,6 +35,13 @@ function Index() {
   const [graph, setGraph] = useState<NormalizedGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
   const viewMode = useGraphStore((s) => s.viewMode);
+  const selectedId = useGraphStore((s) => s.selectedId);
+  const focusMode = useGraphStore((s) => s.focusMode);
+  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
+  const select = useGraphStore((s) => s.select);
+  const toggleFocus = useGraphStore((s) => s.toggleFocus);
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +56,31 @@ function Index() {
       cancelled = true;
     };
   }, []);
+
+  // Hydrate store from URL once graph is loaded.
+  useEffect(() => {
+    if (!graph) return;
+    if (search.view !== viewMode) toggleViewMode();
+    if (search.node && graph.byId.has(search.node) && search.node !== selectedId) {
+      select(search.node);
+    }
+    if (search.focus && !focusMode && search.node && graph.byId.has(search.node)) {
+      toggleFocus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graph]);
+
+  // Sync store back to URL.
+  useEffect(() => {
+    if (!graph) return;
+    const next = {
+      view: viewMode,
+      node: selectedId ?? "",
+      focus: focusMode,
+    };
+    if (next.view === search.view && next.node === search.node && next.focus === search.focus) return;
+    navigate({ search: next, replace: true });
+  }, [viewMode, selectedId, focusMode, graph, search.view, search.node, search.focus, navigate]);
 
   if (error) {
     return (
