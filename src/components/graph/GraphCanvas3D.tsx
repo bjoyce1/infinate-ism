@@ -160,6 +160,14 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       const sprites = spritesRef.current;
       if (fg && sprites.size > 0) {
         try {
+          // Global label toggle: hide every sprite and skip placement work.
+          if (!showLabelsRef.current) {
+            sprites.forEach((s) => {
+              s.visible = false;
+            });
+            rafRef.current = requestAnimationFrame(tick);
+            return;
+          }
           const cam = fg.camera();
           const canvas = fg.renderer().domElement;
           const w = canvas.clientWidth;
@@ -193,8 +201,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             const dz = cam.position.z - nz;
             const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             const label = sprite.__label ?? "";
-            const halfH = 8;
-            const halfW = Math.max(20, label.length * 3.6);
+            // Bigger labels demand more space; higher density shrinks the
+            // reserved bbox so more labels fit before overlap culling kicks in.
+            const sizeMul = labelSizeRef.current;
+            const densityMul = 1 / Math.max(0.2, labelDensityRef.current);
+            const halfH = 8 * sizeMul * densityMul;
+            const halfW = Math.max(20, label.length * 3.6) * sizeMul * densityMul;
             const hi = highlightRef.current;
             const sel = selectedRef.current;
             const focusSet = focusNeighborhoodRef.current;
