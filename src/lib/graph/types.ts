@@ -11,6 +11,8 @@ export type RawNode = {
   artwork?: string;
   is_hub?: boolean;
   weight?: number;
+  color?: string;
+  url?: string;
 };
 
 export type RawLink = {
