@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
@@ -8,6 +8,7 @@ type LabelSprite = SpriteText & {
   visible: boolean;
   material: { opacity: number; transparent: boolean; depthWrite: boolean };
   center: { set: (x: number, y: number) => void };
+  raycast: () => void;
   __node?: NodeWithCoords;
   __label?: string;
 };
@@ -23,7 +24,11 @@ type FgHandle = {
   camera: () => { position: { x: number; y: number; z: number } };
   renderer: () => { domElement: HTMLCanvasElement };
   graph2ScreenCoords: (x: number, y: number, z: number) => ScreenPos;
+  refresh?: () => void;
 };
+
+const getLinkEndpointId = (endpoint: GraphNode | string) =>
+  typeof endpoint === "string" ? endpoint : endpoint.id;
 
 export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
@@ -34,12 +39,11 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const rafRef = useRef<number | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
-  const hoveredId = useGraphStore((s) => s.hoveredId);
   const focusMode = useGraphStore((s) => s.focusMode);
   const activeCommunity = useGraphStore((s) => s.activeCommunity);
   const activeCategories = useGraphStore((s) => s.activeCategories);
   const select = useGraphStore((s) => s.select);
-  const hover = useGraphStore((s) => s.hover);
+  const hoverRef = useRef(useGraphStore.getState().hover);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
@@ -109,21 +113,27 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     }
   }, [data]);
 
-  const highlightSet = useMemo(() => {
-    const anchor = hoveredId ?? selectedId;
-    if (!anchor) return null;
+  const getNeighborhood = useCallback(
+    (anchor: string | null) => {
+      if (!anchor) return null;
     const set = new Set<string>([anchor]);
     for (const nb of graph.neighbors.get(anchor) ?? []) set.add(nb);
     return set;
-  }, [hoveredId, selectedId, graph.neighbors]);
-  const highlightRef = useRef(highlightSet);
+    },
+    [graph.neighbors],
+  );
+
+  const selectedHighlightSet = useMemo(
+    () => getNeighborhood(selectedId),
+    [getNeighborhood, selectedId],
+  );
+  const highlightRef = useRef<Set<string> | null>(selectedHighlightSet);
   const selectedRef = useRef(selectedId);
-  const focusRef = useRef(focusMode);
   const focusNeighborhoodRef = useRef<Set<string> | null>(null);
+  const hoveredRef = useRef<string | null>(null);
   useEffect(() => {
-    highlightRef.current = highlightSet;
+    if (!hoveredRef.current) highlightRef.current = selectedHighlightSet;
     selectedRef.current = selectedId;
-    focusRef.current = focusMode;
     if (focusMode && selectedId) {
       const set = new Set<string>([selectedId]);
       for (const nb of graph.neighbors.get(selectedId) ?? []) set.add(nb);
@@ -131,16 +141,11 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     } else {
       focusNeighborhoodRef.current = null;
     }
-  }, [highlightSet, selectedId, focusMode, graph.neighbors]);
+    fgRef.current?.refresh?.();
+  }, [selectedHighlightSet, selectedId, focusMode, graph.neighbors]);
 
   // Hover tooltip: track hovered node's screen position each frame.
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const hoveredRef = useRef(hoveredId);
-  useEffect(() => {
-    hoveredRef.current = hoveredId;
-    const el = tooltipRef.current;
-    if (el && !hoveredId) el.style.display = "none";
-  }, [hoveredId]);
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -295,18 +300,53 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     };
   }, [ForceGraph3D]);
 
-  const nodeVal = (n: GraphNode) => Math.max(1, 1 + Math.sqrt(n.degree));
-  const nodeColor = (n: GraphNode) => {
+  const nodeVal = useCallback((n: GraphNode) => Math.max(1, 1 + Math.sqrt(n.degree)), []);
+  const nodeColor = useCallback((n: GraphNode) => {
+    const highlightSet = highlightRef.current;
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";
     return CATEGORY_COLORS[n.category];
-  };
-  const linkColor = (link: { source: GraphNode | string; target: GraphNode | string }) => {
-    const s = typeof link.source === "string" ? link.source : link.source.id;
-    const t = typeof link.target === "string" ? link.target : link.target.id;
+  }, []);
+  const linkColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
+    const highlightSet = highlightRef.current;
+    const s = getLinkEndpointId(link.source);
+    const t = getLinkEndpointId(link.target);
     if (highlightSet && highlightSet.has(s) && highlightSet.has(t)) return "rgba(61,237,151,0.6)";
     if (highlightSet) return "rgba(255,255,255,0.02)";
     return "rgba(255,255,255,0.12)";
-  };
+  }, []);
+
+  const handleNodeHover = useCallback(
+    (node: GraphNode | null) => {
+      const nextId = node?.id ?? null;
+      if (hoveredRef.current === nextId) return;
+      hoveredRef.current = nextId;
+      highlightRef.current = nextId ? getNeighborhood(nextId) : selectedHighlightSet;
+      hoverRef.current(nextId);
+      if (!nextId && tooltipRef.current) tooltipRef.current.style.display = "none";
+      fgRef.current?.refresh?.();
+    },
+    [getNeighborhood, selectedHighlightSet],
+  );
+
+  const linkParticleCount = useCallback(
+    (link: { source: GraphNode | string; target: GraphNode | string }) => {
+      const highlightSet = highlightRef.current;
+      const base = highlightSet ? 0 : 1;
+      const s = getLinkEndpointId(link.source);
+      const t = getLinkEndpointId(link.target);
+      const hi = highlightSet && highlightSet.has(s) && highlightSet.has(t) ? 4 : base;
+      return Math.round(hi * particleIntensity);
+    },
+    [particleIntensity],
+  );
+
+  const linkParticleColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
+    const highlightSet = highlightRef.current;
+    if (!highlightSet) return "rgba(228,228,231,0.7)";
+    const s = getLinkEndpointId(link.source);
+    const t = getLinkEndpointId(link.target);
+    return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
+  }, []);
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
@@ -325,25 +365,14 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           linkColor={linkColor}
           linkOpacity={Math.min(1, 0.6 * linkIntensity)}
           linkWidth={0.4 * linkIntensity}
-          linkDirectionalParticles={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            const base = highlightSet ? 0 : 1;
-            const s = typeof link.source === "string" ? link.source : link.source.id;
-            const t = typeof link.target === "string" ? link.target : link.target.id;
-            const hi = highlightSet && highlightSet.has(s) && highlightSet.has(t) ? 4 : base;
-            return Math.round(hi * particleIntensity);
-          }}
+          linkDirectionalParticles={linkParticleCount}
           linkDirectionalParticleSpeed={0.006}
           linkDirectionalParticleWidth={1.4 * particleIntensity}
-          linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return "rgba(228,228,231,0.7)";
-            const s = typeof link.source === "string" ? link.source : link.source.id;
-            const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
-          }}
+          linkDirectionalParticleColor={linkParticleColor}
           onNodeClick={(node: GraphNode) => select(node.id)}
-          onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
+          onNodeHover={handleNodeHover}
           onBackgroundClick={() => select(null)}
-          enableNodeDrag={true}
+          enableNodeDrag={false}
           enableNavigationControls={true}
           controlType="orbit"
           showNavInfo={false}
@@ -360,6 +389,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             sprite.material.transparent = true;
             sprite.material.opacity = 1;
             sprite.center.set(0.5, -0.6);
+            sprite.raycast = () => undefined;
             sprite.__node = node;
             sprite.__label = label;
             spritesRef.current.set(node.id, sprite);
