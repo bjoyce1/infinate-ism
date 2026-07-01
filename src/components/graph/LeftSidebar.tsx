@@ -20,6 +20,13 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setParticleIntensity = useGraphStore((s) => s.setParticleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const setLinkIntensity = useGraphStore((s) => s.setLinkIntensity);
+  const viewMode = useGraphStore((s) => s.viewMode);
+  const showLabels = useGraphStore((s) => s.showLabels);
+  const setShowLabels = useGraphStore((s) => s.setShowLabels);
+  const labelSize = useGraphStore((s) => s.labelSize);
+  const setLabelSize = useGraphStore((s) => s.setLabelSize);
+  const labelDensity = useGraphStore((s) => s.labelDensity);
+  const setLabelDensity = useGraphStore((s) => s.setLabelDensity);
   const topCommunities = graph.communities.slice(0, 12);
 
   const selected = selectedId ? graph.byId.get(selectedId) : null;
@@ -129,6 +136,65 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
               </label>
             </div>
           </div>
+
+          {viewMode === "3d" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text">
+                  Labels (3D)
+                </h3>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showLabels}
+                  onClick={() => setShowLabels(!showLabels)}
+                  className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer ${
+                    showLabels
+                      ? "bg-neon-primary/30 border-neon-primary"
+                      : "bg-white/5 border-obsidian-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
+                      showLabels ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className={`space-y-3 ${showLabels ? "" : "opacity-40 pointer-events-none"}`}>
+                <label className="block">
+                  <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                    <span>Size</span>
+                    <span>{labelSize.toFixed(1)}×</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    value={labelSize}
+                    onChange={(e) => setLabelSize(Number(e.target.value))}
+                    className="w-full accent-neon-primary cursor-pointer"
+                  />
+                </label>
+                <label className="block">
+                  <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                    <span>Density</span>
+                    <span>{labelDensity.toFixed(1)}×</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0.2}
+                    max={2.5}
+                    step={0.1}
+                    value={labelDensity}
+                    onChange={(e) => setLabelDensity(Number(e.target.value))}
+                    className="w-full accent-neon-primary cursor-pointer"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
         </nav>
       </div>
 

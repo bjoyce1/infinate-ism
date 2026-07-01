@@ -43,6 +43,22 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
+  const showLabels = useGraphStore((s) => s.showLabels);
+  const labelSize = useGraphStore((s) => s.labelSize);
+  const labelDensity = useGraphStore((s) => s.labelDensity);
+  const showLabelsRef = useRef(showLabels);
+  const labelSizeRef = useRef(labelSize);
+  const labelDensityRef = useRef(labelDensity);
+  useEffect(() => {
+    showLabelsRef.current = showLabels;
+    labelSizeRef.current = labelSize;
+    labelDensityRef.current = labelDensity;
+    // Live-update text height on existing sprites without rebuilding graph.
+    spritesRef.current.forEach((sprite) => {
+      const deg = sprite.__node?.degree ?? 0;
+      sprite.textHeight = Math.max(2, (3 + Math.min(4, deg / 6)) * labelSize);
+    });
+  }, [showLabels, labelSize, labelDensity]);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,6 +160,14 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       const sprites = spritesRef.current;
       if (fg && sprites.size > 0) {
         try {
+          // Global label toggle: hide every sprite and skip placement work.
+          if (!showLabelsRef.current) {
+            sprites.forEach((s) => {
+              s.visible = false;
+            });
+            rafRef.current = requestAnimationFrame(tick);
+            return;
+          }
           const cam = fg.camera();
           const canvas = fg.renderer().domElement;
           const w = canvas.clientWidth;
@@ -177,8 +201,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             const dz = cam.position.z - nz;
             const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             const label = sprite.__label ?? "";
-            const halfH = 8;
-            const halfW = Math.max(20, label.length * 3.6);
+            // Bigger labels demand more space; higher density shrinks the
+            // reserved bbox so more labels fit before overlap culling kicks in.
+            const sizeMul = labelSizeRef.current;
+            const densityMul = 1 / Math.max(0.2, labelDensityRef.current);
+            const halfH = 8 * sizeMul * densityMul;
+            const halfW = Math.max(20, label.length * 3.6) * sizeMul * densityMul;
             const hi = highlightRef.current;
             const sel = selectedRef.current;
             const focusSet = focusNeighborhoodRef.current;
@@ -323,7 +351,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             sprite.backgroundColor = "rgba(10,10,11,0.55)";
             sprite.padding = 1.5;
             sprite.borderRadius = 2;
-            sprite.textHeight = Math.max(3, 3 + Math.min(4, (node.degree || 0) / 6));
+            sprite.textHeight = Math.max(2, (3 + Math.min(4, (node.degree || 0) / 6)) * labelSizeRef.current);
             sprite.material.depthWrite = false;
             sprite.material.transparent = true;
             sprite.material.opacity = 1;
