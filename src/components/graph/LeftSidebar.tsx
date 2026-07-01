@@ -316,8 +316,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                         active ? "bg-neon-primary/10 text-neon-primary" : "hover:bg-white/5 text-white/80"
                       }`}
                     >
-                      <span className="text-sm">Cluster {String(c.id).padStart(3, "0")}</span>
-                      <span className="font-mono text-[10px] text-muted-text bg-white/5 px-1.5 py-0.5 rounded">
+                      <span className="text-sm truncate text-left" title={c.name}>{c.name}</span>
+                      <span className="font-mono text-[10px] text-muted-text bg-white/5 px-1.5 py-0.5 rounded shrink-0 ml-2">
                         {c.count}
                       </span>
                     </button>

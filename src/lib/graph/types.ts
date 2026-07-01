@@ -46,6 +46,6 @@ export type NormalizedGraph = {
   links: GraphLink[];
   neighbors: Map<string, Set<string>>;
   byId: Map<string, GraphNode>;
-  communities: { id: number; count: number }[];
+  communities: { id: number; count: number; name: string }[];
   categoryCounts: Record<Category, number>;
 };
