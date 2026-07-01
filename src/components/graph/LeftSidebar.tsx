@@ -385,5 +385,6 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
         </div>
       </div>
     </aside>
+    </TooltipProvider>
   );
 }
