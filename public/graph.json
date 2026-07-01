@@ -10557,6 +10557,394 @@
       "weight": 5.0,
       "url": "https://absoulutelycaptivating.com",
       "color": "#A21CAF"
+    },
+    {
+      "id": "selflove_story_the_heart_within",
+      "label": "No. 01 \u2014 Amara: The Heart Within",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/the-heart-within",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "the heart within",
+      "url": "https://selflove24.lovable.app/stories/the-heart-within",
+      "quote": "She built her whole life on being needed and now nobody needs her, and she don't know what that makes her.",
+      "character": "Amara",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_the_heart_within",
+      "label": "Portrait \u2014 Amara",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/the-heart-within-BbwVVYzE.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait amara",
+      "url": "https://selflove24.lovable.app/assets/the-heart-within-BbwVVYzE.jpg",
+      "image": "https://selflove24.lovable.app/assets/the-heart-within-BbwVVYzE.jpg",
+      "character": "Amara",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_the_mirror_of_truth",
+      "label": "No. 02 \u2014 Nia: The Mirror of Truth",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/the-mirror-of-truth",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "the mirror of truth",
+      "url": "https://selflove24.lovable.app/stories/the-mirror-of-truth",
+      "quote": "She has been calling boredom love. She has been calling provision intimacy. She has been calling silence peace.",
+      "character": "Nia",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_the_mirror_of_truth",
+      "label": "Portrait \u2014 Nia",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/the-mirror-of-truth-_NcjO0Zz.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait nia",
+      "url": "https://selflove24.lovable.app/assets/the-mirror-of-truth-_NcjO0Zz.jpg",
+      "image": "https://selflove24.lovable.app/assets/the-mirror-of-truth-_NcjO0Zz.jpg",
+      "character": "Nia",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_finding_her_voice",
+      "label": "No. 03 \u2014 Lila: Finding Her Voice",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/finding-her-voice",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "finding her voice",
+      "url": "https://selflove24.lovable.app/stories/finding-her-voice",
+      "quote": "Baby, your voice ain't lost. You just been loaning it out for free.",
+      "character": "Lila",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_finding_her_voice",
+      "label": "Portrait \u2014 Lila",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/finding-her-voice-B3wcquX4.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait lila",
+      "url": "https://selflove24.lovable.app/assets/finding-her-voice-B3wcquX4.jpg",
+      "image": "https://selflove24.lovable.app/assets/finding-her-voice-B3wcquX4.jpg",
+      "character": "Lila",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_embracing_authenticity",
+      "label": "No. 04 \u2014 Zuri: Embracing Authenticity",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/embracing-authenticity",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "embracing authenticity",
+      "url": "https://selflove24.lovable.app/stories/embracing-authenticity",
+      "quote": "Authenticity, it turns out, is not a thing you achieve. It's a door you walk through.",
+      "character": "Zuri",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_embracing_authenticity",
+      "label": "Portrait \u2014 Zuri",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/embracing-authenticity-C4E_IijW.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait zuri",
+      "url": "https://selflove24.lovable.app/assets/embracing-authenticity-C4E_IijW.jpg",
+      "image": "https://selflove24.lovable.app/assets/embracing-authenticity-C4E_IijW.jpg",
+      "character": "Zuri",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_breaking_the_chains",
+      "label": "No. 05 \u2014 Amina: Breaking the Chains",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/breaking-the-chains",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "breaking the chains",
+      "url": "https://selflove24.lovable.app/stories/breaking-the-chains",
+      "quote": "Chains are heavy. Even when you carry them yourself. Especially then.",
+      "character": "Amina",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_breaking_the_chains",
+      "label": "Portrait \u2014 Amina",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/breaking-the-chains-B3bdwrDC.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait amina",
+      "url": "https://selflove24.lovable.app/assets/breaking-the-chains-B3bdwrDC.jpg",
+      "image": "https://selflove24.lovable.app/assets/breaking-the-chains-B3bdwrDC.jpg",
+      "character": "Amina",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_warrior_of_the_streets",
+      "label": "No. 06 \u2014 Kesha: Warrior of the Streets",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/warrior-of-the-streets",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "warrior of the streets",
+      "url": "https://selflove24.lovable.app/stories/warrior-of-the-streets",
+      "quote": "The war ends because, one day, you decide you ain't gotta fight yourself anymore.",
+      "character": "Kesha",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_warrior_of_the_streets",
+      "label": "Portrait \u2014 Kesha",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/warrior-of-the-streets-BvVcfEwR.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait kesha",
+      "url": "https://selflove24.lovable.app/assets/warrior-of-the-streets-BvVcfEwR.jpg",
+      "image": "https://selflove24.lovable.app/assets/warrior-of-the-streets-BvVcfEwR.jpg",
+      "character": "Kesha",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_strength_in_the_struggle",
+      "label": "No. 07 \u2014 Maya: Strength in the Struggle",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/strength-in-the-struggle",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "strength in the struggle",
+      "url": "https://selflove24.lovable.app/stories/strength-in-the-struggle",
+      "quote": "Strength is not the absence of struggle. Strength is the continuation of struggle.",
+      "character": "Maya",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_strength_in_the_struggle",
+      "label": "Portrait \u2014 Maya",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/strength-in-the-struggle-CZCHMCU1.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait maya",
+      "url": "https://selflove24.lovable.app/assets/strength-in-the-struggle-CZCHMCU1.jpg",
+      "image": "https://selflove24.lovable.app/assets/strength-in-the-struggle-CZCHMCU1.jpg",
+      "character": "Maya",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_rise_from_the_ashes",
+      "label": "No. 08 \u2014 Tasha: Rise from the Ashes",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/rise-from-the-ashes",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "rise from the ashes",
+      "url": "https://selflove24.lovable.app/stories/rise-from-the-ashes",
+      "quote": "The phoenix is not the same bird. The phoenix is a new bird made out of the heat of what burned.",
+      "character": "Tasha",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_rise_from_the_ashes",
+      "label": "Portrait \u2014 Tasha",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/rise-from-the-ashes-B_sQvLto.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait tasha",
+      "url": "https://selflove24.lovable.app/assets/rise-from-the-ashes-B_sQvLto.jpg",
+      "image": "https://selflove24.lovable.app/assets/rise-from-the-ashes-B_sQvLto.jpg",
+      "character": "Tasha",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_eyes_of_hope",
+      "label": "No. 09 \u2014 Aisha: Eyes of Hope",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/eyes-of-hope",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "eyes of hope",
+      "url": "https://selflove24.lovable.app/stories/eyes-of-hope",
+      "quote": "It was not hope for me. It was hope through me.",
+      "character": "Aisha",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_eyes_of_hope",
+      "label": "Portrait \u2014 Aisha",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/eyes-of-hope-z7dmAb49.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait aisha",
+      "url": "https://selflove24.lovable.app/assets/eyes-of-hope-z7dmAb49.jpg",
+      "image": "https://selflove24.lovable.app/assets/eyes-of-hope-z7dmAb49.jpg",
+      "character": "Aisha",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_whispers_of_self_love",
+      "label": "No. 10 \u2014 Risa: Whispers of Self-Love",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/whispers-of-self-love",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "whispers of self-love",
+      "url": "https://selflove24.lovable.app/stories/whispers-of-self-love",
+      "quote": "The big version is a billboard. The real version is a whisper.",
+      "character": "Risa",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_whispers_of_self_love",
+      "label": "Portrait \u2014 Risa",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/whispers-of-self-love-BYZYIDpM.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait risa",
+      "url": "https://selflove24.lovable.app/assets/whispers-of-self-love-BYZYIDpM.jpg",
+      "image": "https://selflove24.lovable.app/assets/whispers-of-self-love-BYZYIDpM.jpg",
+      "character": "Risa",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_blueprints_of_the_heart",
+      "label": "No. 11 \u2014 Lexa: Blueprints of the Heart",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/blueprints-of-the-heart",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "blueprints of the heart",
+      "url": "https://selflove24.lovable.app/stories/blueprints-of-the-heart",
+      "quote": "Buildings are never finished. There is always something to maintain, something to upgrade.",
+      "character": "Lexa",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_blueprints_of_the_heart",
+      "label": "Portrait \u2014 Lexa",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/blueprints-of-the-heart-v5sKFZ3D.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait lexa",
+      "url": "https://selflove24.lovable.app/assets/blueprints-of-the-heart-v5sKFZ3D.jpg",
+      "image": "https://selflove24.lovable.app/assets/blueprints-of-the-heart-v5sKFZ3D.jpg",
+      "character": "Lexa",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_story_vision_of_love",
+      "label": "No. 12 \u2014 Siah: Vision of Love",
+      "file_type": "blog",
+      "source_file": "https://selflove24.lovable.app/stories/vision-of-love",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "vision of love",
+      "url": "https://selflove24.lovable.app/stories/vision-of-love",
+      "quote": "I am holding it for the same reason a lighthouse holds its light.",
+      "character": "Siah",
+      "color": "#EC4899",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_vision_of_love",
+      "label": "Portrait \u2014 Siah",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/vision-of-love-BVbf9g2Z.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "portrait siah",
+      "url": "https://selflove24.lovable.app/assets/vision-of-love-BVbf9g2Z.jpg",
+      "image": "https://selflove24.lovable.app/assets/vision-of-love-BVbf9g2Z.jpg",
+      "character": "Siah",
+      "color": "#F9A8D4",
+      "weight": 2.0
+    },
+    {
+      "id": "selflove_art_hero_mural",
+      "label": "Self Love Mural \u2014 Twelve Portraits",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/self-love-hero-VLO6CLcb.jpg",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "self love mural \u2014 twelve portraits",
+      "url": "https://selflove24.lovable.app/assets/self-love-hero-VLO6CLcb.jpg",
+      "image": "https://selflove24.lovable.app/assets/self-love-hero-VLO6CLcb.jpg",
+      "color": "#F9A8D4",
+      "weight": 2.5
+    },
+    {
+      "id": "selflove_art_mr_cap",
+      "label": "Mr. CAP \u2014 Cornelius A. Pratt",
+      "file_type": "image",
+      "source_file": "https://selflove24.lovable.app/assets/mr-cap-CZ8cB2Ye.png",
+      "source_location": "web",
+      "_origin": "selflove24",
+      "community": 200,
+      "norm_label": "mr. cap \u2014 cornelius a. pratt",
+      "url": "https://selflove24.lovable.app/assets/mr-cap-CZ8cB2Ye.png",
+      "image": "https://selflove24.lovable.app/assets/mr-cap-CZ8cB2Ye.png",
+      "color": "#F9A8D4",
+      "weight": 2.5
     }
   ],
   "links": [
@@ -22063,6 +22451,240 @@
       "relation": "connected_site",
       "weight": 3.0,
       "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_the_heart_within",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_the_heart_within",
+      "target": "selflove_art_the_heart_within",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_the_heart_within",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_the_mirror_of_truth",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_the_mirror_of_truth",
+      "target": "selflove_art_the_mirror_of_truth",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_the_mirror_of_truth",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_finding_her_voice",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_finding_her_voice",
+      "target": "selflove_art_finding_her_voice",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_finding_her_voice",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_embracing_authenticity",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_embracing_authenticity",
+      "target": "selflove_art_embracing_authenticity",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_embracing_authenticity",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_breaking_the_chains",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_breaking_the_chains",
+      "target": "selflove_art_breaking_the_chains",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_breaking_the_chains",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_warrior_of_the_streets",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_warrior_of_the_streets",
+      "target": "selflove_art_warrior_of_the_streets",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_warrior_of_the_streets",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_strength_in_the_struggle",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_strength_in_the_struggle",
+      "target": "selflove_art_strength_in_the_struggle",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_strength_in_the_struggle",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_rise_from_the_ashes",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_rise_from_the_ashes",
+      "target": "selflove_art_rise_from_the_ashes",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_rise_from_the_ashes",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_eyes_of_hope",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_eyes_of_hope",
+      "target": "selflove_art_eyes_of_hope",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_eyes_of_hope",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_whispers_of_self_love",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_whispers_of_self_love",
+      "target": "selflove_art_whispers_of_self_love",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_whispers_of_self_love",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_blueprints_of_the_heart",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_blueprints_of_the_heart",
+      "target": "selflove_art_blueprints_of_the_heart",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_blueprints_of_the_heart",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_story_vision_of_love",
+      "relation": "features_story",
+      "weight": 2.0
+    },
+    {
+      "source": "selflove_story_vision_of_love",
+      "target": "selflove_art_vision_of_love",
+      "relation": "has_portrait",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_vision_of_love",
+      "relation": "features_art",
+      "weight": 1.5
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_hero_mural",
+      "relation": "features_art",
+      "weight": 2.0
+    },
+    {
+      "source": "site_selflove24_lovable_app",
+      "target": "selflove_art_mr_cap",
+      "relation": "features_art",
+      "weight": 2.0
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "selflove_art_mr_cap",
+      "relation": "depicts_artist",
+      "weight": 2.0
     }
   ],
   "hyperedges": [],
