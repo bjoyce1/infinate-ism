@@ -10,6 +10,8 @@ type ForceGraphHandle = {
   zoomToFit: (ms?: number, padding?: number) => void;
 };
 
+const HUB_ID = "site_mrcap1_com";
+
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -27,6 +29,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const hover = useGraphStore((s) => s.hover);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
+  const recenterToken = useGraphStore((s) => s.recenterToken);
 
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const getImage = (url: string): HTMLImageElement | null => {
@@ -73,6 +76,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       }),
     [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId],
   );
+
+  useEffect(() => {
+    if (!recenterToken || !fgRef.current) return;
+    const hub = data.nodes.find((n) => n.id === HUB_ID) as
+      | (GraphNode & { x?: number; y?: number })
+      | undefined;
+    if (!hub || hub.x == null || hub.y == null) {
+      fgRef.current.zoomToFit(600, 60);
+      return;
+    }
+    fgRef.current.centerAt(hub.x, hub.y, 800);
+    fgRef.current.zoom(3, 800);
+  }, [recenterToken, data]);
 
   const highlightSet = useMemo(() => {
     const anchor = hoveredId ?? selectedId;
