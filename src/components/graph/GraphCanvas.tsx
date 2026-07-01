@@ -20,6 +20,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const focusMode = useGraphStore((s) => s.focusMode);
   const activeCommunity = useGraphStore((s) => s.activeCommunity);
   const activeCategories = useGraphStore((s) => s.activeCategories);
+  const hideCode = useGraphStore((s) => s.hideCode);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
@@ -50,6 +51,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     const nodeSet = new Set<string>();
     for (const n of graph.nodes) {
       if (activeCategories.size > 0 && !activeCategories.has(n.category)) continue;
+      if (hideCode && n.category === "code") continue;
       if (activeCommunity != null && n.community !== activeCommunity) continue;
       nodeSet.add(n.id);
     }
@@ -63,7 +65,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .filter((l) => nodeSet.has(l.source) && nodeSet.has(l.target))
       .map((l) => ({ ...l }));
     return { nodes, links };
-  }, [graph, activeCategories, activeCommunity, focusMode, selectedId]);
+  }, [graph, activeCategories, hideCode, activeCommunity, focusMode, selectedId]);
 
   const highlightSet = useMemo(() => {
     const anchor = hoveredId ?? selectedId;
