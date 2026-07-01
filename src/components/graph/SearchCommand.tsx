@@ -9,17 +9,31 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const setOpen = useGraphStore((s) => s.setSearchOpen);
   const select = useGraphStore((s) => s.select);
   const [q, setQ] = useState("");
+  const [includeCode, setIncludeCode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fuse = useMemo(
-    () => new Fuse(graph.nodes, { keys: ["label", "source_file"], threshold: 0.4, ignoreLocation: true }),
-    [graph.nodes],
+  const isTsNode = (n: GraphNode) => {
+    const l = (n.label ?? "").toLowerCase();
+    const s = (n.source_file ?? "").toLowerCase();
+    return /\.(ts|tsx)(?:$|[:?#])/.test(l) || /\.(ts|tsx)(?:$|[:?#])/.test(s);
+  };
+
+  const searchPool = useMemo(
+    () => (includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n))),
+    [graph.nodes, includeCode],
   );
 
+  const fuse = useMemo(
+    () => new Fuse(searchPool, { keys: ["label", "source_file"], threshold: 0.4, ignoreLocation: true }),
+    [searchPool],
+  );
+
+  const excludedCount = graph.nodes.length - searchPool.length;
+
   const results = useMemo<GraphNode[]>(() => {
-    if (!q.trim()) return graph.nodes.slice().sort((a, b) => b.degree - a.degree).slice(0, 20);
+    if (!q.trim()) return searchPool.slice().sort((a, b) => b.degree - a.degree).slice(0, 20);
     return fuse.search(q, { limit: 30 }).map((r) => r.item);
-  }, [q, fuse, graph.nodes]);
+  }, [q, fuse, searchPool]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -59,6 +73,24 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
             className="flex-1 bg-transparent outline-none text-sm font-mono placeholder:text-muted-text/60"
           />
           <span className="text-[10px] font-mono text-muted-text">ESC</span>
+        </div>
+        <div className="px-4 py-2 border-b border-obsidian-border flex items-center justify-between gap-3 bg-white/[0.02]">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={includeCode}
+              onChange={(e) => setIncludeCode(e.target.checked)}
+              className="accent-neon-primary cursor-pointer"
+            />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">
+              Include .ts / .tsx nodes
+            </span>
+          </label>
+          <span className="text-[10px] font-mono text-muted-text">
+            {includeCode
+              ? `${searchPool.length} indexed`
+              : `${searchPool.length} indexed · ${excludedCount} hidden`}
+          </span>
         </div>
         <div className="max-h-[420px] overflow-y-auto">
           {results.map((n) => (
