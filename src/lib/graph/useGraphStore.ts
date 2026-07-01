@@ -16,6 +16,7 @@ type State = {
   labelDensity: number;
   cameraResetToken: number;
   hideCode: boolean;
+  includeTsFiles: boolean;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -31,6 +32,8 @@ type State = {
   resetCamera: () => void;
   toggleHideCode: () => void;
   setHideCode: (v: boolean) => void;
+  toggleIncludeTsFiles: () => void;
+  setIncludeTsFiles: (v: boolean) => void;
   reset: () => void;
 };
 
@@ -49,6 +52,7 @@ export const useGraphStore = create<State>((set) => ({
   labelDensity: 1,
   cameraResetToken: 0,
   hideCode: false,
+  includeTsFiles: false,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -71,6 +75,8 @@ export const useGraphStore = create<State>((set) => ({
   resetCamera: () => set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
   toggleHideCode: () => set((s) => ({ hideCode: !s.hideCode })),
   setHideCode: (v) => set({ hideCode: v }),
+  toggleIncludeTsFiles: () => set((s) => ({ includeTsFiles: !s.includeTsFiles })),
+  setIncludeTsFiles: (v) => set({ includeTsFiles: v }),
   reset: () =>
     set({
       selectedId: null,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
-import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
+import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import SpriteText from "three-spritetext";
 
@@ -43,6 +43,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const activeCommunity = useGraphStore((s) => s.activeCommunity);
   const activeCategories = useGraphStore((s) => s.activeCategories);
   const hideCode = useGraphStore((s) => s.hideCode);
+  const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
   const hoverRef = useRef(useGraphStore.getState().hover);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
@@ -91,6 +92,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     for (const n of graph.nodes) {
       if (activeCategories.size > 0 && !activeCategories.has(n.category)) continue;
       if (hideCode && n.category === "code") continue;
+      if (!includeTsFiles && isTsSourceNode(n)) continue;
       if (activeCommunity != null && n.community !== activeCommunity) continue;
       nodeSet.add(n.id);
     }
@@ -104,7 +106,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       .filter((l) => nodeSet.has(l.source) && nodeSet.has(l.target))
       .map((l) => ({ ...l }));
     return { nodes, links };
-  }, [graph, activeCategories, hideCode, activeCommunity, focusMode, selectedId]);
+  }, [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId]);
 
   // Drop cached sprites for nodes no longer in the filtered set so the
   // collision loop doesn't try to place stale labels.

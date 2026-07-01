@@ -1,7 +1,7 @@
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
-import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
+import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 
 export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
@@ -9,15 +9,13 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const setOpen = useGraphStore((s) => s.setSearchOpen);
   const select = useGraphStore((s) => s.select);
   const [q, setQ] = useState("");
-  const [includeCode, setIncludeCode] = useState(false);
+  const includeCode = useGraphStore((s) => s.includeTsFiles);
+  const setIncludeCode = useGraphStore((s) => s.setIncludeTsFiles);
+  const hideCode = useGraphStore((s) => s.hideCode);
   const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isTsNode = (n: GraphNode) => {
-    const l = (n.label ?? "").toLowerCase();
-    const s = (n.source_file ?? "").toLowerCase();
-    return /\.(ts|tsx)(?:$|[:?#])/.test(l) || /\.(ts|tsx)(?:$|[:?#])/.test(s);
-  };
+  const isTsNode = (n: GraphNode) => isTsSourceNode(n);
 
   const getType = (n: GraphNode): string => {
     const ft = (n as GraphNode & { file_type?: string }).file_type;
@@ -25,24 +23,26 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   };
 
   const typeCounts = useMemo(() => {
-    const base = includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n));
+    let base = includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n));
+    if (hideCode) base = base.filter((n) => n.category !== "code");
     const c: Record<string, number> = {};
     for (const n of base) {
       const t = getType(n);
       c[t] = (c[t] ?? 0) + 1;
     }
     return c;
-  }, [graph.nodes, includeCode]);
+  }, [graph.nodes, includeCode, hideCode]);
 
   const CHIPS = ["code", "music", "blog", "other"] as const;
 
   const searchPool = useMemo(() => {
     let pool = includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n));
+    if (hideCode) pool = pool.filter((n) => n.category !== "code");
     if (activeTypes.size > 0) {
       pool = pool.filter((n) => activeTypes.has(getType(n)));
     }
     return pool;
-  }, [graph.nodes, includeCode, activeTypes]);
+  }, [graph.nodes, includeCode, hideCode, activeTypes]);
 
   const fuse = useMemo(
     () => new Fuse(searchPool, { keys: ["label", "source_file"], threshold: 0.4, ignoreLocation: true }),
