@@ -216,6 +216,27 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     );
   }, [recenterToken, data]);
 
+  // Fly-to (tour + programmatic): orbit camera to a specific node.
+  useEffect(() => {
+    if (!flyToToken || !flyToId || !fgRef.current) return;
+    const target = data.nodes.find((n) => n.id === flyToId) as NodeWithCoords | undefined;
+    if (!target || target.x == null) return;
+    const x = target.x;
+    const y = target.y ?? 0;
+    const z = target.z ?? 0;
+    const distance = 160;
+    const norm = Math.hypot(x, y, z) || 1;
+    fgRef.current.cameraPosition(
+      {
+        x: x + (x / norm) * distance,
+        y: y + (y / norm) * distance,
+        z: z + (z / norm) * distance,
+      },
+      { x, y, z },
+      1200,
+    );
+  }, [flyToToken, flyToId, data]);
+
   // Collision-aware label loop: project every labeled node to screen space,
   // sort by importance, and hide labels whose bounding box overlaps a
   // higher-priority one already placed.
