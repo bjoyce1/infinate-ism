@@ -10466,6 +10466,90 @@
       "community": 200,
       "norm_label": "big prez",
       "id": "collab_big_prez"
+    },
+    {
+      "id": "site_theartofism_com",
+      "label": "theartofism.com",
+      "file_type": "other",
+      "source_file": "https://theartofism.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "theartofism.com",
+      "weight": 5.0,
+      "url": "https://theartofism.com"
+    },
+    {
+      "id": "site_713mixhouse_com",
+      "label": "713mixhouse.com",
+      "file_type": "other",
+      "source_file": "https://713mixhouse.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "713mixhouse.com",
+      "weight": 5.0,
+      "url": "https://713mixhouse.com"
+    },
+    {
+      "id": "site_themaasaproject_com",
+      "label": "themaasaproject.com",
+      "file_type": "other",
+      "source_file": "https://themaasaproject.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "themaasaproject.com",
+      "weight": 5.0,
+      "url": "https://themaasaproject.com"
+    },
+    {
+      "id": "site_themilkmoney_com",
+      "label": "themilkmoney.com",
+      "file_type": "other",
+      "source_file": "https://themilkmoney.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "themilkmoney.com",
+      "weight": 5.0,
+      "url": "https://themilkmoney.com"
+    },
+    {
+      "id": "site_selflove24_lovable_app",
+      "label": "selflove24.lovable.app",
+      "file_type": "other",
+      "source_file": "https://selflove24.lovable.app",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "selflove24.lovable.app",
+      "weight": 5.0,
+      "url": "https://selflove24.lovable.app"
+    },
+    {
+      "id": "site_dabsheets_com",
+      "label": "dabsheets.com",
+      "file_type": "other",
+      "source_file": "https://dabsheets.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "dabsheets.com",
+      "weight": 5.0,
+      "url": "https://dabsheets.com"
+    },
+    {
+      "id": "site_absoulutelycaptivating_com",
+      "label": "absoulutelycaptivating.com",
+      "file_type": "other",
+      "source_file": "https://absoulutelycaptivating.com",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 200,
+      "norm_label": "absoulutelycaptivating.com",
+      "weight": 5.0,
+      "url": "https://absoulutelycaptivating.com"
     }
   ],
   "links": [
@@ -21923,6 +22007,55 @@
       "target": "ui_chart_chartlegendcontent",
       "weight": 2.0,
       "relation": "spawns"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_theartofism_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_713mixhouse_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_themaasaproject_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_themilkmoney_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_selflove24_lovable_app",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_dabsheets_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_absoulutelycaptivating_com",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
     }
   ],
   "hyperedges": [],
