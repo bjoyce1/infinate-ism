@@ -27,6 +27,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setLabelSize = useGraphStore((s) => s.setLabelSize);
   const labelDensity = useGraphStore((s) => s.labelDensity);
   const setLabelDensity = useGraphStore((s) => s.setLabelDensity);
+  const hideCode = useGraphStore((s) => s.hideCode);
+  const toggleHideCode = useGraphStore((s) => s.toggleHideCode);
   const topCommunities = graph.communities.slice(0, 12);
 
   const selected = selectedId ? graph.byId.get(selectedId) : null;
@@ -41,6 +43,37 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
         </div>
 
         <nav className="space-y-6">
+          <div className="p-3 bg-white/5 border border-obsidian-border rounded-lg">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold">
+                  {hideCode ? "Clean View" : "Raw View"}
+                </div>
+                <div className="text-[10px] font-mono text-muted-text mt-0.5">
+                  {hideCode ? "Code nodes hidden" : `${graph.categoryCounts.code} code nodes visible`}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hideCode}
+                aria-label="Hide code nodes"
+                onClick={toggleHideCode}
+                className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer shrink-0 ${
+                  hideCode
+                    ? "bg-neon-primary/30 border-neon-primary"
+                    : "bg-white/5 border-obsidian-border"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
+                    hideCode ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           <div>
             <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-4">
               Communities
