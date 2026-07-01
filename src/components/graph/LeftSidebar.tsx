@@ -16,6 +16,10 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const toggleCategory = useGraphStore((s) => s.toggleCategory);
   const focusMode = useGraphStore((s) => s.focusMode);
   const selectedId = useGraphStore((s) => s.selectedId);
+  const particleIntensity = useGraphStore((s) => s.particleIntensity);
+  const setParticleIntensity = useGraphStore((s) => s.setParticleIntensity);
+  const linkIntensity = useGraphStore((s) => s.linkIntensity);
+  const setLinkIntensity = useGraphStore((s) => s.setLinkIntensity);
   const topCommunities = graph.communities.slice(0, 12);
 
   const selected = selectedId ? graph.byId.get(selectedId) : null;
@@ -85,6 +89,44 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-4">
+              Flow Intensity
+            </h3>
+            <div className="space-y-3">
+              <label className="block">
+                <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                  <span>Particles</span>
+                  <span>{particleIntensity.toFixed(1)}×</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={3}
+                  step={0.1}
+                  value={particleIntensity}
+                  onChange={(e) => setParticleIntensity(Number(e.target.value))}
+                  className="w-full accent-neon-primary cursor-pointer"
+                />
+              </label>
+              <label className="block">
+                <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                  <span>Links</span>
+                  <span>{linkIntensity.toFixed(1)}×</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={3}
+                  step={0.1}
+                  value={linkIntensity}
+                  onChange={(e) => setLinkIntensity(Number(e.target.value))}
+                  className="w-full accent-neon-primary cursor-pointer"
+                />
+              </label>
             </div>
           </div>
         </nav>

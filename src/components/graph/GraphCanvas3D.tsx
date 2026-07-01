@@ -6,6 +6,10 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
   const wrapRef = useRef<HTMLDivElement>(null);
+  const fgRef = useRef<{
+    zoomToFit: (ms?: number, padding?: number) => void;
+    cameraPosition: (pos: { x: number; y: number; z: number }, lookAt?: { x: number; y: number; z: number }, ms?: number) => void;
+  } | null>(null);
   const [ForceGraph3D, setForceGraph3D] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
@@ -15,6 +19,9 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const activeCategories = useGraphStore((s) => s.activeCategories);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
+  const particleIntensity = useGraphStore((s) => s.particleIntensity);
+  const linkIntensity = useGraphStore((s) => s.linkIntensity);
+  const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +71,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     return set;
   }, [hoveredId, selectedId, graph.neighbors]);
 
+  useEffect(() => {
+    if (!fgRef.current) return;
+    fgRef.current.cameraPosition({ x: 0, y: 0, z: 400 }, { x: 0, y: 0, z: 0 }, 800);
+    setTimeout(() => fgRef.current?.zoomToFit(600, 60), 850);
+  }, [cameraResetToken]);
+
   const nodeVal = (n: GraphNode) => Math.max(1, 1 + Math.sqrt(n.degree));
   const nodeColor = (n: GraphNode) => {
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";
@@ -81,6 +94,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     <div ref={wrapRef} className="absolute inset-0">
       {ForceGraph3D && size.w > 0 && (
         <ForceGraph3D
+          ref={fgRef as unknown as React.Ref<unknown>}
           graphData={data}
           width={size.w}
           height={size.h}
@@ -91,16 +105,17 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           nodeResolution={12}
           nodeLabel={(n: GraphNode) => n.label ?? n.id}
           linkColor={linkColor}
-          linkOpacity={0.6}
-          linkWidth={0.4}
+          linkOpacity={Math.min(1, 0.6 * linkIntensity)}
+          linkWidth={0.4 * linkIntensity}
           linkDirectionalParticles={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return 1;
+            const base = highlightSet ? 0 : 1;
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? 4 : 0;
+            const hi = highlightSet && highlightSet.has(s) && highlightSet.has(t) ? 4 : base;
+            return Math.round(hi * particleIntensity);
           }}
           linkDirectionalParticleSpeed={0.006}
-          linkDirectionalParticleWidth={1.4}
+          linkDirectionalParticleWidth={1.4 * particleIntensity}
           linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
             if (!highlightSet) return "rgba(228,228,231,0.7)";
             const s = typeof link.source === "string" ? link.source : link.source.id;
@@ -111,6 +126,9 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
           enableNodeDrag={true}
+          enableNavigationControls={true}
+          controlType="orbit"
+          showNavInfo={false}
         />
       )}
       {!ForceGraph3D && (

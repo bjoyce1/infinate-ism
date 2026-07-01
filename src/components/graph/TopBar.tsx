@@ -8,6 +8,7 @@ export function TopBar() {
   const reset = useGraphStore((s) => s.reset);
   const viewMode = useGraphStore((s) => s.viewMode);
   const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
+  const resetCamera = useGraphStore((s) => s.resetCamera);
 
   return (
     <header className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10 pointer-events-none">
@@ -29,6 +30,15 @@ export function TopBar() {
         >
           RESET
         </button>
+        {viewMode === "3d" && (
+          <button
+            type="button"
+            onClick={resetCamera}
+            className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium hover:border-neon-primary transition-colors cursor-pointer"
+          >
+            RESET CAMERA
+          </button>
+        )}
         <button
           type="button"
           onClick={toggleViewMode}

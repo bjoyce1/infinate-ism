@@ -9,6 +9,9 @@ type State = {
   activeCategories: Set<Category>;
   searchOpen: boolean;
   viewMode: "2d" | "3d";
+  particleIntensity: number;
+  linkIntensity: number;
+  cameraResetToken: number;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -16,6 +19,9 @@ type State = {
   toggleCategory: (c: Category) => void;
   setSearchOpen: (v: boolean) => void;
   toggleViewMode: () => void;
+  setParticleIntensity: (v: number) => void;
+  setLinkIntensity: (v: number) => void;
+  resetCamera: () => void;
   reset: () => void;
 };
 
@@ -27,6 +33,9 @@ export const useGraphStore = create<State>((set) => ({
   activeCategories: new Set(),
   searchOpen: false,
   viewMode: "2d",
+  particleIntensity: 1,
+  linkIntensity: 1,
+  cameraResetToken: 0,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -41,6 +50,9 @@ export const useGraphStore = create<State>((set) => ({
     }),
   setSearchOpen: (v) => set({ searchOpen: v }),
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === "2d" ? "3d" : "2d" })),
+  setParticleIntensity: (v) => set({ particleIntensity: v }),
+  setLinkIntensity: (v) => set({ linkIntensity: v }),
+  resetCamera: () => set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
   reset: () =>
     set({
       selectedId: null,
