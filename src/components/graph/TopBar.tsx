@@ -6,6 +6,8 @@ export function TopBar() {
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const selectedId = useGraphStore((s) => s.selectedId);
   const reset = useGraphStore((s) => s.reset);
+  const viewMode = useGraphStore((s) => s.viewMode);
+  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
 
   return (
     <header className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10 pointer-events-none">
@@ -27,12 +29,14 @@ export function TopBar() {
         >
           RESET
         </button>
-        <div
-          className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium text-muted-text"
-          title="3D view — coming soon"
+        <button
+          type="button"
+          onClick={toggleViewMode}
+          className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium hover:border-neon-primary transition-colors cursor-pointer"
+          title="Toggle 2D / 3D view"
         >
-          2D VIEW
-        </div>
+          {viewMode === "2d" ? "2D VIEW" : "3D VIEW"}
+        </button>
         <button
           type="button"
           disabled={!selectedId}

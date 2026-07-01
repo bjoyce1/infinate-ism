@@ -8,12 +8,14 @@ type State = {
   activeCommunity: number | null;
   activeCategories: Set<Category>;
   searchOpen: boolean;
+  viewMode: "2d" | "3d";
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
   setCommunity: (c: number | null) => void;
   toggleCategory: (c: Category) => void;
   setSearchOpen: (v: boolean) => void;
+  toggleViewMode: () => void;
   reset: () => void;
 };
 
@@ -24,6 +26,7 @@ export const useGraphStore = create<State>((set) => ({
   activeCommunity: null,
   activeCategories: new Set(),
   searchOpen: false,
+  viewMode: "2d",
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -37,6 +40,7 @@ export const useGraphStore = create<State>((set) => ({
       return { activeCategories: next };
     }),
   setSearchOpen: (v) => set({ searchOpen: v }),
+  toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === "2d" ? "3d" : "2d" })),
   reset: () =>
     set({
       selectedId: null,

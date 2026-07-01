@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { loadGraph } from "@/lib/graph/loadGraph";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
+import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { DetailPanel } from "@/components/graph/DetailPanel";
 import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
+import { useGraphStore } from "@/lib/graph/useGraphStore";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [graph, setGraph] = useState<NormalizedGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const viewMode = useGraphStore((s) => s.viewMode);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +66,7 @@ function Index() {
     <div className="h-screen w-full bg-obsidian-bg text-white font-sora flex overflow-hidden">
       <LeftSidebar graph={graph} />
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
-        <GraphCanvas graph={graph} />
+        {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}
         <TopBar />
       </main>
       <DetailPanel graph={graph} />
