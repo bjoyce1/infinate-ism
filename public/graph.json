@@ -11629,6 +11629,956 @@
       "file_type": "blog",
       "color": "#5A0F1E",
       "url": "https://713mixhouse.com/services#graphic-design"
+    },
+    {
+      "id": "site_bookspc_com",
+      "label": "bookspc.com",
+      "category": "other",
+      "file_type": "other",
+      "community": 203,
+      "color": "#7C3AED",
+      "weight": 6.0,
+      "url": "https://bookspc.com",
+      "source_file": "https://bookspc.com",
+      "source_location": "web",
+      "_origin": "site",
+      "description": "South Park Coalition \u00b7 Houston's legendary hip-hop collective. Book individual artists or the full SPC experience.",
+      "image": "https://bookspc.com/assets/hero-image-UYTd19I6.png"
+    },
+    {
+      "id": "spc_artist_k_rino",
+      "label": "K-Rino",
+      "category": "image",
+      "file_type": "image",
+      "community": 203,
+      "color": "#F5C542",
+      "image": "https://bookspc.com/assets/k-rino-DgQIAVK0.png",
+      "role": "founder",
+      "description": "Houston rap legend and South Park Coalition founder, one of hip-hop's most prolific and intellectually respected lyricists.",
+      "tags": [
+        "Conscious",
+        "Lyrical"
+      ],
+      "weight": 2.5,
+      "url": "https://bookspc.com/artists/k-rino"
+    },
+    {
+      "id": "spc_artist_point_blank",
+      "label": "Point Blank",
+      "category": "image",
+      "file_type": "image",
+      "community": 203,
+      "color": "#F5C542",
+      "image": "https://bookspc.com/assets/point-blank-DziDqNhg.png",
+      "role": "core",
+      "description": "Houston Rap Icon \u00b7 SPC Original Member \u00b7 Executive Producer",
+      "tags": [
+        "Street",
+        "Raw"
+      ],
+      "weight": 2.5,
+      "url": "https://bookspc.com/artists/point-blank"
+    },
+    {
+      "id": "spc_artist_klondike_kat",
+      "label": "Klondike Kat",
+      "category": "image",
+      "file_type": "image",
+      "community": 203,
+      "color": "#F5C542",
+      "image": "https://bookspc.com/assets/klondike-kat-BIzj3-sa.png",
+      "role": "core",
+      "description": "Houston rapper and SPC core member, respected for sharp lyricism and consistency.",
+      "tags": [
+        "Underground",
+        "Lyrical"
+      ],
+      "weight": 2.5,
+      "url": "https://bookspc.com/artists/klondike-kat"
+    },
+    {
+      "id": "spc_artist_mr_cap",
+      "label": "Mr. CAP",
+      "category": "image",
+      "file_type": "image",
+      "community": 203,
+      "color": "#F5C542",
+      "image": "https://bookspc.com/assets/mr-cap-GSXQ_N5P.png",
+      "role": "core",
+      "description": "SPC Original Member \u00b7 Entrepreneur \u00b7 Cultural Steward",
+      "tags": [
+        "Hip-Hop",
+        "Rap"
+      ],
+      "weight": 2.5,
+      "url": "https://bookspc.com/artists/mr-cap"
+    },
+    {
+      "id": "spc_artist_psk_13",
+      "label": "Psk-13",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "core",
+      "tags": [
+        "Underground",
+        "Lyrical",
+        "Street"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/psk-13",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_ganksta_nip",
+      "label": "Ganksta N-I-P",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "core",
+      "tags": [
+        "Horrorcore",
+        "Underground",
+        "Intense"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/ganksta-nip",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist__38",
+      "label": ".38 \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/-38",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_a_c_chill",
+      "label": "A.C. Chill \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/a-c-chill",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_aftermath",
+      "label": "Aftermath",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/aftermath",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_aggravated_phat_kat",
+      "label": "Aggravated Phat Kat",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/aggravated-phat-kat",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_alcatraz",
+      "label": "Alcatraz",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/alcatraz",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_b_1",
+      "label": "B-1",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/b-1",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_bam",
+      "label": "Bam",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/bam",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_big_d",
+      "label": "Big D",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/big-d",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_black",
+      "label": "Black",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/black",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_brain_dead",
+      "label": "Brain Dead",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/brain-dead",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_c_rock",
+      "label": "C-Rock",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/c-rock",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_dbx",
+      "label": "DBX",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/dbx",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_dilemma",
+      "label": "Dilemma",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/dilemma",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_dj_screw",
+      "label": "DJ Screw \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "Legend",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/dj-screw",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_egypt_e",
+      "label": "Egypt-E",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/egypt-e",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_father_time",
+      "label": "Father Time",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/father-time",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_game_boys",
+      "label": "Game Boys",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/game-boys",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_g_rapp",
+      "label": "G-Rapp",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/g-rapp",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_greek",
+      "label": "Greek",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/greek",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_grimm",
+      "label": "Grimm",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/grimm",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_g_t",
+      "label": "G.T.",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/g-t",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_ice_lord",
+      "label": "Ice Lord",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/ice-lord",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_icey_hott",
+      "label": "Icey Hott",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/icey-hott",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_j_chill",
+      "label": "J-Chill",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/j-chill",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_justice_allah",
+      "label": "Justice Allah",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/justice-allah",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_k_b_da_kidnappa",
+      "label": "K.B. Da Kidnappa",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/k-b-da-kidnappa",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_killa_hoe",
+      "label": "Killa Hoe",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/killa-hoe",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_k_o",
+      "label": "K.O.",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/k-o",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_kuwait",
+      "label": "Kuwait",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/kuwait",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_k_water",
+      "label": "K-Water",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/k-water",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_lean_sippa",
+      "label": "Lean Sippa",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/lean-sippa",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_lil_flea",
+      "label": "Lil Flea",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/lil-flea",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_mac_nyce",
+      "label": "Mac Nyce",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/mac-nyce",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_madd_bomber",
+      "label": "Madd Bomber",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/madd-bomber",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_murder_one",
+      "label": "Murder One",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/murder-one",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_nut",
+      "label": "Nut \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/nut",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_pharaoh",
+      "label": "Pharaoh",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/pharaoh",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_pimp_game_shane",
+      "label": "Pimp Game Shane",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/pimp-game-shane",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_preppy_jay",
+      "label": "Preppy Jay",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/preppy-jay",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_q_boy",
+      "label": "Q-Boy",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/q-boy",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_rapper_k",
+      "label": "Rapper K.",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/rapper-k",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_se7en",
+      "label": "Se7en",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/se7en",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_soul_provider",
+      "label": "Soul Provider",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/soul-provider",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_texas_tech",
+      "label": "Texas Tech",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/texas-tech",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_the_144_elite",
+      "label": "The 144 Elite",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/the-144-elite",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_the_fakkulty",
+      "label": "The Fakkulty",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/the-fakkulty",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_the_real_j_walker",
+      "label": "The Real J. Walker",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/the-real-j-walker",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_the_rhyme_felon",
+      "label": "The Rhyme Felon",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/the-rhyme-felon",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_thugstar",
+      "label": "Thugstar",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/thugstar",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_top_dog",
+      "label": "Top Dog",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/top-dog",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_t_p_sin",
+      "label": "T.P. Sin",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#7C3AED",
+      "role": "member",
+      "tags": [
+        "Underground"
+      ],
+      "description": "SPC Member",
+      "url": "https://bookspc.com/artists/t-p-sin",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_wickett_crickett",
+      "label": "Wickett Crickett \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "Legend",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/wickett-crickett",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_artist_x_man_e",
+      "label": "X-Man-E \u271d",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#6B7280",
+      "role": "member",
+      "tags": [
+        "Underground",
+        "R.I.P."
+      ],
+      "description": "SPC Member \u00b7 In Memory",
+      "url": "https://bookspc.com/artists/x-man-e",
+      "weight": 1.2
+    },
+    {
+      "id": "spc_stat_years",
+      "label": "37+ Years Active",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#3B1D5C",
+      "weight": 1.0,
+      "url": "https://bookspc.com"
+    },
+    {
+      "id": "spc_stat_albums",
+      "label": "50+ Albums Released",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#3B1D5C",
+      "weight": 1.0,
+      "url": "https://bookspc.com"
+    },
+    {
+      "id": "spc_stat_members",
+      "label": "100+ Members",
+      "category": "blog",
+      "file_type": "blog",
+      "community": 203,
+      "color": "#3B1D5C",
+      "weight": 1.0,
+      "url": "https://bookspc.com"
     }
   ],
   "links": [
@@ -23825,6 +24775,414 @@
       "target": "713_service_graphic_design",
       "weight": 1.5,
       "relation": "service"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_bookspc_com",
+      "weight": 3.0,
+      "relation": "spawn"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_k_rino",
+      "weight": 2.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_point_blank",
+      "weight": 2.5,
+      "relation": "artist"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "713_artist_point_blank",
+      "weight": 2.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_klondike_kat",
+      "weight": 2.5,
+      "relation": "artist"
+    },
+    {
+      "source": "spc_artist_klondike_kat",
+      "target": "713_artist_klondike_kat",
+      "weight": 2.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_mr_cap",
+      "weight": 2.5,
+      "relation": "artist"
+    },
+    {
+      "source": "spc_artist_mr_cap",
+      "target": "site_mrcap1_com",
+      "weight": 3.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_psk_13",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_ganksta_nip",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist__38",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_a_c_chill",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_aftermath",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_aggravated_phat_kat",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_alcatraz",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_b_1",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "spc_artist_b_1",
+      "target": "713_artist_b_1",
+      "weight": 2.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_bam",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_big_d",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_black",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_brain_dead",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_c_rock",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_dbx",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_dilemma",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_dj_screw",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_egypt_e",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_father_time",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_game_boys",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_g_rapp",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_greek",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_grimm",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_g_t",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_ice_lord",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_icey_hott",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_j_chill",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_justice_allah",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_k_b_da_kidnappa",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_killa_hoe",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_k_o",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_kuwait",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_k_water",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "spc_artist_k_water",
+      "target": "713_artist_k_water",
+      "weight": 2.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_lean_sippa",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_lil_flea",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_mac_nyce",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_madd_bomber",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_murder_one",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_nut",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_pharaoh",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_pimp_game_shane",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_preppy_jay",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_q_boy",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_rapper_k",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_se7en",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_soul_provider",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_texas_tech",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_the_144_elite",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_the_fakkulty",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_the_real_j_walker",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_the_rhyme_felon",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_thugstar",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_top_dog",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_t_p_sin",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_wickett_crickett",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_artist_x_man_e",
+      "weight": 1.5,
+      "relation": "artist"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_stat_years",
+      "weight": 1.0,
+      "relation": "stat"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_stat_albums",
+      "weight": 1.0,
+      "relation": "stat"
+    },
+    {
+      "source": "site_bookspc_com",
+      "target": "spc_stat_members",
+      "weight": 1.0,
+      "relation": "stat"
     }
   ],
   "hyperedges": [],
