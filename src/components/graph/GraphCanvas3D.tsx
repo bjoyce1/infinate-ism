@@ -106,7 +106,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       setForceGraph3D(() => fgModule.default as React.ComponentType<Record<string, unknown>>);
     });
     // Lazy-load three for textured photo sprites so it never enters the SSR bundle.
-    import("three").then((mod) => {
+    (import("three") as Promise<unknown>).then((mod) => {
       const THREE = mod as unknown as ThreeModule;
       if (cancelled) return;
       ThreeRef.current = THREE;
