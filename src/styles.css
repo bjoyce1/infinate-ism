@@ -4,6 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-obsidian-bg: #0A0A0B;
+  --color-obsidian-surface: #161618;
+  --color-obsidian-border: #262629;
+  --color-neon-primary: #3DED97;
+  --color-neon-dim: #1B4D36;
+  --color-muted-text: #8E9196;
+  --font-sora: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
 /*
  * Design system definition.
  *
