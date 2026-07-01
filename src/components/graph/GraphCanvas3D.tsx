@@ -45,7 +45,16 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const SpriteTextCtorRef = useRef<SpriteTextConstructor | null>(null);
   const spritesRef = useRef<Map<string, LabelSprite>>(new Map());
   const rafRef = useRef<number | null>(null);
-  const ThreeRef = useRef<typeof import("three") | null>(null);
+  type ThreeModule = {
+    TextureLoader: new () => { load: (url: string, onLoad?: (t: unknown) => void) => unknown };
+    SpriteMaterial: new (params: Record<string, unknown>) => unknown;
+    Sprite: new (mat?: unknown) => {
+      scale: { set: (x: number, y: number, z: number) => void };
+      center: { set: (x: number, y: number) => void };
+      raycast: () => void;
+    };
+  };
+  const ThreeRef = useRef<ThreeModule | null>(null);
   const textureLoaderRef = useRef<{ load: (url: string, onLoad?: (t: unknown) => void) => unknown } | null>(null);
   const textureCacheRef = useRef<Map<string, unknown>>(new Map());
   const missingThumbsRef = useRef<Set<string>>(new Set());
@@ -97,10 +106,11 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       setForceGraph3D(() => fgModule.default as React.ComponentType<Record<string, unknown>>);
     });
     // Lazy-load three for textured photo sprites so it never enters the SSR bundle.
-    import("three").then((THREE) => {
+    import("three").then((mod) => {
+      const THREE = mod as unknown as ThreeModule;
       if (cancelled) return;
       ThreeRef.current = THREE;
-      textureLoaderRef.current = new THREE.TextureLoader() as unknown as typeof textureLoaderRef.current;
+      textureLoaderRef.current = new THREE.TextureLoader();
     });
     return () => {
       cancelled = true;
