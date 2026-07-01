@@ -45,6 +45,10 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const SpriteTextCtorRef = useRef<SpriteTextConstructor | null>(null);
   const spritesRef = useRef<Map<string, LabelSprite>>(new Map());
   const rafRef = useRef<number | null>(null);
+  const ThreeRef = useRef<typeof import("three") | null>(null);
+  const textureLoaderRef = useRef<{ load: (url: string, onLoad?: (t: unknown) => void) => unknown } | null>(null);
+  const textureCacheRef = useRef<Map<string, unknown>>(new Map());
+  const missingThumbsRef = useRef<Set<string>>(new Set());
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const focusMode = useGraphStore((s) => s.focusMode);
@@ -59,6 +63,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
+  const flyToId = useGraphStore((s) => s.flyToId);
+  const flyToToken = useGraphStore((s) => s.flyToToken);
 
   useEffect(() => {
     const ctrls = fgRef.current?.controls?.();
@@ -89,6 +95,12 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       if (cancelled) return;
       SpriteTextCtorRef.current = (spriteModule.default ?? spriteModule) as unknown as SpriteTextConstructor;
       setForceGraph3D(() => fgModule.default as React.ComponentType<Record<string, unknown>>);
+    });
+    // Lazy-load three for textured photo sprites so it never enters the SSR bundle.
+    import("three").then((THREE) => {
+      if (cancelled) return;
+      ThreeRef.current = THREE;
+      textureLoaderRef.current = new THREE.TextureLoader() as unknown as typeof textureLoaderRef.current;
     });
     return () => {
       cancelled = true;
