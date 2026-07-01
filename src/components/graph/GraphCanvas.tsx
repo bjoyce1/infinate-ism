@@ -30,6 +30,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const recenterToken = useGraphStore((s) => s.recenterToken);
+  const autoRotate = useGraphStore((s) => s.autoRotate);
 
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const getImage = (url: string): HTMLImageElement | null => {
@@ -159,7 +160,15 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   };
 
   return (
-    <div ref={wrapRef} className="absolute inset-0">
+    <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={
+          autoRotate
+            ? { animation: "graph-spin 60s linear infinite", transformOrigin: "50% 50%" }
+            : undefined
+        }
+      >
       {ForceGraph && size.w > 0 && (
         <ForceGraph
           ref={fgRef as unknown as React.Ref<unknown>}
