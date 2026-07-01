@@ -1,7 +1,37 @@
 import type { Category, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function LinkCount({
+  children,
+  tip,
+}: {
+  children: React.ReactNode;
+  tip: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="underline decoration-dotted underline-offset-2 decoration-white/30 cursor-help">
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        className="bg-obsidian-surface border border-obsidian-border text-white/90 max-w-[220px]"
+      >
+        <p className="text-[11px] leading-snug">{tip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 const CATS: { key: Category; label: string }[] = [
   { key: "code", label: ".Code" },
@@ -81,7 +111,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const focusLabel = focusMode && selected ? selected.label : null;
 
   return (
-    <aside className="w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full">
+    <TooltipProvider delayDuration={150}>
+      <aside className="w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full">
       <div className="p-6 border-b border-obsidian-border">
         <div className="flex items-center gap-2 mb-8">
           <div className="size-3 rounded-full bg-neon-primary shadow-[0_0_10px_#3DED97]" />
@@ -100,9 +131,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {hideCode ? (
-                    <>hides {filterStats.codeNodes} nodes · {filterStats.codeLinks} links</>
+                    <>hides {filterStats.codeNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a code-category node.">{filterStats.codeLinks} links</LinkCount></>
                   ) : (
-                    <>{filterStats.codeNodes} code nodes · {filterStats.codeLinks} links shown</>
+                    <>{filterStats.codeNodes} code nodes · <LinkCount tip="Links are hidden when either endpoint is a code-category node.">{filterStats.codeLinks} links shown</LinkCount></>
                   )}
                 </div>
               </div>
@@ -138,9 +169,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {includeTsFiles ? (
-                    <>{filterStats.tsNodes} nodes · {filterStats.tsLinks} links shown</>
+                    <>{filterStats.tsNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a .ts/.tsx source node.">{filterStats.tsLinks} links shown</LinkCount></>
                   ) : (
-                    <>hides {filterStats.tsNodes} nodes · {filterStats.tsLinks} links</>
+                    <>hides {filterStats.tsNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a .ts/.tsx source node.">{filterStats.tsLinks} links</LinkCount></>
                   )}
                 </div>
               </div>
@@ -179,9 +210,11 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             <div className="flex justify-between">
               <span className="text-muted-text">Links</span>
               <span>
-                <span className="text-neon-primary">{filterStats.visibleLinks}</span>
+                <LinkCount tip="A link counts as visible only when both its source and target nodes are currently shown.">
+                  <span className="text-neon-primary">{filterStats.visibleLinks}</span>
+                </LinkCount>
                 <span className="text-muted-text">
-                  {" "}/ {filterStats.totalLinks} · {filterStats.hiddenLinks} hidden
+                  {" "}/ {filterStats.totalLinks} · <LinkCount tip="A link is hidden if either of its endpoints is filtered out.">{filterStats.hiddenLinks} hidden</LinkCount>
                 </span>
               </span>
             </div>
@@ -354,5 +387,6 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
         </div>
       </div>
     </aside>
+    </TooltipProvider>
   );
 }
