@@ -110,7 +110,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
     const isAnchor = node.id === selectedId || node.id === hoveredId;
     const dim = highlightSet != null && !highlightSet.has(node.id);
-    const color = CATEGORY_COLORS[node.category];
+    const color = node.color ?? CATEGORY_COLORS[node.category];
     ctx.globalAlpha = dim ? 0.15 : 1;
     const img = node.image ? getImage(node.image) : null;
     if (img) {
