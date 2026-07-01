@@ -169,9 +169,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {includeTsFiles ? (
-                    <>{filterStats.tsNodes} nodes · {filterStats.tsLinks} links shown</>
+                    <>{filterStats.tsNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a .ts/.tsx source node.">{filterStats.tsLinks} links shown</LinkCount></>
                   ) : (
-                    <>hides {filterStats.tsNodes} nodes · {filterStats.tsLinks} links</>
+                    <>hides {filterStats.tsNodes} nodes · <LinkCount tip="Links are hidden when either endpoint is a .ts/.tsx source node.">{filterStats.tsLinks} links</LinkCount></>
                   )}
                 </div>
               </div>
