@@ -11,6 +11,9 @@ type State = {
   viewMode: "2d" | "3d";
   particleIntensity: number;
   linkIntensity: number;
+  showLabels: boolean;
+  labelSize: number;
+  labelDensity: number;
   cameraResetToken: number;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
@@ -21,6 +24,9 @@ type State = {
   toggleViewMode: () => void;
   setParticleIntensity: (v: number) => void;
   setLinkIntensity: (v: number) => void;
+  setShowLabels: (v: boolean) => void;
+  setLabelSize: (v: number) => void;
+  setLabelDensity: (v: number) => void;
   resetCamera: () => void;
   reset: () => void;
 };
@@ -35,6 +41,9 @@ export const useGraphStore = create<State>((set) => ({
   viewMode: "2d",
   particleIntensity: 1,
   linkIntensity: 1,
+  showLabels: true,
+  labelSize: 1,
+  labelDensity: 1,
   cameraResetToken: 0,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
@@ -52,6 +61,9 @@ export const useGraphStore = create<State>((set) => ({
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === "2d" ? "3d" : "2d" })),
   setParticleIntensity: (v) => set({ particleIntensity: v }),
   setLinkIntensity: (v) => set({ linkIntensity: v }),
+  setShowLabels: (v) => set({ showLabels: v }),
+  setLabelSize: (v) => set({ labelSize: v }),
+  setLabelDensity: (v) => set({ labelDensity: v }),
   resetCamera: () => set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
   reset: () =>
     set({
