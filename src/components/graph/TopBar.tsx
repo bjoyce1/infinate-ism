@@ -11,9 +11,6 @@ export function TopBar() {
   const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const resetCamera = useGraphStore((s) => s.resetCamera);
   const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
-  const hideCode = useGraphStore((s) => s.hideCode);
-  const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
-
   const handleRecenter = () => {
     recenterOnHub();
     toast.success("Re-centering on mrcap1.com", {
@@ -76,7 +73,6 @@ export function TopBar() {
         >
           ◎ RE-CENTER · MRCAP1
         </button>
-        {(hideCode || !includeTsFiles) && null}
         <button
           type="button"
           onClick={toggleViewMode}
