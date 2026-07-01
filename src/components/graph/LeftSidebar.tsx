@@ -2,6 +2,36 @@ import type { Category, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useMemo } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function LinkCount({
+  children,
+  tip,
+}: {
+  children: React.ReactNode;
+  tip: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="underline decoration-dotted underline-offset-2 decoration-white/30 cursor-help">
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        className="bg-obsidian-surface border border-obsidian-border text-white/90 max-w-[220px]"
+      >
+        <p className="text-[11px] leading-snug">{tip}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 const CATS: { key: Category; label: string }[] = [
   { key: "code", label: ".Code" },
