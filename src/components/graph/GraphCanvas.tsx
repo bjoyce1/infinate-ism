@@ -28,6 +28,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
 
+  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
+  const getImage = (url: string): HTMLImageElement | null => {
+    const cache = imageCache.current;
+    const existing = cache.get(url);
+    if (existing) return existing.complete && existing.naturalWidth > 0 ? existing : null;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = url;
+    cache.set(url, img);
+    return null;
+  };
+
   useEffect(() => {
     let cancelled = false;
     import("react-force-graph-2d").then((m) => {
@@ -76,18 +88,40 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     globalScale: number,
   ) => {
     if (node.x == null || node.y == null) return;
-    const base = Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
+    const isHub = Boolean(node.is_hub || node.image);
+    const base = isHub
+      ? Math.max(14, Math.min(28, 10 + Math.sqrt(node.degree) * 1.2))
+      : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
     const isAnchor = node.id === selectedId || node.id === hoveredId;
     const dim = highlightSet != null && !highlightSet.has(node.id);
     const color = CATEGORY_COLORS[node.category];
     ctx.globalAlpha = dim ? 0.15 : 1;
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = isAnchor ? 18 : 6;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    const img = node.image ? getImage(node.image) : null;
+    if (img) {
+      ctx.shadowColor = "#F59E0B";
+      ctx.shadowBlur = isAnchor ? 30 : 18;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, node.x - base, node.y - base, base * 2, base * 2);
+      ctx.restore();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
+      ctx.strokeStyle = "#F59E0B";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = isAnchor ? 18 : 6;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
     if (isAnchor || (globalScale > 2.5 && !dim)) {
       const label = node.label ?? node.id;
       const fontSize = Math.min(10 / globalScale + 2, 6);

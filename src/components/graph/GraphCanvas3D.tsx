@@ -297,7 +297,10 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     };
   }, [ForceGraph3D]);
 
-  const nodeVal = useCallback((n: GraphNode) => Math.max(1, 1 + Math.sqrt(n.degree)), []);
+  const nodeVal = useCallback(
+    (n: GraphNode) => (n.is_hub ? 40 : Math.max(1, 1 + Math.sqrt(n.degree))),
+    [],
+  );
   const nodeColor = useCallback((n: GraphNode) => {
     const highlightSet = highlightRef.current;
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";

@@ -7,6 +7,10 @@ export type RawNode = {
   _origin?: string;
   community?: number;
   norm_label?: string;
+  image?: string;
+  artwork?: string;
+  is_hub?: boolean;
+  weight?: number;
 };
 
 export type RawLink = {
