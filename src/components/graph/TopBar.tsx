@@ -10,6 +10,13 @@ export function TopBar() {
   const viewMode = useGraphStore((s) => s.viewMode);
   const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const resetCamera = useGraphStore((s) => s.resetCamera);
+  const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
+  const handleRecenter = () => {
+    recenterOnHub();
+    toast.success("Re-centering on mrcap1.com", {
+      description: "Camera locked back on the hub under current filters.",
+    });
+  };
 
   const copyPermalink = async () => {
     const url = window.location.href;
@@ -58,6 +65,14 @@ export function TopBar() {
             RESET CAMERA
           </button>
         )}
+        <button
+          type="button"
+          onClick={handleRecenter}
+          className="px-4 py-2 bg-obsidian-surface border border-amber-500/40 rounded-lg text-xs font-medium text-amber-300 hover:bg-amber-500/10 transition-colors cursor-pointer"
+          title="Re-center the view on the mrcap1.com hub"
+        >
+          ◎ RE-CENTER · MRCAP1
+        </button>
         <button
           type="button"
           onClick={toggleViewMode}
