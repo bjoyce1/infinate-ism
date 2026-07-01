@@ -10945,6 +10945,399 @@
       "image": "https://selflove24.lovable.app/assets/mr-cap-CZ8cB2Ye.png",
       "color": "#F9A8D4",
       "weight": 2.5
+    },
+    {
+      "id": "artofism_introduction",
+      "label": "Introduction \u00b7 Enter the ISM",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "url": "https://theartofism.com/#introduction",
+      "quote": "\"If you don't define your mindset, the world will define it for you.\""
+    },
+    {
+      "id": "artofism_about_mrcap",
+      "label": "About Mr. CAP",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "image": "https://theartofism.com/assets/art_of_ism_book_3-BgdNc0gq.webp",
+      "url": "https://theartofism.com/#about"
+    },
+    {
+      "id": "artofism_chapter_01",
+      "label": "Ch. 1: Evolution of the 16th Letter",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 1,
+      "subtitle": "Identity becomes philosophy",
+      "quote": "\"P was never just a letter. It was a ladder.\"",
+      "url": "https://theartofism.com/chapter/1"
+    },
+    {
+      "id": "artofism_song_01_evolution_of_the_16th_letter",
+      "label": "\u266a Evolution of the 16th Letter",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 1,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_01",
+      "label": "ISM Code 01",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 1,
+      "chapter": 1,
+      "description": "NFT collectible unlocking Chapter 1: Evolution of the 16th Letter",
+      "url": "https://theartofism.com/codes#01"
+    },
+    {
+      "id": "artofism_chapter_02",
+      "label": "Ch. 2: Focus",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 2,
+      "subtitle": "Discipline creates direction",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/2"
+    },
+    {
+      "id": "artofism_song_02_focus",
+      "label": "\u266a Focus",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 2,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_02",
+      "label": "ISM Code 02",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 2,
+      "chapter": 2,
+      "description": "NFT collectible unlocking Chapter 2: Focus",
+      "url": "https://theartofism.com/codes#02"
+    },
+    {
+      "id": "artofism_chapter_03",
+      "label": "Ch. 3: International Club Hopper",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 3,
+      "subtitle": "Lifestyle meets awareness",
+      "quote": "\"Confidence doesn't perform. It exists.\"",
+      "url": "https://theartofism.com/chapter/3"
+    },
+    {
+      "id": "artofism_song_03_international_club_hopper",
+      "label": "\u266a International Club Hopper",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 3,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_03",
+      "label": "ISM Code 03",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 3,
+      "chapter": 3,
+      "description": "NFT collectible unlocking Chapter 3: International Club Hopper",
+      "url": "https://theartofism.com/codes#03"
+    },
+    {
+      "id": "artofism_chapter_04",
+      "label": "Ch. 4: How You Feel About It",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 4,
+      "subtitle": "Perception reveals truth",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/4"
+    },
+    {
+      "id": "artofism_song_04_how_you_feel_about_it",
+      "label": "\u266a How You Feel About It",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 4,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_04",
+      "label": "ISM Code 04",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 4,
+      "chapter": 4,
+      "description": "NFT collectible unlocking Chapter 4: How You Feel About It",
+      "url": "https://theartofism.com/codes#04"
+    },
+    {
+      "id": "artofism_chapter_05",
+      "label": "Ch. 5: Words of ISM",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 5,
+      "subtitle": "Words become power",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/5"
+    },
+    {
+      "id": "artofism_song_05_words_of_ism",
+      "label": "\u266a Words of ISM",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 5,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_05",
+      "label": "ISM Code 05",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 5,
+      "chapter": 5,
+      "description": "NFT collectible unlocking Chapter 5: Words of ISM",
+      "url": "https://theartofism.com/codes#05"
+    },
+    {
+      "id": "artofism_chapter_06",
+      "label": "Ch. 6: Let Me Touch It",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 6,
+      "subtitle": "Temptation tests control",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/6"
+    },
+    {
+      "id": "artofism_song_06_let_me_touch_it",
+      "label": "\u266a Let Me Touch It",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 6,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_06",
+      "label": "ISM Code 06",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 6,
+      "chapter": 6,
+      "description": "NFT collectible unlocking Chapter 6: Let Me Touch It",
+      "url": "https://theartofism.com/codes#06"
+    },
+    {
+      "id": "artofism_chapter_07",
+      "label": "Ch. 7: Space Age ISM",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 7,
+      "subtitle": "Mindset transcends limits",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/7"
+    },
+    {
+      "id": "artofism_song_07_space_age_ism",
+      "label": "\u266a Space Age ISM",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 7,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_07",
+      "label": "ISM Code 07",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 7,
+      "chapter": 7,
+      "description": "NFT collectible unlocking Chapter 7: Space Age ISM",
+      "url": "https://theartofism.com/codes#07"
+    },
+    {
+      "id": "artofism_chapter_08",
+      "label": "Ch. 8: The Realest",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 8,
+      "subtitle": "Real recognizes real",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/8"
+    },
+    {
+      "id": "artofism_song_08_the_realest",
+      "label": "\u266a The Realest",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 8,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_08",
+      "label": "ISM Code 08",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 8,
+      "chapter": 8,
+      "description": "NFT collectible unlocking Chapter 8: The Realest",
+      "url": "https://theartofism.com/codes#08"
+    },
+    {
+      "id": "artofism_chapter_09",
+      "label": "Ch. 9: For Money",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 9,
+      "subtitle": "Money exposes character",
+      "quote": "\"Money reveals people.\"",
+      "url": "https://theartofism.com/chapter/9"
+    },
+    {
+      "id": "artofism_song_09_for_money",
+      "label": "\u266a For Money",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 9,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_09",
+      "label": "ISM Code 09",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 9,
+      "chapter": 9,
+      "description": "NFT collectible unlocking Chapter 9: For Money",
+      "url": "https://theartofism.com/codes#09"
+    },
+    {
+      "id": "artofism_chapter_10",
+      "label": "Ch. 10: Nothing Without It",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 10,
+      "subtitle": "Control defines value",
+      "quote": "",
+      "url": "https://theartofism.com/chapter/10"
+    },
+    {
+      "id": "artofism_song_10_nothing_without_it",
+      "label": "\u266a Nothing Without It",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 10,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "artofism_code_10",
+      "label": "ISM Code 10",
+      "category": "image",
+      "community": 201,
+      "file_type": "image",
+      "color": "#3B2F14",
+      "code_number": 10,
+      "chapter": 10,
+      "description": "NFT collectible unlocking Chapter 10: Nothing Without It",
+      "url": "https://theartofism.com/codes#10"
+    },
+    {
+      "id": "artofism_chapter_11",
+      "label": "Ch. 11: CAPISM",
+      "category": "blog",
+      "community": 201,
+      "file_type": "blog",
+      "color": "#D4A24C",
+      "chapter": 11,
+      "subtitle": "Philosophy becomes legacy",
+      "quote": "\"CAPISM isn't something you say. It's something you live.\"",
+      "url": "https://theartofism.com/chapter/11"
+    },
+    {
+      "id": "artofism_song_11_capism",
+      "label": "\u266a CAPISM",
+      "category": "music",
+      "community": 201,
+      "file_type": "music",
+      "color": "#8B6914",
+      "track": 11,
+      "album": "The Art of ISM",
+      "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
     }
   ],
   "links": [
@@ -22685,6 +23078,288 @@
       "target": "selflove_art_mr_cap",
       "relation": "depicts_artist",
       "weight": 2.0
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_introduction",
+      "weight": 2.0,
+      "relation": "spawn"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_about_mrcap",
+      "weight": 2.0,
+      "relation": "spawn"
+    },
+    {
+      "source": "artofism_about_mrcap",
+      "target": "site_mrcap1_com",
+      "weight": 3.0,
+      "relation": "author"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "album_art_of_ism",
+      "weight": 3.0,
+      "relation": "album"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_01",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_01",
+      "target": "artofism_song_01_evolution_of_the_16th_letter",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_01_evolution_of_the_16th_letter",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_01",
+      "target": "artofism_code_01",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_02",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_02",
+      "target": "artofism_song_02_focus",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_02_focus",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_02",
+      "target": "artofism_code_02",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_03",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_03",
+      "target": "artofism_song_03_international_club_hopper",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_03_international_club_hopper",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_03",
+      "target": "artofism_code_03",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_04",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_04",
+      "target": "artofism_song_04_how_you_feel_about_it",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_04_how_you_feel_about_it",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_04",
+      "target": "artofism_code_04",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_05",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_05",
+      "target": "artofism_song_05_words_of_ism",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_05_words_of_ism",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_05",
+      "target": "artofism_code_05",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_06",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_06",
+      "target": "artofism_song_06_let_me_touch_it",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_06_let_me_touch_it",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_06",
+      "target": "artofism_code_06",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_07",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_07",
+      "target": "artofism_song_07_space_age_ism",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_07_space_age_ism",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_07",
+      "target": "artofism_code_07",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_08",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_08",
+      "target": "artofism_song_08_the_realest",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_08_the_realest",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_08",
+      "target": "artofism_code_08",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_09",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_09",
+      "target": "artofism_song_09_for_money",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_09_for_money",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_09",
+      "target": "artofism_code_09",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_10",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_10",
+      "target": "artofism_song_10_nothing_without_it",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_10_nothing_without_it",
+      "weight": 1.5,
+      "relation": "track"
+    },
+    {
+      "source": "artofism_chapter_10",
+      "target": "artofism_code_10",
+      "weight": 2.0,
+      "relation": "nft_code"
+    },
+    {
+      "source": "site_theartofism_com",
+      "target": "artofism_chapter_11",
+      "weight": 2.0,
+      "relation": "chapter"
+    },
+    {
+      "source": "artofism_chapter_11",
+      "target": "artofism_song_11_capism",
+      "weight": 2.0,
+      "relation": "audio"
+    },
+    {
+      "source": "album_art_of_ism",
+      "target": "artofism_song_11_capism",
+      "weight": 1.5,
+      "relation": "track"
     }
   ],
   "hyperedges": [],
