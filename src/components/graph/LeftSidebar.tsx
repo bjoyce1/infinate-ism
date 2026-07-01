@@ -1,6 +1,7 @@
 import type { Category, NormalizedGraph } from "@/lib/graph/types";
-import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
+import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { useMemo } from "react";
 
 const CATS: { key: Category; label: string }[] = [
   { key: "code", label: ".Code" },
@@ -29,7 +30,14 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setLabelDensity = useGraphStore((s) => s.setLabelDensity);
   const hideCode = useGraphStore((s) => s.hideCode);
   const toggleHideCode = useGraphStore((s) => s.toggleHideCode);
+  const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
+  const toggleIncludeTsFiles = useGraphStore((s) => s.toggleIncludeTsFiles);
   const topCommunities = graph.communities.slice(0, 12);
+
+  const tsNodeCount = useMemo(
+    () => graph.nodes.reduce((acc, n) => (isTsSourceNode(n) ? acc + 1 : acc), 0),
+    [graph.nodes],
+  );
 
   const selected = selectedId ? graph.byId.get(selectedId) : null;
   const focusLabel = focusMode && selected ? selected.label : null;
@@ -68,6 +76,39 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 <span
                   className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
                     hideCode ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-3 bg-white/5 border border-obsidian-border rounded-lg">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold">
+                  {includeTsFiles ? "TS Files Shown" : "TS Files Hidden"}
+                </div>
+                <div className="text-[10px] font-mono text-muted-text mt-0.5">
+                  {includeTsFiles
+                    ? `${tsNodeCount} .ts/.tsx nodes visible`
+                    : `${tsNodeCount} .ts/.tsx nodes hidden`}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={includeTsFiles}
+                aria-label="Include TypeScript source nodes"
+                onClick={toggleIncludeTsFiles}
+                className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer shrink-0 ${
+                  includeTsFiles
+                    ? "bg-neon-primary/30 border-neon-primary"
+                    : "bg-white/5 border-obsidian-border"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
+                    includeTsFiles ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
                   }`}
                 />
               </button>
