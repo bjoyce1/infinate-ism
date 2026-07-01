@@ -351,7 +351,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             sprite.backgroundColor = "rgba(10,10,11,0.55)";
             sprite.padding = 1.5;
             sprite.borderRadius = 2;
-            sprite.textHeight = Math.max(3, 3 + Math.min(4, (node.degree || 0) / 6));
+            sprite.textHeight = Math.max(2, (3 + Math.min(4, (node.degree || 0) / 6)) * labelSizeRef.current);
             sprite.material.depthWrite = false;
             sprite.material.transparent = true;
             sprite.material.opacity = 1;
