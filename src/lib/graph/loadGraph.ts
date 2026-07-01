@@ -1,5 +1,13 @@
 import type { Category, GraphNode, NormalizedGraph, RawGraph } from "./types";
 
+/** True if a node's label or source_file points at a TypeScript file. */
+export function isTsSourceNode(n: { label?: string | null; source_file?: string | null }): boolean {
+  const re = /\.(ts|tsx)(?:$|[:?#])/;
+  const l = (n.label ?? "").toLowerCase();
+  const s = (n.source_file ?? "").toLowerCase();
+  return re.test(l) || re.test(s);
+}
+
 function inferCategory(label: string, fileType?: string): Category {
   if (fileType === "music") return "music";
   if (fileType === "blog") return "blog";
