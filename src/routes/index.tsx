@@ -1,29 +1,73 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { loadGraph } from "@/lib/graph/loadGraph";
+import type { NormalizedGraph } from "@/lib/graph/types";
+import { GraphCanvas } from "@/components/graph/GraphCanvas";
+import { LeftSidebar } from "@/components/graph/LeftSidebar";
+import { DetailPanel } from "@/components/graph/DetailPanel";
+import { TopBar } from "@/components/graph/TopBar";
+import { SearchCommand } from "@/components/graph/SearchCommand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Mnemosyne — Second Brain" },
+      { name: "description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
+      { property: "og:title", content: "Mnemosyne — Second Brain" },
+      { property: "og:description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const [graph, setGraph] = useState<NormalizedGraph | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadGraph()
+      .then((g) => {
+        if (!cancelled) setGraph(g);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <div className="h-screen w-full bg-obsidian-bg text-white grid place-items-center font-mono text-xs">
+        Failed to load graph: {error}
+      </div>
+    );
+  }
+
+  if (!graph) {
+    return (
+      <div className="h-screen w-full bg-obsidian-bg text-white grid place-items-center gap-3">
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-2 rounded-full bg-neon-primary shadow-[0_0_12px_#3DED97] animate-pulse" />
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-text">
+            Loading constellation…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="h-screen w-full bg-obsidian-bg text-white font-sora flex overflow-hidden">
+      <LeftSidebar graph={graph} />
+      <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
+        <GraphCanvas graph={graph} />
+        <TopBar />
+      </main>
+      <DetailPanel graph={graph} />
+      <SearchCommand graph={graph} />
     </div>
   );
 }
