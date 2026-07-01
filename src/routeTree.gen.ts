@@ -9,8 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
 
+const AbsoulutelycaptivatingRoute = AbsoulutelycaptivatingRouteImport.update({
+  id: '/absoulutelycaptivating',
+  path: '/absoulutelycaptivating',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +25,39 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/absoulutelycaptivating'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/absoulutelycaptivating'
+  id: '__root__' | '/' | '/absoulutelycaptivating'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AbsoulutelycaptivatingRoute: typeof AbsoulutelycaptivatingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/absoulutelycaptivating': {
+      id: '/absoulutelycaptivating'
+      path: '/absoulutelycaptivating'
+      fullPath: '/absoulutelycaptivating'
+      preLoaderRoute: typeof AbsoulutelycaptivatingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +70,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AbsoulutelycaptivatingRoute: AbsoulutelycaptivatingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
