@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
-import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
+import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
+import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import SpriteText from "three-spritetext";
 
@@ -87,26 +88,18 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     return () => ro.disconnect();
   }, []);
 
-  const data = useMemo(() => {
-    const nodeSet = new Set<string>();
-    for (const n of graph.nodes) {
-      if (activeCategories.size > 0 && !activeCategories.has(n.category)) continue;
-      if (hideCode && n.category === "code") continue;
-      if (!includeTsFiles && isTsSourceNode(n)) continue;
-      if (activeCommunity != null && n.community !== activeCommunity) continue;
-      nodeSet.add(n.id);
-    }
-    if (focusMode && selectedId && nodeSet.has(selectedId)) {
-      const keep = new Set<string>([selectedId]);
-      for (const nb of graph.neighbors.get(selectedId) ?? []) keep.add(nb);
-      for (const id of nodeSet) if (!keep.has(id)) nodeSet.delete(id);
-    }
-    const nodes = graph.nodes.filter((n) => nodeSet.has(n.id)).map((n) => ({ ...n }));
-    const links = graph.links
-      .filter((l) => nodeSet.has(l.source) && nodeSet.has(l.target))
-      .map((l) => ({ ...l }));
-    return { nodes, links };
-  }, [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId]);
+  const data = useMemo(
+    () =>
+      filterGraph(graph, {
+        activeCategories,
+        hideCode,
+        includeTsFiles,
+        activeCommunity,
+        focusMode,
+        selectedId,
+      }),
+    [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId],
+  );
 
   // Drop cached sprites for nodes no longer in the filtered set so the
   // collision loop doesn't try to place stale labels.
