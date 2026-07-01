@@ -102,10 +102,28 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   }, [hoveredId, selectedId, graph.neighbors]);
   const highlightRef = useRef(highlightSet);
   const selectedRef = useRef(selectedId);
+  const focusRef = useRef(focusMode);
+  const focusNeighborhoodRef = useRef<Set<string> | null>(null);
   useEffect(() => {
     highlightRef.current = highlightSet;
     selectedRef.current = selectedId;
-  }, [highlightSet, selectedId]);
+    focusRef.current = focusMode;
+    if (focusMode && selectedId) {
+      const set = new Set<string>([selectedId]);
+      for (const nb of graph.neighbors.get(selectedId) ?? []) set.add(nb);
+      focusNeighborhoodRef.current = set;
+    } else {
+      focusNeighborhoodRef.current = null;
+    }
+  }, [highlightSet, selectedId, focusMode, graph.neighbors]);
+
+  // Hover tooltip: track hovered node's screen position each frame.
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
+  const hoveredRef = useRef(hoveredId);
+  useEffect(() => {
+    hoveredRef.current = hoveredId;
+    if (!hoveredId) setTooltip(null);
+  }, [hoveredId]);
 
   useEffect(() => {
     if (!fgRef.current) return;
@@ -163,9 +181,14 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             const halfW = Math.max(20, label.length * 3.6);
             const hi = highlightRef.current;
             const sel = selectedRef.current;
+            const focusSet = focusNeighborhoodRef.current;
             let priority = node.degree || 0;
             if (hi && hi.has(node.id)) priority += 10000;
             if (sel === node.id) priority += 100000;
+            // In Focus Mode, the selected node's neighborhood is the entire
+            // visible graph — promote those labels above every other signal
+            // so they're placed first and win any overlap contest.
+            if (focusSet && focusSet.has(node.id)) priority += 1_000_000;
             // fade with distance so far-away labels dim before overlap-culling
             const fade = Math.max(0, Math.min(1, 1 - (dist - 150) / 700));
             sprite.material.opacity = fade;
@@ -203,6 +226,28 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             } else {
               e.sprite.visible = true;
               placed.push(e);
+            }
+          }
+
+          // Update hover tooltip position from the currently hovered node.
+          const hid = hoveredRef.current;
+          if (hid) {
+            const hoveredNode = sprites.get(hid)?.__node;
+            if (hoveredNode && hoveredNode.x != null) {
+              const p = fg.graph2ScreenCoords(
+                hoveredNode.x,
+                hoveredNode.y ?? 0,
+                hoveredNode.z ?? 0,
+              );
+              if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) {
+                setTooltip((prev) => {
+                  const text = hoveredNode.label ?? hoveredNode.id;
+                  const nx = Math.round(p.x);
+                  const ny = Math.round(p.y);
+                  if (prev && prev.x === nx && prev.y === ny && prev.text === text) return prev;
+                  return { x: nx, y: ny, text };
+                });
+              }
             }
           }
         } catch {
