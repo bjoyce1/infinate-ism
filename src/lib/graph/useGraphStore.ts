@@ -20,6 +20,8 @@ type State = {
   includeTsFiles: boolean;
   autoRotate: boolean;
   tourActive: boolean;
+  flyToId: string | null;
+  flyToToken: number;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -42,6 +44,7 @@ type State = {
   setAutoRotate: (v: boolean) => void;
   toggleTour: () => void;
   setTour: (v: boolean) => void;
+  flyTo: (id: string) => void;
   reset: () => void;
 };
 
@@ -64,6 +67,8 @@ export const useGraphStore = create<State>((set) => ({
   includeTsFiles: false,
   autoRotate: false,
   tourActive: false,
+  flyToId: null,
+  flyToToken: 0,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -95,6 +100,7 @@ export const useGraphStore = create<State>((set) => ({
   toggleTour: () =>
     set((s) => ({ tourActive: !s.tourActive, autoRotate: !s.tourActive ? false : s.autoRotate })),
   setTour: (v) => set((s) => ({ tourActive: v, autoRotate: v ? false : s.autoRotate })),
+  flyTo: (id) => set((s) => ({ flyToId: id, flyToToken: s.flyToToken + 1 })),
   reset: () =>
     set({
       selectedId: null,
