@@ -92,8 +92,11 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
           <div className="p-3 bg-white/5 border border-obsidian-border rounded-lg">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-xs font-semibold">
+                <div className="text-xs font-semibold flex items-center gap-2">
                   {hideCode ? "Clean View" : "Raw View"}
+                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border ${hideCode ? "border-neon-primary/40 text-neon-primary bg-neon-primary/10" : "border-white/20 text-white/70 bg-white/10"}`}>
+                    {hideCode ? `${filterStats.hiddenNodes} hidden` : `${filterStats.visibleNodes} visible`}
+                  </span>
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {hideCode ? (
@@ -127,8 +130,11 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
           <div className="p-3 bg-white/5 border border-obsidian-border rounded-lg">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-xs font-semibold">
+                <div className="text-xs font-semibold flex items-center gap-2">
                   {includeTsFiles ? "TS Files Shown" : "TS Files Hidden"}
+                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full border ${includeTsFiles ? "border-neon-primary/40 text-neon-primary bg-neon-primary/10" : "border-white/20 text-white/70 bg-white/10"}`}>
+                    {includeTsFiles ? `${filterStats.tsNodes} shown` : `${filterStats.tsNodes} hidden`}
+                  </span>
                 </div>
                 <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
                   {includeTsFiles ? (
