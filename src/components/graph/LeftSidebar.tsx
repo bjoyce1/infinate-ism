@@ -210,9 +210,11 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             <div className="flex justify-between">
               <span className="text-muted-text">Links</span>
               <span>
-                <span className="text-neon-primary">{filterStats.visibleLinks}</span>
+                <LinkCount tip="A link counts as visible only when both its source and target nodes are currently shown.">
+                  <span className="text-neon-primary">{filterStats.visibleLinks}</span>
+                </LinkCount>
                 <span className="text-muted-text">
-                  {" "}/ {filterStats.totalLinks} · {filterStats.hiddenLinks} hidden
+                  {" "}/ {filterStats.totalLinks} · <LinkCount tip="A link is hidden if either of its endpoints is filtered out.">{filterStats.hiddenLinks} hidden</LinkCount>
                 </span>
               </span>
             </div>
