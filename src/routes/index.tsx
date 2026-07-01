@@ -10,6 +10,7 @@ import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { DetailPanel } from "@/components/graph/DetailPanel";
 import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
+import { HubHoverCard } from "@/components/graph/HubHoverCard";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 
 const searchSchema = z.object({
@@ -109,6 +110,7 @@ function Index() {
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
         {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}
         <TopBar />
+        <HubHoverCard graph={graph} />
       </main>
       <DetailPanel graph={graph} />
       <SearchCommand graph={graph} />
