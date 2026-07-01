@@ -1,13 +1,16 @@
 import type { Category, GraphNode, NormalizedGraph, RawGraph } from "./types";
 
 function inferCategory(label: string, fileType?: string): Category {
+  if (fileType === "music") return "music";
+  if (fileType === "blog") return "blog";
+  if (fileType === "image") return "image";
+  if (fileType === "code") return "code";
   const l = (label || "").toLowerCase();
   if (/\.(png|jpg|jpeg|svg|webp|gif)$/.test(l) || l.includes("thumb") || l.includes("cover") || l.includes("poster") || l.includes("art"))
     return "image";
   if (/\.(mp3|wav|flac|m4a)$/.test(l) || l.includes("album") || l.includes("song") || l.includes("track") || l.includes("remix"))
     return "music";
   if (l.includes("blog") || l.endsWith(".md") || l.endsWith(".mdx")) return "blog";
-  if (fileType === "code") return "code";
   return "other";
 }
 
