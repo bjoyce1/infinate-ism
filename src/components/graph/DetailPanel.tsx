@@ -1,6 +1,7 @@
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { trackLinkClick, detectLinkType } from "@/lib/analytics/trackClick";
 
 export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
@@ -81,6 +82,14 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   })();
   const sourceFileIsUrl = isHttp(node.source_file);
 
+  const track = (url: string) =>
+    trackLinkClick({
+      url,
+      nodeId: node.id,
+      nodeLabel: node.label,
+      nodeCategory: node.category,
+    });
+
   return (
     <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full overflow-y-auto">
       <div className="p-8">
@@ -117,6 +126,8 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
               href={primaryUrl}
               target="_blank"
               rel="noreferrer"
+              onClick={() => track(primaryUrl)}
+              onAuxClick={() => track(primaryUrl)}
               className="text-white hover:text-neon-primary transition-colors underline decoration-white/20 hover:decoration-neon-primary underline-offset-4"
             >
               {node.label}
@@ -130,6 +141,8 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
             href={primaryUrl}
             target="_blank"
             rel="noreferrer"
+            onClick={() => track(primaryUrl)}
+            onAuxClick={() => track(primaryUrl)}
             className="inline-flex items-center gap-1.5 mb-4 text-[10px] font-mono uppercase tracking-widest text-neon-primary hover:underline"
           >
             Open ↗ <span className="text-muted-text normal-case tracking-normal truncate max-w-[220px]">{primaryUrl}</span>
@@ -152,6 +165,8 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                 href={node.source_file}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => track(node.source_file as string)}
+                onAuxClick={() => track(node.source_file as string)}
                 className="text-neon-primary hover:underline"
               >
                 {node.source_file}
@@ -180,7 +195,13 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
               <PropRow label="Source File" value={node.source_file ?? "—"} mono />
               <PropRow label="Source Location" value={node.source_location ?? "—"} mono />
               {extraEntries.map(([k, v]) => (
-                <PropRow key={k} label={k} value={formatValue(v)} mono />
+                <PropRow
+                  key={k}
+                  label={k}
+                  value={formatValue(v)}
+                  mono
+                  onLinkClick={track}
+                />
               ))}
             </div>
           </section>
@@ -285,18 +306,32 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   );
 }
 
-function PropRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function PropRow({
+  label,
+  value,
+  mono,
+  onLinkClick,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  onLinkClick?: (url: string) => void;
+}) {
   const isUrl = /^https?:\/\//.test(value);
+  const isMailto = /^mailto:/i.test(value);
+  const isLink = isUrl || isMailto;
   return (
     <div className="grid grid-cols-[110px_1fr] gap-3 items-start py-1.5 border-b border-white/5">
       <div className="text-[10px] font-mono uppercase tracking-wider text-muted-text pt-0.5">
         {label}
       </div>
-      {isUrl ? (
+      {isLink ? (
         <a
           href={value}
-          target="_blank"
-          rel="noreferrer"
+          target={isMailto ? undefined : "_blank"}
+          rel={isMailto ? undefined : "noreferrer"}
+          onClick={() => onLinkClick?.(value)}
+          onAuxClick={() => onLinkClick?.(value)}
           className="text-xs font-mono text-neon-primary break-all hover:underline"
         >
           {value}
