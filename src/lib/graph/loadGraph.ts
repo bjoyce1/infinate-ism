@@ -14,6 +14,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
   if (id === 202) return "MAASA Project · Witness Archive";
   if (id === 203) return "Cornelius A. Pratt · Identity & Ventures";
   if (id === 204) return "PIMPINTUITIONISM™ · CAP-ism #1";
+  if (id === 205) return "AbSoulutely CAPtivating · Creative System";
   if (members.length === 0) return `Cluster ${String(id).padStart(3, "0")}`;
 
   const labels = members.map((m) => m.label.toLowerCase());
