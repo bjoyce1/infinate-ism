@@ -1,5 +1,6 @@
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 
 export function TopBar() {
   const setSearchOpen = useGraphStore((s) => s.setSearchOpen);
@@ -58,6 +59,13 @@ export function TopBar() {
         >
           SHARE VIEW
         </button>
+        <Link
+          to="/analytics"
+          className="px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-xs font-medium hover:border-neon-primary transition-colors cursor-pointer"
+          title="View aggregated click counts for external + mailto links"
+        >
+          ANALYTICS
+        </Link>
         {viewMode === "3d" && (
           <button
             type="button"
