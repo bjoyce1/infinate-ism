@@ -4,35 +4,30 @@ import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import SpriteText from "three-spritetext";
 
-type Vec3 = { x: number; y: number; z: number };
-type ThreeCamera = {
-  position: Vec3;
-  projectionMatrix: unknown;
-  matrixWorldInverse: unknown;
-};
-type ThreeSprite = {
-  position: { set: (x: number, y: number, z: number) => void };
-  visible: boolean;
-  scale: { set: (x: number, y: number, z: number) => void };
-  material: { opacity: number; transparent: boolean; depthWrite: boolean };
-  center: { set: (x: number, y: number) => void };
+type LabelSprite = SpriteText & {
+  __node?: NodeWithCoords;
   __label?: string;
-  __node?: GraphNode;
 };
 type NodeWithCoords = GraphNode & { x?: number; y?: number; z?: number };
+type ScreenPos = { x: number; y: number };
+type FgHandle = {
+  zoomToFit: (ms?: number, padding?: number) => void;
+  cameraPosition: (
+    pos: { x: number; y: number; z: number },
+    lookAt?: { x: number; y: number; z: number },
+    ms?: number,
+  ) => void;
+  camera: () => { position: { x: number; y: number; z: number } };
+  renderer: () => { domElement: HTMLCanvasElement };
+  graph2ScreenCoords: (x: number, y: number, z: number) => ScreenPos;
+};
 
 export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
   const wrapRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<{
-    zoomToFit: (ms?: number, padding?: number) => void;
-    cameraPosition: (pos: { x: number; y: number; z: number }, lookAt?: { x: number; y: number; z: number }, ms?: number) => void;
-    camera: () => ThreeCamera;
-    scene: () => unknown;
-    renderer: () => { domElement: HTMLCanvasElement };
-  } | null>(null);
+  const fgRef = useRef<FgHandle | null>(null);
   const [ForceGraph3D, setForceGraph3D] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
-  const spritesRef = useRef<Map<string, ThreeSprite>>(new Map());
+  const spritesRef = useRef<Map<string, LabelSprite>>(new Map());
   const rafRef = useRef<number | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
@@ -113,49 +108,44 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     if (!ForceGraph3D) return;
     let stopped = false;
 
-    const tick = async () => {
+    const tick = () => {
       if (stopped) return;
       const fg = fgRef.current;
       const sprites = spritesRef.current;
       if (fg && sprites.size > 0) {
         try {
-          const THREE = await import("three");
-          const camera = fg.camera() as unknown as {
-            position: { distanceTo: (v: unknown) => number };
-          };
-          const renderer = fg.renderer();
-          const canvas = renderer.domElement;
+          const cam = fg.camera();
+          const canvas = fg.renderer().domElement;
           const w = canvas.clientWidth;
           const h = canvas.clientHeight;
 
           type Entry = {
-            sprite: ThreeSprite;
+            sprite: LabelSprite;
             node: NodeWithCoords;
             sx: number;
             sy: number;
             halfW: number;
             halfH: number;
             priority: number;
-            inFront: boolean;
+            visibleOnScreen: boolean;
           };
           const entries: Entry[] = [];
-          const vec = new (THREE as unknown as { Vector3: new (x?: number, y?: number, z?: number) => { x: number; y: number; z: number; project: (c: unknown) => { x: number; y: number; z: number } } }).Vector3();
 
           sprites.forEach((sprite) => {
-            const node = sprite.__node as NodeWithCoords | undefined;
+            const node = sprite.__node;
             if (!node || node.x == null) return;
-            vec.x = node.x;
-            vec.y = node.y ?? 0;
-            vec.z = node.z ?? 0;
-            const worldX = vec.x;
-            const worldY = vec.y;
-            const worldZ = vec.z;
-            vec.project(camera);
-            const inFront = vec.z < 1 && vec.z > -1;
-            const sx = (vec.x * 0.5 + 0.5) * w;
-            const sy = (-vec.y * 0.5 + 0.5) * h;
-            const dist = camera.position.distanceTo({ x: worldX, y: worldY, z: worldZ } as unknown);
-            // approximate label footprint in pixels
+            const nx = node.x;
+            const ny = node.y ?? 0;
+            const nz = node.z ?? 0;
+            const p = fg.graph2ScreenCoords(nx, ny, nz);
+            const sx = p.x;
+            const sy = p.y;
+            const visibleOnScreen =
+              sx >= -100 && sx <= w + 100 && sy >= -100 && sy <= h + 100;
+            const dx = cam.position.x - nx;
+            const dy = cam.position.y - ny;
+            const dz = cam.position.z - nz;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             const label = sprite.__label ?? "";
             const halfH = 8;
             const halfW = Math.max(20, label.length * 3.6);
@@ -164,16 +154,25 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             let priority = node.degree || 0;
             if (hi && hi.has(node.id)) priority += 10000;
             if (sel === node.id) priority += 100000;
-            // fade with distance
-            const fade = Math.max(0, Math.min(1, 1 - (dist - 120) / 600));
+            // fade with distance so far-away labels dim before overlap-culling
+            const fade = Math.max(0, Math.min(1, 1 - (dist - 150) / 700));
             sprite.material.opacity = fade;
-            entries.push({ sprite, node, sx, sy, halfW, halfH, priority, inFront });
+            entries.push({
+              sprite,
+              node,
+              sx,
+              sy,
+              halfW,
+              halfH,
+              priority,
+              visibleOnScreen,
+            });
           });
 
           entries.sort((a, b) => b.priority - a.priority);
           const placed: Entry[] = [];
           for (const e of entries) {
-            if (!e.inFront || e.material_opacity_zero()) {
+            if (!e.visibleOnScreen || e.sprite.material.opacity <= 0.05) {
               e.sprite.visible = false;
               continue;
             }
@@ -190,8 +189,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
             if (overlap) {
               e.sprite.visible = false;
             } else {
-              e.sprite.visible = e.sprite.material.opacity > 0.05;
-              if (e.sprite.visible) placed.push(e);
+              e.sprite.visible = true;
+              placed.push(e);
             }
           }
         } catch {
@@ -259,6 +258,24 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           enableNavigationControls={true}
           controlType="orbit"
           showNavInfo={false}
+          nodeThreeObjectExtend={true}
+          nodeThreeObject={(node: NodeWithCoords) => {
+            const label = node.label ?? node.id;
+            const sprite = new SpriteText(label) as LabelSprite;
+            sprite.color = "#E4E4E7";
+            sprite.backgroundColor = "rgba(10,10,11,0.55)";
+            sprite.padding = 1.5;
+            sprite.borderRadius = 2;
+            sprite.textHeight = Math.max(3, 3 + Math.min(4, (node.degree || 0) / 6));
+            sprite.material.depthWrite = false;
+            sprite.material.transparent = true;
+            sprite.material.opacity = 1;
+            sprite.center.set(0.5, -0.6);
+            sprite.__node = node;
+            sprite.__label = label;
+            spritesRef.current.set(node.id, sprite);
+            return sprite;
+          }}
         />
       )}
       {!ForceGraph3D && (
