@@ -115,13 +115,14 @@ export async function loadGraph(): Promise<NormalizedGraph> {
     }))
     .filter((l) => byId.has(l.source) && byId.has(l.target));
 
-  const commCounts = new Map<number, number>();
+  const commMembers = new Map<number, GraphNode[]>();
   for (const n of nodes) {
     if (n.community == null) continue;
-    commCounts.set(n.community, (commCounts.get(n.community) ?? 0) + 1);
+    if (!commMembers.has(n.community)) commMembers.set(n.community, []);
+    commMembers.get(n.community)!.push(n);
   }
-  const communities = Array.from(commCounts.entries())
-    .map(([id, count]) => ({ id, count }))
+  const communities = Array.from(commMembers.entries())
+    .map(([id, members]) => ({ id, count: members.length, name: deriveCommunityLabel(id, members) }))
     .sort((a, b) => b.count - a.count);
 
   return { nodes, links, neighbors, byId, communities, categoryCounts };
