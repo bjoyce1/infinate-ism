@@ -84,6 +84,15 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     return { nodes, links };
   }, [graph, activeCategories, activeCommunity, focusMode, selectedId]);
 
+  // Drop cached sprites for nodes no longer in the filtered set so the
+  // collision loop doesn't try to place stale labels.
+  useEffect(() => {
+    const ids = new Set(data.nodes.map((n) => n.id));
+    for (const key of Array.from(spritesRef.current.keys())) {
+      if (!ids.has(key)) spritesRef.current.delete(key);
+    }
+  }, [data]);
+
   const highlightSet = useMemo(() => {
     const anchor = hoveredId ?? selectedId;
     if (!anchor) return null;
