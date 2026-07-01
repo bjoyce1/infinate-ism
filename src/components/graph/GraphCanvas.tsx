@@ -11,6 +11,7 @@ type ForceGraphHandle = {
 };
 
 const HUB_ID = "site_mrcap1_com";
+const IMAGE_GOLD = "#FFC23C";
 
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
@@ -31,6 +32,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
+  const flyToId = useGraphStore((s) => s.flyToId);
+  const flyToToken = useGraphStore((s) => s.flyToToken);
 
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const getImage = (url: string): HTMLImageElement | null => {
@@ -91,6 +94,17 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current.zoom(3, 800);
   }, [recenterToken, data]);
 
+  // Fly-to (tour + programmatic): center + zoom on the target node.
+  useEffect(() => {
+    if (!flyToToken || !flyToId || !fgRef.current) return;
+    const target = data.nodes.find((n) => n.id === flyToId) as
+      | (GraphNode & { x?: number; y?: number })
+      | undefined;
+    if (!target || target.x == null || target.y == null) return;
+    fgRef.current.centerAt(target.x, target.y, 1200);
+    fgRef.current.zoom(4, 1200);
+  }, [flyToToken, flyToId, data]);
+
   const highlightSet = useMemo(() => {
     const anchor = hoveredId ?? selectedId;
     if (!anchor) return null;
@@ -106,12 +120,15 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   ) => {
     if (node.x == null || node.y == null) return;
     const isHub = Boolean(node.is_hub || node.image);
+    const isImageAsset = node.file_type === "image" || node.category === "image";
     const base = isHub
       ? Math.max(14, Math.min(28, 10 + Math.sqrt(node.degree) * 1.2))
-      : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
+      : isImageAsset
+        ? Math.max(3, Math.min(8, 3 + Math.sqrt(node.degree) * 1.1))
+        : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
     const isAnchor = node.id === selectedId || node.id === hoveredId;
     const dim = highlightSet != null && !highlightSet.has(node.id);
-    const color = node.color ?? CATEGORY_COLORS[node.category];
+    const color = isImageAsset ? IMAGE_GOLD : (node.color ?? CATEGORY_COLORS[node.category]);
     ctx.globalAlpha = dim ? 0.15 : 1;
     const img = node.image ? getImage(node.image) : null;
     if (img) {
@@ -154,6 +171,11 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkColor = (link: { source: GraphNode | string; target: GraphNode | string }) => {
     const s = typeof link.source === "string" ? link.source : link.source.id;
     const t = typeof link.target === "string" ? link.target : link.target.id;
+    const rel = (link as { relation?: string }).relation;
+    if (rel === "depicts") {
+      if (highlightSet && !(highlightSet.has(s) && highlightSet.has(t))) return "rgba(255,194,60,0.08)";
+      return "rgba(255,194,60,0.55)";
+    }
     if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return "rgba(61,237,151,0.5)";
     if (highlightSet) return "rgba(255,255,255,0.03)";
     return "rgba(255,255,255,0.08)";
@@ -186,6 +208,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           }}
           linkColor={linkColor}
           linkWidth={0.6 * linkIntensity}
+          linkLineDash={(link: { relation?: string }) =>
+            link.relation === "depicts" ? [4, 3] : null
+          }
           linkDirectionalParticles={(link: { source: GraphNode | string; target: GraphNode | string }) => {
             const base = highlightSet ? 0 : 1;
             const s = typeof link.source === "string" ? link.source : link.source.id;

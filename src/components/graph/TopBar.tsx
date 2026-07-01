@@ -14,6 +14,8 @@ export function TopBar() {
   const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const toggleAutoRotate = useGraphStore((s) => s.toggleAutoRotate);
+  const tourActive = useGraphStore((s) => s.tourActive);
+  const toggleTour = useGraphStore((s) => s.toggleTour);
   const handleRecenter = () => {
     recenterOnHub();
     toast.success("Re-centering on mrcap1.com", {
@@ -102,6 +104,18 @@ export function TopBar() {
           title="Slowly rotate the graph"
         >
           {autoRotate ? "↻ ROTATE ON" : "↻ ROTATE OFF"}
+        </button>
+        <button
+          type="button"
+          onClick={toggleTour}
+          className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer border ${
+            tourActive
+              ? "bg-amber-500/20 border-amber-400 text-amber-200"
+              : "bg-obsidian-surface border-obsidian-border hover:border-amber-400"
+          }`}
+          title="Fly through the 14 most-connected nodes"
+        >
+          {tourActive ? "▶ TOUR ON" : "▶ TOUR"}
         </button>
         <button
           type="button"

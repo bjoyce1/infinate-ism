@@ -59,6 +59,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
+  const flyToId = useGraphStore((s) => s.flyToId);
+  const flyToToken = useGraphStore((s) => s.flyToToken);
 
   useEffect(() => {
     const ctrls = fgRef.current?.controls?.();
@@ -193,6 +195,27 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
       800,
     );
   }, [recenterToken, data]);
+
+  // Fly-to (tour + programmatic): orbit camera to a specific node.
+  useEffect(() => {
+    if (!flyToToken || !flyToId || !fgRef.current) return;
+    const target = data.nodes.find((n) => n.id === flyToId) as NodeWithCoords | undefined;
+    if (!target || target.x == null) return;
+    const x = target.x;
+    const y = target.y ?? 0;
+    const z = target.z ?? 0;
+    const distance = 160;
+    const norm = Math.hypot(x, y, z) || 1;
+    fgRef.current.cameraPosition(
+      {
+        x: x + (x / norm) * distance,
+        y: y + (y / norm) * distance,
+        z: z + (z / norm) * distance,
+      },
+      { x, y, z },
+      1200,
+    );
+  }, [flyToToken, flyToId, data]);
 
   // Collision-aware label loop: project every labeled node to screen space,
   // sort by importance, and hide labels whose bounding box overlaps a
@@ -342,18 +365,30 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   }, [ForceGraph3D]);
 
   const nodeVal = useCallback(
-    (n: GraphNode) => (n.is_hub ? 40 : Math.max(1, 1 + Math.sqrt(n.degree))),
+    (n: GraphNode) => {
+      if (n.is_hub) return 40;
+      if (n.file_type === "image" || n.category === "image") {
+        return Math.max(3, 3 + Math.sqrt(n.degree) * 1.6);
+      }
+      return Math.max(1, 1 + Math.sqrt(n.degree));
+    },
     [],
   );
   const nodeColor = useCallback((n: GraphNode) => {
     const highlightSet = highlightRef.current;
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";
+    if (n.file_type === "image" || n.category === "image") return "#FFC23C";
     return n.color ?? CATEGORY_COLORS[n.category];
   }, []);
   const linkColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
     const highlightSet = highlightRef.current;
     const s = getLinkEndpointId(link.source);
     const t = getLinkEndpointId(link.target);
+    const rel = (link as { relation?: string }).relation;
+    if (rel === "depicts") {
+      if (highlightSet && !(highlightSet.has(s) && highlightSet.has(t))) return "rgba(255,194,60,0.1)";
+      return "rgba(255,194,60,0.6)";
+    }
     if (highlightSet && highlightSet.has(s) && highlightSet.has(t)) return "rgba(61,237,151,0.6)";
     if (highlightSet) return "rgba(255,255,255,0.02)";
     return "rgba(255,255,255,0.12)";
@@ -375,6 +410,10 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const linkParticleCount = useCallback(
     (link: { source: GraphNode | string; target: GraphNode | string }) => {
       const highlightSet = highlightRef.current;
+      const rel = (link as { relation?: string }).relation;
+      // depicts links: always show a couple of gold particles so image
+      // connections are legible even without hover.
+      if (rel === "depicts") return Math.max(1, Math.round(2 * particleIntensity));
       const base = highlightSet ? 0 : 1;
       const s = getLinkEndpointId(link.source);
       const t = getLinkEndpointId(link.target);
@@ -386,6 +425,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
 
   const linkParticleColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
     const highlightSet = highlightRef.current;
+    const rel = (link as { relation?: string }).relation;
+    if (rel === "depicts") return "#FFC23C";
     if (!highlightSet) return "rgba(228,228,231,0.7)";
     const s = getLinkEndpointId(link.source);
     const t = getLinkEndpointId(link.target);
