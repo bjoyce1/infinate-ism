@@ -15,6 +15,7 @@ type State = {
   labelSize: number;
   labelDensity: number;
   cameraResetToken: number;
+  hideCode: boolean;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -28,6 +29,8 @@ type State = {
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
   resetCamera: () => void;
+  toggleHideCode: () => void;
+  setHideCode: (v: boolean) => void;
   reset: () => void;
 };
 
@@ -45,6 +48,7 @@ export const useGraphStore = create<State>((set) => ({
   labelSize: 1,
   labelDensity: 1,
   cameraResetToken: 0,
+  hideCode: false,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -65,6 +69,8 @@ export const useGraphStore = create<State>((set) => ({
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
   resetCamera: () => set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
+  toggleHideCode: () => set((s) => ({ hideCode: !s.hideCode })),
+  setHideCode: (v) => set({ hideCode: v }),
   reset: () =>
     set({
       selectedId: null,
