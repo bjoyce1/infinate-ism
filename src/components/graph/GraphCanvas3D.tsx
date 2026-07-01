@@ -43,6 +43,22 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
+  const showLabels = useGraphStore((s) => s.showLabels);
+  const labelSize = useGraphStore((s) => s.labelSize);
+  const labelDensity = useGraphStore((s) => s.labelDensity);
+  const showLabelsRef = useRef(showLabels);
+  const labelSizeRef = useRef(labelSize);
+  const labelDensityRef = useRef(labelDensity);
+  useEffect(() => {
+    showLabelsRef.current = showLabels;
+    labelSizeRef.current = labelSize;
+    labelDensityRef.current = labelDensity;
+    // Live-update text height on existing sprites without rebuilding graph.
+    spritesRef.current.forEach((sprite) => {
+      const deg = sprite.__node?.degree ?? 0;
+      sprite.textHeight = Math.max(2, (3 + Math.min(4, deg / 6)) * labelSize);
+    });
+  }, [showLabels, labelSize, labelDensity]);
 
   useEffect(() => {
     let cancelled = false;
