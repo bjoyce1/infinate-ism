@@ -10477,7 +10477,8 @@
       "community": 200,
       "norm_label": "theartofism.com",
       "weight": 5.0,
-      "url": "https://theartofism.com"
+      "url": "https://theartofism.com",
+      "color": "#D4A24C"
     },
     {
       "id": "site_713mixhouse_com",
@@ -10489,7 +10490,8 @@
       "community": 200,
       "norm_label": "713mixhouse.com",
       "weight": 5.0,
-      "url": "https://713mixhouse.com"
+      "url": "https://713mixhouse.com",
+      "color": "#E11D48"
     },
     {
       "id": "site_themaasaproject_com",
@@ -10501,7 +10503,8 @@
       "community": 200,
       "norm_label": "themaasaproject.com",
       "weight": 5.0,
-      "url": "https://themaasaproject.com"
+      "url": "https://themaasaproject.com",
+      "color": "#B45309"
     },
     {
       "id": "site_themilkmoney_com",
@@ -10513,7 +10516,8 @@
       "community": 200,
       "norm_label": "themilkmoney.com",
       "weight": 5.0,
-      "url": "https://themilkmoney.com"
+      "url": "https://themilkmoney.com",
+      "color": "#F9A8D4"
     },
     {
       "id": "site_selflove24_lovable_app",
@@ -10525,7 +10529,8 @@
       "community": 200,
       "norm_label": "selflove24.lovable.app",
       "weight": 5.0,
-      "url": "https://selflove24.lovable.app"
+      "url": "https://selflove24.lovable.app",
+      "color": "#EC4899"
     },
     {
       "id": "site_dabsheets_com",
@@ -10537,7 +10542,8 @@
       "community": 200,
       "norm_label": "dabsheets.com",
       "weight": 5.0,
-      "url": "https://dabsheets.com"
+      "url": "https://dabsheets.com",
+      "color": "#16A34A"
     },
     {
       "id": "site_absoulutelycaptivating_com",
@@ -10549,7 +10555,8 @@
       "community": 200,
       "norm_label": "absoulutelycaptivating.com",
       "weight": 5.0,
-      "url": "https://absoulutelycaptivating.com"
+      "url": "https://absoulutelycaptivating.com",
+      "color": "#A21CAF"
     }
   ],
   "links": [
