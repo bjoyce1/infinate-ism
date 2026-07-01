@@ -11338,6 +11338,296 @@
       "track": 11,
       "album": "The Art of ISM",
       "url": "https://lliulxlmodpymserpcyd.supabase.co/storage/v1/object/public/music/The%20Art%20of%20ISM%20Album.zip"
+    },
+    {
+      "id": "713_artist_k_rino",
+      "label": "K-Rino",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/k-rino-Dx6GVbqv.jpg",
+      "url": "https://713mixhouse.com/artists/k-rino"
+    },
+    {
+      "id": "713_artist_mr_cap",
+      "label": "Mr. CAP",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/mr-cap-DW5cF1F5.jpg",
+      "url": "https://713mixhouse.com/artists/mr-cap"
+    },
+    {
+      "id": "713_artist_sir_ron",
+      "label": "$ir Ron",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/sir-ron-D87q0DyE.jpg",
+      "url": "https://713mixhouse.com/artists/sir-ron"
+    },
+    {
+      "id": "713_artist_b_1",
+      "label": "B-1",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/__l5e/assets-v1/b4d62f9c-b221-4a6b-8172-d1d541c3a061/klassik-lecturez-front.png",
+      "url": "https://713mixhouse.com/artists/b-1"
+    },
+    {
+      "id": "713_artist_k_water",
+      "label": "K-Water",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Hip-Hop \u00b7 Engineering \u00b7 Production",
+      "image": "https://713mixhouse.com/__l5e/assets-v1/67655457-9be5-4e97-9237-94c068eef668/k-water-pfp.jpg",
+      "url": "https://713mixhouse.com/artists/k-water"
+    },
+    {
+      "id": "713_artist_jak_da_ripa",
+      "label": "Jak Da Ripa",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/jak-da-ripa-BjrozcQn.png",
+      "url": "https://713mixhouse.com/artists/jak-da-ripa"
+    },
+    {
+      "id": "713_artist_amd_roy",
+      "label": "AMD Roy",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/amd-roy-gyN93FaX.jpg",
+      "url": "https://713mixhouse.com/artists/amd-roy"
+    },
+    {
+      "id": "713_artist_tae_light",
+      "label": "Tae Light",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/tae-light-stXSPiap.jpg",
+      "url": "https://713mixhouse.com/artists/tae-light"
+    },
+    {
+      "id": "713_artist_nyah_d",
+      "label": "Nyah D",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "R&B / Hip-Hop",
+      "image": "https://713mixhouse.com/assets/nyah-d-CQTxVq_I.jpg",
+      "url": "https://713mixhouse.com/artists/nyah-d"
+    },
+    {
+      "id": "713_artist_conway",
+      "label": "Conway",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/foe-front-2IDI9JA0.png",
+      "url": "https://713mixhouse.com/artists/conway"
+    },
+    {
+      "id": "713_artist_slim_minista",
+      "label": "Slim Minista",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/slim-minista-DCbKtUGw.jpg",
+      "url": "https://713mixhouse.com/artists/slim-minista"
+    },
+    {
+      "id": "713_artist_inferno_slim",
+      "label": "Inferno Slim",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/burnt-spoon-babies-front-DLtia_0u.png",
+      "url": "https://713mixhouse.com/artists/inferno-slim"
+    },
+    {
+      "id": "713_artist_scotty",
+      "label": "Scotty",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/scotty-CcR6sBus.jpg",
+      "url": "https://713mixhouse.com/artists/scotty"
+    },
+    {
+      "id": "713_artist_cl_che",
+      "label": "Cl'Che'",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Southern Hip-Hop",
+      "image": "https://713mixhouse.com/assets/cl-che-D0jymr-I.jpg",
+      "url": "https://713mixhouse.com/artists/cl-che"
+    },
+    {
+      "id": "713_artist_point_blank",
+      "label": "Point Blank",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Hip-Hop / Rap",
+      "image": "https://713mixhouse.com/assets/point-blank-B--vbRSJ.jpg",
+      "url": "https://713mixhouse.com/artists/point-blank"
+    },
+    {
+      "id": "713_artist_stunna_bam",
+      "label": "Stunna Bam",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Hip-Hop / Rap",
+      "image": "https://713mixhouse.com/assets/stunna-bam-DJbA8UrB.jpg",
+      "url": "https://713mixhouse.com/artists/stunna-bam"
+    },
+    {
+      "id": "713_artist_klondike_kat",
+      "label": "Klondike Kat",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Hip-Hop / Rap",
+      "image": "https://713mixhouse.com/assets/klondike-kat-DBO0T78M.jpg",
+      "url": "https://713mixhouse.com/artists/klondike-kat"
+    },
+    {
+      "id": "713_artist_texas_marie",
+      "label": "Texas Marie",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "R&B / Country Crossover",
+      "image": "https://713mixhouse.com/assets/texas-marie-Co9B0Rnf.png",
+      "url": "https://713mixhouse.com/artists/texas-marie"
+    },
+    {
+      "id": "713_artist_theezy_santana",
+      "label": "Theezy Santana",
+      "category": "image",
+      "community": 202,
+      "file_type": "image",
+      "color": "#E94560",
+      "genre": "Hip-Hop / Rap",
+      "image": "https://713mixhouse.com/assets/theezy-santana-CCEReDjZ.jpg",
+      "url": "https://713mixhouse.com/artists/theezy-santana"
+    },
+    {
+      "id": "713_service_vocal_training",
+      "label": "Service \u00b7 Vocal Training",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#vocal-training"
+    },
+    {
+      "id": "713_service_recording",
+      "label": "Service \u00b7 Recording",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#recording"
+    },
+    {
+      "id": "713_service_mixing_mastering",
+      "label": "Service \u00b7 Mixing & Mastering",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#mixing-mastering"
+    },
+    {
+      "id": "713_service_production",
+      "label": "Service \u00b7 Production",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#production"
+    },
+    {
+      "id": "713_service_videography",
+      "label": "Service \u00b7 Videography",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#videography"
+    },
+    {
+      "id": "713_service_publishing",
+      "label": "Service \u00b7 Publishing",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#publishing"
+    },
+    {
+      "id": "713_service_distribution",
+      "label": "Service \u00b7 Distribution",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#distribution"
+    },
+    {
+      "id": "713_service_artist_website_design",
+      "label": "Service \u00b7 Artist Website Design",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#artist-website-design"
+    },
+    {
+      "id": "713_service_graphic_design",
+      "label": "Service \u00b7 Graphic Design",
+      "category": "blog",
+      "community": 202,
+      "file_type": "blog",
+      "color": "#5A0F1E",
+      "url": "https://713mixhouse.com/services#graphic-design"
     }
   ],
   "links": [
@@ -23360,6 +23650,180 @@
       "target": "artofism_song_11_capism",
       "weight": 1.5,
       "relation": "track"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_k_rino",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_mr_cap",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "713_artist_mr_cap",
+      "target": "site_mrcap1_com",
+      "weight": 3.0,
+      "relation": "same_as"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_sir_ron",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_b_1",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_k_water",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_jak_da_ripa",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_amd_roy",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_tae_light",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_nyah_d",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_conway",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_slim_minista",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_inferno_slim",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_scotty",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_cl_che",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_point_blank",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_stunna_bam",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_klondike_kat",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_texas_marie",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_artist_theezy_santana",
+      "weight": 2.0,
+      "relation": "artist"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_vocal_training",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_recording",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_mixing_mastering",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_production",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_videography",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_publishing",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_distribution",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_artist_website_design",
+      "weight": 1.5,
+      "relation": "service"
+    },
+    {
+      "source": "site_713mixhouse_com",
+      "target": "713_service_graphic_design",
+      "weight": 1.5,
+      "relation": "service"
     }
   ],
   "hyperedges": [],
