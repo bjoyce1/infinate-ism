@@ -34,10 +34,48 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const toggleIncludeTsFiles = useGraphStore((s) => s.toggleIncludeTsFiles);
   const topCommunities = graph.communities.slice(0, 12);
 
-  const tsNodeCount = useMemo(
-    () => graph.nodes.reduce((acc, n) => (isTsSourceNode(n) ? acc + 1 : acc), 0),
-    [graph.nodes],
-  );
+  const filterStats = useMemo(() => {
+    const totalNodes = graph.nodes.length;
+    const totalLinks = graph.links.length;
+
+    const codeIds = new Set<string>();
+    const tsIds = new Set<string>();
+    for (const n of graph.nodes) {
+      if (n.category === "code") codeIds.add(n.id);
+      if (isTsSourceNode(n)) tsIds.add(n.id);
+    }
+
+    // Nodes/links hidden by each filter in isolation (against the raw graph).
+    let codeLinks = 0;
+    let tsLinks = 0;
+    // Nodes/links hidden by both filters combined (current live view).
+    const hiddenIds = new Set<string>();
+    if (hideCode) for (const id of codeIds) hiddenIds.add(id);
+    if (!includeTsFiles) for (const id of tsIds) hiddenIds.add(id);
+    let visibleLinks = 0;
+
+    for (const l of graph.links) {
+      const s = l.source as unknown as string;
+      const t = l.target as unknown as string;
+      if (codeIds.has(s) || codeIds.has(t)) codeLinks += 1;
+      if (tsIds.has(s) || tsIds.has(t)) tsLinks += 1;
+      if (!hiddenIds.has(s) && !hiddenIds.has(t)) visibleLinks += 1;
+    }
+
+    const visibleNodes = totalNodes - hiddenIds.size;
+    return {
+      totalNodes,
+      totalLinks,
+      visibleNodes,
+      visibleLinks,
+      hiddenNodes: hiddenIds.size,
+      hiddenLinks: totalLinks - visibleLinks,
+      codeNodes: codeIds.size,
+      codeLinks,
+      tsNodes: tsIds.size,
+      tsLinks,
+    };
+  }, [graph.nodes, graph.links, hideCode, includeTsFiles]);
 
   const selected = selectedId ? graph.byId.get(selectedId) : null;
   const focusLabel = focusMode && selected ? selected.label : null;
@@ -57,8 +95,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 <div className="text-xs font-semibold">
                   {hideCode ? "Clean View" : "Raw View"}
                 </div>
-                <div className="text-[10px] font-mono text-muted-text mt-0.5">
-                  {hideCode ? "Code nodes hidden" : `${graph.categoryCounts.code} code nodes visible`}
+                <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
+                  {hideCode ? (
+                    <>hides {filterStats.codeNodes} nodes · {filterStats.codeLinks} links</>
+                  ) : (
+                    <>{filterStats.codeNodes} code nodes · {filterStats.codeLinks} links shown</>
+                  )}
                 </div>
               </div>
               <button
@@ -88,10 +130,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 <div className="text-xs font-semibold">
                   {includeTsFiles ? "TS Files Shown" : "TS Files Hidden"}
                 </div>
-                <div className="text-[10px] font-mono text-muted-text mt-0.5">
-                  {includeTsFiles
-                    ? `${tsNodeCount} .ts/.tsx nodes visible`
-                    : `${tsNodeCount} .ts/.tsx nodes hidden`}
+                <div className="text-[10px] font-mono text-muted-text mt-0.5 leading-relaxed">
+                  {includeTsFiles ? (
+                    <>{filterStats.tsNodes} nodes · {filterStats.tsLinks} links shown</>
+                  ) : (
+                    <>hides {filterStats.tsNodes} nodes · {filterStats.tsLinks} links</>
+                  )}
                 </div>
               </div>
               <button
@@ -112,6 +156,28 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                   }`}
                 />
               </button>
+            </div>
+          </div>
+
+          <div className="px-3 py-2 rounded-lg border border-obsidian-border bg-white/[0.02] font-mono text-[10px] leading-relaxed">
+            <div className="uppercase tracking-widest text-muted-text mb-1">Live totals</div>
+            <div className="flex justify-between">
+              <span className="text-muted-text">Nodes</span>
+              <span>
+                <span className="text-neon-primary">{filterStats.visibleNodes}</span>
+                <span className="text-muted-text">
+                  {" "}/ {filterStats.totalNodes} · {filterStats.hiddenNodes} hidden
+                </span>
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-text">Links</span>
+              <span>
+                <span className="text-neon-primary">{filterStats.visibleLinks}</span>
+                <span className="text-muted-text">
+                  {" "}/ {filterStats.totalLinks} · {filterStats.hiddenLinks} hidden
+                </span>
+              </span>
             </div>
           </div>
 
