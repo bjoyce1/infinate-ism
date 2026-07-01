@@ -367,22 +367,18 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           }}
         />
       )}
-      {tooltip && (
-        <div
-          className="pointer-events-none absolute z-20 rounded border border-white/10 bg-black/85 px-2 py-1 font-mono text-[11px] text-zinc-100 shadow-lg backdrop-blur-sm"
-          style={{
-            left: tooltip.x,
-            top: tooltip.y,
-            transform: "translate(12px, -50%)",
-            maxWidth: 320,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {tooltip.text}
-        </div>
-      )}
+      <div
+        ref={tooltipRef}
+        className="pointer-events-none absolute left-0 top-0 z-20 rounded border border-white/10 bg-black/85 px-2 py-1 font-mono text-[11px] text-zinc-100 shadow-lg backdrop-blur-sm"
+        style={{
+          display: "none",
+          maxWidth: 320,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          willChange: "transform",
+        }}
+      />
       {!ForceGraph3D && (
         <div className="absolute inset-0 grid place-items-center text-muted-text font-mono text-xs">
           Initializing 3D engine…
