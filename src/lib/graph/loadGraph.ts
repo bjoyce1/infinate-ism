@@ -10,6 +10,7 @@ export function isTsSourceNode(n: { label?: string | null; source_file?: string 
 
 function deriveCommunityLabel(id: number, members: GraphNode[]): string {
   if (id === 200) return "mrcap1.com · Artist Site";
+  if (id === 201) return "Self Love Project · NFT Gallery";
   if (members.length === 0) return `Cluster ${String(id).padStart(3, "0")}`;
 
   const labels = members.map((m) => m.label.toLowerCase());
