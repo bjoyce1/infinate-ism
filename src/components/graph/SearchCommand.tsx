@@ -10,6 +10,7 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const select = useGraphStore((s) => s.select);
   const [q, setQ] = useState("");
   const [includeCode, setIncludeCode] = useState(false);
+  const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isTsNode = (n: GraphNode) => {
@@ -18,10 +19,30 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
     return /\.(ts|tsx)(?:$|[:?#])/.test(l) || /\.(ts|tsx)(?:$|[:?#])/.test(s);
   };
 
-  const searchPool = useMemo(
-    () => (includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n))),
-    [graph.nodes, includeCode],
-  );
+  const getType = (n: GraphNode): string => {
+    const ft = (n as GraphNode & { file_type?: string }).file_type;
+    return (ft && String(ft).toLowerCase()) || n.category || "other";
+  };
+
+  const typeCounts = useMemo(() => {
+    const base = includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n));
+    const c: Record<string, number> = {};
+    for (const n of base) {
+      const t = getType(n);
+      c[t] = (c[t] ?? 0) + 1;
+    }
+    return c;
+  }, [graph.nodes, includeCode]);
+
+  const CHIPS = ["code", "music", "blog", "other"] as const;
+
+  const searchPool = useMemo(() => {
+    let pool = includeCode ? graph.nodes : graph.nodes.filter((n) => !isTsNode(n));
+    if (activeTypes.size > 0) {
+      pool = pool.filter((n) => activeTypes.has(getType(n)));
+    }
+    return pool;
+  }, [graph.nodes, includeCode, activeTypes]);
 
   const fuse = useMemo(
     () => new Fuse(searchPool, { keys: ["label", "source_file"], threshold: 0.4, ignoreLocation: true }),
@@ -51,6 +72,14 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
     if (open) setTimeout(() => inputRef.current?.focus(), 20);
     else setQ("");
   }, [open]);
+
+  const toggleType = (t: string) =>
+    setActiveTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
 
   if (!open) return null;
 
@@ -91,6 +120,45 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
               ? `${searchPool.length} indexed`
               : `${searchPool.length} indexed · ${excludedCount} hidden`}
           </span>
+        </div>
+        <div className="px-4 py-2 border-b border-obsidian-border flex items-center gap-2 flex-wrap bg-white/[0.01]">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text mr-1">
+            Type
+          </span>
+          {CHIPS.map((t) => {
+            const active = activeTypes.has(t);
+            const count = typeCounts[t] ?? 0;
+            const color = CATEGORY_COLORS[t as keyof typeof CATEGORY_COLORS] ?? "#8E9196";
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggleType(t)}
+                disabled={count === 0}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest transition-colors ${
+                  active
+                    ? "bg-white/10 border-white/30 text-white"
+                    : "border-obsidian-border text-muted-text hover:bg-white/5"
+                } disabled:opacity-30 disabled:cursor-not-allowed`}
+              >
+                <span
+                  className="size-1.5 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                {t}
+                <span className="opacity-60">{count}</span>
+              </button>
+            );
+          })}
+          {activeTypes.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTypes(new Set())}
+              className="ml-auto text-[10px] font-mono uppercase tracking-widest text-muted-text hover:text-white"
+            >
+              clear
+            </button>
+          )}
         </div>
         <div className="max-h-[420px] overflow-y-auto">
           {results.map((n) => (
