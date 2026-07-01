@@ -5,6 +5,9 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import SpriteText from "three-spritetext";
 
 type LabelSprite = SpriteText & {
+  visible: boolean;
+  material: { opacity: number; transparent: boolean; depthWrite: boolean };
+  center: { set: (x: number, y: number) => void };
   __node?: NodeWithCoords;
   __label?: string;
 };
