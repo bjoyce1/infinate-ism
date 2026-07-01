@@ -1,7 +1,7 @@
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import { trackLinkClick, detectLinkType } from "@/lib/analytics/trackClick";
+import { trackLinkClick } from "@/lib/analytics/trackClick";
 
 export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
