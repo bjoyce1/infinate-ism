@@ -10033,7 +10033,9 @@
       "norm_label": "mrcap1.com",
       "id": "site_mrcap1_com",
       "weight": 10.0,
-      "is_hub": true
+      "is_hub": true,
+      "image": "/__l5e/assets-v1/809dc247-1844-4fe6-8067-1933456b4db1/mrcap1-coin.png",
+      "artwork": "/__l5e/assets-v1/809dc247-1844-4fe6-8067-1933456b4db1/mrcap1-coin.png"
     },
     {
       "label": "Discography",
