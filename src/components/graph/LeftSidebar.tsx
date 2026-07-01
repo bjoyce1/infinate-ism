@@ -1,7 +1,7 @@
 import type { Category, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
