@@ -365,18 +365,30 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   }, [ForceGraph3D]);
 
   const nodeVal = useCallback(
-    (n: GraphNode) => (n.is_hub ? 40 : Math.max(1, 1 + Math.sqrt(n.degree))),
+    (n: GraphNode) => {
+      if (n.is_hub) return 40;
+      if (n.file_type === "image" || n.category === "image") {
+        return Math.max(3, 3 + Math.sqrt(n.degree) * 1.6);
+      }
+      return Math.max(1, 1 + Math.sqrt(n.degree));
+    },
     [],
   );
   const nodeColor = useCallback((n: GraphNode) => {
     const highlightSet = highlightRef.current;
     if (highlightSet && !highlightSet.has(n.id)) return "rgba(80,80,90,0.25)";
+    if (n.file_type === "image" || n.category === "image") return "#FFC23C";
     return n.color ?? CATEGORY_COLORS[n.category];
   }, []);
   const linkColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
     const highlightSet = highlightRef.current;
     const s = getLinkEndpointId(link.source);
     const t = getLinkEndpointId(link.target);
+    const rel = (link as { relation?: string }).relation;
+    if (rel === "depicts") {
+      if (highlightSet && !(highlightSet.has(s) && highlightSet.has(t))) return "rgba(255,194,60,0.1)";
+      return "rgba(255,194,60,0.6)";
+    }
     if (highlightSet && highlightSet.has(s) && highlightSet.has(t)) return "rgba(61,237,151,0.6)";
     if (highlightSet) return "rgba(255,255,255,0.02)";
     return "rgba(255,255,255,0.12)";
@@ -398,6 +410,10 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const linkParticleCount = useCallback(
     (link: { source: GraphNode | string; target: GraphNode | string }) => {
       const highlightSet = highlightRef.current;
+      const rel = (link as { relation?: string }).relation;
+      // depicts links: always show a couple of gold particles so image
+      // connections are legible even without hover.
+      if (rel === "depicts") return Math.max(1, Math.round(2 * particleIntensity));
       const base = highlightSet ? 0 : 1;
       const s = getLinkEndpointId(link.source);
       const t = getLinkEndpointId(link.target);
@@ -409,6 +425,8 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
 
   const linkParticleColor = useCallback((link: { source: GraphNode | string; target: GraphNode | string }) => {
     const highlightSet = highlightRef.current;
+    const rel = (link as { relation?: string }).relation;
+    if (rel === "depicts") return "#FFC23C";
     if (!highlightSet) return "rgba(228,228,231,0.7)";
     const s = getLinkEndpointId(link.source);
     const t = getLinkEndpointId(link.target);
