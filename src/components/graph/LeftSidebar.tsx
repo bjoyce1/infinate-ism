@@ -159,7 +159,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
       <div className="p-6 border-b border-obsidian-border">
         <div className="flex items-center gap-2 mb-8">
           <div className="size-3 rounded-full bg-neon-primary shadow-[0_0_10px_#3DED97]" />
-          <span className="font-semibold tracking-tight text-lg">MNEMOSYNE v1.0</span>
+          <span className="font-semibold tracking-tight text-lg">INFINITE-ISM v1</span>
         </div>
 
         <nav className="space-y-6">
