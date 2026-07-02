@@ -14339,19 +14339,6 @@
       "isolated_cluster": true
     },
     {
-      "id": "yates_1992_jackie",
-      "label": "Jackie \u00b7 Class of 1992",
-      "file_type": "other",
-      "source_file": "https://yateshighschool.org/class-of-1992.html",
-      "source_location": "web",
-      "_origin": "alumni",
-      "community": 300,
-      "norm_label": "jackie \u00b7 class of 1992",
-      "weight": 2.2,
-      "color": "#E5B948",
-      "description": "Jackie \u2014 Yates High School, Class of 1992. The bridge that ties this planet to Cornelius A. Pratt."
-    },
-    {
       "id": "yates_1992_aden_christopher_wilson",
       "label": "Aden Christopher Wilson",
       "file_type": "other",
@@ -28619,21 +28606,9 @@
     },
     {
       "source": "site_yates_hs_1992",
-      "target": "yates_1992_jackie",
-      "relation": "alumni",
-      "weight": 3.0
-    },
-    {
-      "source": "site_yates_hs_1992",
       "target": "site_corneliusapratt_com",
       "relation": "attended_by",
       "weight": 2.5
-    },
-    {
-      "source": "yates_1992_jackie",
-      "target": "site_corneliusapratt_com",
-      "relation": "partner_of",
-      "weight": 3.0
     },
     {
       "source": "site_yates_hs_1992",
