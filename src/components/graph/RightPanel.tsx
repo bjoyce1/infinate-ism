@@ -18,11 +18,11 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
           type="button"
           aria-label="Close panel"
           onClick={() => setOpen(false)}
-          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm animate-fade-in"
         />
       )}
       <aside
-        className={`fixed md:relative z-40 top-0 right-0 h-full w-[92vw] max-w-sm md:w-80 lg:w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed md:relative z-40 top-0 right-0 h-full w-[92vw] max-w-sm md:w-80 lg:w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
