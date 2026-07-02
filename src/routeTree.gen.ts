@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -23,6 +24,11 @@ const AuthRoute = AuthRouteImport.update({
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AbsoulutelycaptivatingRoute = AbsoulutelycaptivatingRouteImport.update({
@@ -44,6 +50,7 @@ const ApiChatRoute = ApiChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
@@ -68,15 +77,23 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/absoulutelycaptivating'
+    | '/admin'
     | '/analytics'
     | '/auth'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/absoulutelycaptivating' | '/analytics' | '/auth' | '/api/chat'
+  to:
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/admin'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
   id:
     | '__root__'
     | '/'
     | '/absoulutelycaptivating'
+    | '/admin'
     | '/analytics'
     | '/auth'
     | '/api/chat'
@@ -85,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbsoulutelycaptivatingRoute: typeof AbsoulutelycaptivatingRoute
+  AdminRoute: typeof AdminRoute
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -104,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/absoulutelycaptivating': {
@@ -133,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbsoulutelycaptivatingRoute: AbsoulutelycaptivatingRoute,
+  AdminRoute: AdminRoute,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
