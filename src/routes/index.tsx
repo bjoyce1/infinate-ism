@@ -12,6 +12,7 @@ import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 
 const searchSchema = z.object({
   view: fallback(z.enum(["2d", "3d"]), "2d").default("2d"),
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [graph, setGraph] = useState<NormalizedGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
+  useSwipeGestures();
   const viewMode = useGraphStore((s) => s.viewMode);
   const selectedId = useGraphStore((s) => s.selectedId);
   const focusMode = useGraphStore((s) => s.focusMode);
