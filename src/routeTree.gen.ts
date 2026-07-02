@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,45 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
+  fullPaths:
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
-  id: '__root__' | '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
+  to: '/' | '/absoulutelycaptivating' | '/analytics' | '/auth' | '/api/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbsoulutelycaptivatingRoute: typeof AbsoulutelycaptivatingRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
@@ -106,6 +134,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbsoulutelycaptivatingRoute: AbsoulutelycaptivatingRoute,
   AnalyticsRoute: AnalyticsRoute,
+  AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
