@@ -17,6 +17,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<ForceGraphHandle | null>(null);
   const [ForceGraph, setForceGraph] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
+  const [imageTick, setImageTick] = useState(0);
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const hoveredId = useGraphStore((s) => s.hoveredId);
@@ -39,6 +40,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     if (existing) return existing.complete && existing.naturalWidth > 0 ? existing : null;
     const img = new Image();
     img.crossOrigin = "anonymous";
+    img.onload = () => setImageTick((t) => t + 1);
     img.src = url;
     cache.set(url, img);
     return null;

@@ -12,4 +12,22 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    plugins: [
+      {
+        name: 'mock-force-graph-ssr',
+        enforce: 'pre',
+        resolveId(id, importer, options) {
+          if (options?.ssr && (id === 'react-force-graph-3d' || id === 'react-force-graph-2d' || id === '3d-force-graph' || id === 'force-graph')) {
+            return '\0mock-' + id;
+          }
+        },
+        load(id) {
+          if (id.startsWith('\0mock-')) {
+            return 'export default function() { return null; }';
+          }
+        }
+      }
+    ]
+  }
 });
