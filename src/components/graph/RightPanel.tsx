@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { NormalizedGraph } from "@/lib/graph/types";
+import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { DetailPanel } from "./DetailPanel";
 import { NotesPanel } from "./NotesPanel";
 import { AskPanel } from "./AskPanel";
@@ -8,8 +9,23 @@ type Tab = "info" | "notes" | "ask";
 
 export function RightPanel({ graph }: { graph: NormalizedGraph }) {
   const [tab, setTab] = useState<Tab>("info");
+  const open = useGraphStore((s) => s.rightPanelOpen);
+  const setOpen = useGraphStore((s) => s.setRightPanel);
   return (
-    <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full">
+    <>
+      {open && (
+        <button
+          type="button"
+          aria-label="Close panel"
+          onClick={() => setOpen(false)}
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+        />
+      )}
+      <aside
+        className={`fixed md:relative z-40 top-0 right-0 h-full w-[92vw] max-w-sm md:w-80 lg:w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transition-transform duration-300 md:translate-x-0 ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
       <div className="flex border-b border-obsidian-border shrink-0">
         {(["info", "notes", "ask"] as const).map((t) => (
           <button
@@ -39,6 +55,7 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
         )}
         {tab === "ask" && <AskPanel graph={graph} />}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

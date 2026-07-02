@@ -153,9 +153,24 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const selected = selectedId ? graph.byId.get(selectedId) : null;
   const focusLabel = focusMode && selected ? selected.label : null;
 
+  const leftPanelOpen = useGraphStore((s) => s.leftPanelOpen);
+  const setLeftPanel = useGraphStore((s) => s.setLeftPanel);
+
   return (
     <TooltipProvider delayDuration={150}>
-      <aside className="w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full">
+      {leftPanelOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          onClick={() => setLeftPanel(false)}
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+        />
+      )}
+      <aside
+        className={`fixed md:relative z-40 top-0 left-0 h-full w-[85vw] max-w-xs md:w-64 lg:w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transition-transform duration-300 md:translate-x-0 ${
+          leftPanelOpen ? "translate-x-0" : "-translate-x-full"
+        } overflow-y-auto`}
+      >
       <div className="p-6 border-b border-obsidian-border">
         <div className="flex items-center gap-2 mb-8">
           <div className="size-3 rounded-full bg-neon-primary shadow-[0_0_10px_#3DED97]" />
