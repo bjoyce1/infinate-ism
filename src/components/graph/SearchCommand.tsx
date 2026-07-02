@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS, isTsSourceNode } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { semanticSearch } from "@/lib/ai.functions";
 
 export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const open = useGraphStore((s) => s.searchOpen);
@@ -13,6 +14,9 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const setIncludeCode = useGraphStore((s) => s.setIncludeTsFiles);
   const hideCode = useGraphStore((s) => s.hideCode);
   const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
+  const [semantic, setSemantic] = useState(false);
+  const [semResults, setSemResults] = useState<GraphNode[]>([]);
+  const [semBusy, setSemBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isTsNode = (n: GraphNode) => isTsSourceNode(n);
@@ -52,9 +56,31 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
   const excludedCount = graph.nodes.length - searchPool.length;
 
   const results = useMemo<GraphNode[]>(() => {
+    if (semantic && q.trim()) return semResults;
     if (!q.trim()) return searchPool.slice().sort((a, b) => b.degree - a.degree).slice(0, 20);
     return fuse.search(q, { limit: 30 }).map((r) => r.item);
-  }, [q, fuse, searchPool]);
+  }, [q, fuse, searchPool, semantic, semResults]);
+
+  // Debounced semantic search.
+  useEffect(() => {
+    if (!semantic || !q.trim()) {
+      setSemResults([]);
+      return;
+    }
+    setSemBusy(true);
+    const handle = setTimeout(() => {
+      semanticSearch({ data: { query: q, limit: 20 } })
+        .then((res) => {
+          const mapped = res.results
+            .map((r) => graph.byId.get(r.node_id))
+            .filter((n): n is GraphNode => Boolean(n));
+          setSemResults(mapped);
+        })
+        .catch((err) => console.warn("[semanticSearch]", err))
+        .finally(() => setSemBusy(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [q, semantic, graph.byId]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -115,6 +141,17 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
               Include .ts / .tsx nodes
             </span>
           </label>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={semantic}
+              onChange={(e) => setSemantic(e.target.checked)}
+              className="accent-neon-primary cursor-pointer"
+            />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neon-primary">
+              ✨ Semantic
+            </span>
+          </label>
           <span className="text-[10px] font-mono text-muted-text">
             {includeCode
               ? `${searchPool.length} indexed`
@@ -161,6 +198,11 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
           )}
         </div>
         <div className="max-h-[420px] overflow-y-auto">
+          {semantic && semBusy && (
+            <div className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-muted-text">
+              ✨ embedding query…
+            </div>
+          )}
           {results.map((n) => (
             <button
               key={n.id}
