@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider, embedText } from "@/lib/ai-gateway.server";
 
 export const Route = createFileRoute("/api/chat")({
@@ -28,12 +26,8 @@ export const Route = createFileRoute("/api/chat")({
         if (queryText) {
           try {
             const [vec] = await embedText(key, queryText);
-            const sb = createClient<Database>(
-              process.env.SUPABASE_URL!,
-              process.env.SUPABASE_PUBLISHABLE_KEY!,
-              { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-            );
-            const { data: rows } = await sb.rpc("match_nodes", {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data: rows } = await supabaseAdmin.rpc("match_nodes", {
               query_embedding: vec as unknown as string,
               match_count: 12,
             });
