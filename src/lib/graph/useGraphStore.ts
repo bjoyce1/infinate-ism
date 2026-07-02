@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Category } from "./types";
 
 type State = {
@@ -48,7 +49,9 @@ type State = {
   reset: () => void;
 };
 
-export const useGraphStore = create<State>((set) => ({
+export const useGraphStore = create<State>()(
+  persist(
+    (set) => ({
   selectedId: null,
   hoveredId: null,
   focusMode: false,
@@ -107,4 +110,15 @@ export const useGraphStore = create<State>((set) => ({
       activeCommunity: null,
       activeCategories: new Set(),
     }),
-}));
+    }),
+    {
+      name: "infinite-ism:panels",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({
+        leftPanelOpen: s.leftPanelOpen,
+        rightPanelOpen: s.rightPanelOpen,
+      }),
+      skipHydration: typeof window === "undefined",
+    },
+  ),
+);
