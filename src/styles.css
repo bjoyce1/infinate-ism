@@ -9,6 +9,31 @@
   to { transform: rotate(360deg); }
 }
 
+/* Themed scrollbars — obsidian surface + neon accent thumb */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #262629 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #262629 0%, #1B4D36 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(61, 237, 151, 0.15);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3DED97 0%, #1B4D36 100%);
+  border-color: rgba(61, 237, 151, 0.5);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @theme {
   --color-obsidian-bg: #0A0A0B;
   --color-obsidian-surface: #161618;

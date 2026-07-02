@@ -19,6 +19,8 @@ type State = {
   hideCode: boolean;
   includeTsFiles: boolean;
   autoRotate: boolean;
+  leftPanelOpen: boolean;
+  rightPanelOpen: boolean;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -39,6 +41,10 @@ type State = {
   setIncludeTsFiles: (v: boolean) => void;
   toggleAutoRotate: () => void;
   setAutoRotate: (v: boolean) => void;
+  toggleLeftPanel: () => void;
+  setLeftPanel: (v: boolean) => void;
+  toggleRightPanel: () => void;
+  setRightPanel: (v: boolean) => void;
   reset: () => void;
 };
 
@@ -60,6 +66,8 @@ export const useGraphStore = create<State>((set) => ({
   hideCode: false,
   includeTsFiles: false,
   autoRotate: false,
+  leftPanelOpen: false,
+  rightPanelOpen: false,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -87,6 +95,10 @@ export const useGraphStore = create<State>((set) => ({
   setIncludeTsFiles: (v) => set({ includeTsFiles: v }),
   toggleAutoRotate: () => set((s) => ({ autoRotate: !s.autoRotate })),
   setAutoRotate: (v) => set({ autoRotate: v }),
+  toggleLeftPanel: () => set((s) => ({ leftPanelOpen: !s.leftPanelOpen })),
+  setLeftPanel: (v) => set({ leftPanelOpen: v }),
+  toggleRightPanel: () => set((s) => ({ rightPanelOpen: !s.rightPanelOpen })),
+  setRightPanel: (v) => set({ rightPanelOpen: v }),
   reset: () =>
     set({
       selectedId: null,
