@@ -111,11 +111,11 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-obsidian-bg/70 backdrop-blur-sm grid place-items-start pt-32"
+      className="fixed inset-0 z-50 bg-obsidian-bg/70 backdrop-blur-sm grid place-items-start pt-16 sm:pt-24 md:pt-32 px-3"
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-[560px] max-w-[92vw] bg-obsidian-surface border border-obsidian-border rounded-xl shadow-2xl overflow-hidden"
+        className="w-full sm:w-[560px] max-w-[560px] bg-obsidian-surface border border-obsidian-border rounded-xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b border-obsidian-border flex items-center gap-3">
