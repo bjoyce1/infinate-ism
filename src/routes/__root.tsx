@@ -78,16 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Mnemosyne — Second Brain" },
+      { title: "infinite-ism-v1" },
       { name: "description", content: "A dark-mode explorer for your knowledge graph." },
       { name: "author", content: "Cornelius A. Pratt" },
-      { property: "og:title", content: "Mnemosyne — Second Brain" },
+      { property: "og:title", content: "infinite-ism-v1" },
       { property: "og:description", content: "A dark-mode explorer for your knowledge graph." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@mrcap1" },
-      { name: "twitter:title", content: "Mnemosyne — Second Brain" },
+      { name: "twitter:title", content: "infinite-ism-v1" },
       { name: "twitter:description", content: "A dark-mode explorer for your knowledge graph." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/97c93000-e59d-4212-af5f-0b17df638fdf" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/97c93000-e59d-4212-af5f-0b17df638fdf" },
     ],
     links: [
       {
