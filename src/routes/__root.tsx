@@ -88,8 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@mrcap1" },
       { name: "twitter:title", content: "infinite-ism-v1" },
       { name: "twitter:description", content: "A dark-mode explorer for your knowledge graph." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/97c93000-e59d-4212-af5f-0b17df638fdf" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/97c93000-e59d-4212-af5f-0b17df638fdf" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
     ],
     links: [
       {
