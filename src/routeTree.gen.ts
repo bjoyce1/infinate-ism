@@ -9,13 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AbsoulutelycaptivatingRoute = AbsoulutelycaptivatingRouteImport.update({
@@ -28,44 +41,94 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
+  '/admin': typeof AdminRoute
   '/analytics': typeof AnalyticsRoute
+  '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/absoulutelycaptivating' | '/analytics'
+  fullPaths:
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/admin'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/absoulutelycaptivating' | '/analytics'
-  id: '__root__' | '/' | '/absoulutelycaptivating' | '/analytics'
+  to:
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/admin'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/absoulutelycaptivating'
+    | '/admin'
+    | '/analytics'
+    | '/auth'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbsoulutelycaptivatingRoute: typeof AbsoulutelycaptivatingRoute
+  AdminRoute: typeof AdminRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/absoulutelycaptivating': {
@@ -82,13 +145,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbsoulutelycaptivatingRoute: AbsoulutelycaptivatingRoute,
+  AdminRoute: AdminRoute,
   AnalyticsRoute: AnalyticsRoute,
+  AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

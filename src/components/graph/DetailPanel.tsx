@@ -17,8 +17,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
 
   if (!node) {
     return (
-      <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full">
-        <div className="p-8 flex-1 flex flex-col items-center justify-center text-center gap-4">
+      <div className="p-8 flex flex-col items-center justify-center text-center gap-4">
           <div className="size-2 rounded-full bg-neon-primary shadow-[0_0_10px_#3DED97] animate-pulse" />
           <p className="text-xs font-mono uppercase tracking-widest text-muted-text">
             No node selected
@@ -26,8 +25,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
           <p className="text-sm text-white/60 max-w-[220px] leading-relaxed">
             Click a star in the constellation to trace its connections.
           </p>
-        </div>
-      </aside>
+      </div>
     );
   }
 
@@ -91,7 +89,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     });
 
   return (
-    <aside className="w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 h-full overflow-y-auto">
+    <div className="flex flex-col">
       <div className="p-8">
         <div className="flex items-center gap-3 mb-6 flex-wrap">
           <span
@@ -302,7 +300,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
           <div className="size-4 border border-white/40 rounded-sm" />
         </button>
       </div>
-    </aside>
+    </div>
   );
 }
 

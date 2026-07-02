@@ -1,70 +1,46 @@
-# Second Brain — Graph Explorer
+## Goal
 
-A single-page, dark-mode explorer for the knowledge graph in your uploaded `graph.json`. No login, no backend — the graph ships as a static asset and runs entirely in the browser.
+Turn Mnemosyne into an AI-aware second brain backed by Lovable Cloud. Four capabilities, one cohesive UX.
 
-## What you get
+## 1. AI Chat with your graph
 
-- **Full-screen interactive graph** (2D force-directed) as the home page
-  - Nodes colored by `file_type` (code / blog / music / image / other)
-  - Sized by degree (more connections = bigger star)
-  - Pan, zoom, drag nodes
-  - Hover: highlight neighbors, dim the rest
-  - Click: opens right detail panel + soft focus on that node
-- **Left sidebar** — Communities & filters
-  - "Communities" list, generated from `community` field in graph.json, sorted by size, with counts. Click to filter graph to that cluster.
-  - "Filter by Type" toggle chips (.Code / .Blog / .Audio / .Visual)
-  - Bottom status card: "Exploring N nodes across M clusters" / "Focus mode: <label>"
-- **Top overlay**
-  - Command-K style search pill (fuzzy over node labels)
-  - "2D VIEW" indicator (3D deferred — see Non-goals)
-  - "FOCUS MODE" toggle: isolates selected node's 1-hop neighborhood
-- **Right detail panel** (slides in on select)
-  - Node label, file_type badge, community
-  - `source_file` and `source_location`
-  - Direct neighbors list (clickable → selects that node)
-  - Metadata grid (origin, community, id)
-  - "Open Source File" (copies the source path — no filesystem access from the browser)
-- **Empty state** before selection: brief hint text
+- New right-panel tab **Ask** next to the existing detail view (toggle in `DetailPanel.tsx`).
+- Uses `useChat` → `POST /api/chat` (TanStack server route).
+- Server route injects graph context: top-K semantically relevant nodes for the user's question (via embeddings, below), plus the currently selected node.
+- Streams answers with `google/gemini-3-flash-preview` through the Lovable AI Gateway.
+- Answers cite nodes as `[[node_id]]`; the UI turns them into clickable chips that select the node in the graph.
 
-## Data
+## 2. AI auto-tagging & summaries
 
-- Copy `graph.json` from your zip into `public/graph.json` so it's served as a static asset (fetched once on load, cached).
-- Parse into `{ nodes, links }`. Precompute per-node degree, neighbor sets, and community rollups.
-- Everything downstream (search index, filters, focus) runs in memory.
+- **Summarize / Suggest tags** buttons in `DetailPanel` for the selected node.
+- Server fn `summarizeNode({ id })` uses `generateText` + structured output (`{ summary, tags[] }`).
+- Result saved to Cloud (`node_notes` table) so it persists and shows on reload.
 
-## Tech details
+## 3. Semantic search
 
-- Route: single `src/routes/index.tsx` (home is the explorer).
-- Graph rendering: `react-force-graph-2d` (WebGL/canvas, handles thousands of nodes smoothly). Install via bun.
-- Search: `fuse.js` for fuzzy label search.
-- State: local component state + a small `useGraphStore` (zustand) for selection / filters / focus.
-- Styling: adopt the "Obsidian precision" tokens verbatim into `src/styles.css` under `@theme` (obsidian-bg #0A0A0B, obsidian-surface #161618, obsidian-border #262629, neon-primary #3DED97). Load Sora + IBM Plex Mono via `<link>` in `__root.tsx` head.
-- File structure:
-  ```
-  src/
-    routes/index.tsx          (layout: sidebar + canvas + detail panel)
-    components/graph/
-      GraphCanvas.tsx         (react-force-graph wrapper)
-      LeftSidebar.tsx
-      DetailPanel.tsx
-      TopBar.tsx              (search + focus toggle)
-      SearchCommand.tsx       (Cmd+K palette)
-    lib/graph/
-      loadGraph.ts            (fetch + normalize graph.json)
-      useGraphStore.ts        (zustand: selection, filters, focus)
-      types.ts
-  public/graph.json
-  ```
+- Cloud table `node_embeddings (node_id text pk, embedding vector(1536), text_hash text, updated_at)`.
+- One-time server fn `rebuildEmbeddings()` (admin-gated) walks `graph.json`, embeds `label + snippet` with `openai/text-embedding-3-small`, upserts.
+- Search palette gets a **Semantic** toggle: server fn `semanticSearch({ q, limit })` embeds the query and returns top matches via `match_nodes()` SQL function. Falls back to Fuse when off.
 
-## Non-goals for v1
+## 4. Cloud-persisted notes/tags
 
-- 3D view (the button will be present but disabled with a "coming soon" tooltip — 3D adds a heavy dep and a different renderer). Say the word if you want it in v1.
-- Editing / adding notes (you chose read-only).
-- Auth / persistence.
-- Node thumbnails from your `thumbnails/` folder — can wire up next pass if you want image previews inside the detail panel.
+- Table `node_notes (node_id text pk, user_id uuid, summary text, tags text[], note text, updated_at)`.
+- RLS: user reads/writes only their own rows.
+- Detail panel shows editable note + tag chips; auto-saves via `createServerFn` (`upsertNodeNote`).
+- Requires sign-in. Add a lightweight `/auth` route (email + Google) — no protected subtree needed; graph stays public, only note editing gates on auth.
 
-## Follow-up options (not in this build unless you say so)
+## Technical notes
 
-- Wire the `thumbnails/` folder into the detail panel for image-type nodes.
-- Add the 3D view with `react-force-graph-3d`.
-- Import your `GRAPH_REPORT.md` as an "About this graph" modal.
+- All AI + DB calls go through `createServerFn` (never from loaders on the public `/` route).
+- `LOVABLE_API_KEY` already provisioned.
+- Migration: enable `pgvector`, create both tables with GRANTs + RLS + `has_role` reuse for admin rebuild, add `match_nodes` RPC.
+- Chat context builder caps at ~15 nodes / ~4k tokens to stay cheap.
+- Google auth configured via `supabase--configure_social_auth` in the same turn.
+
+## Out of scope (this pass)
+
+- Editing graph structure (add/remove nodes/links) from the UI.
+- Multi-user shared notes.
+- Streaming tool-call agent (single-shot RAG only).
+
+Ship in this order so each step is usable on its own: (1) migration + embeddings rebuild, (2) semantic search toggle, (3) chat panel, (4) auth + notes + auto-tag.

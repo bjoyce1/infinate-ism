@@ -47,6 +47,63 @@ export type Database = {
         }
         Relationships: []
       }
+      node_embeddings: {
+        Row: {
+          embedding: string
+          label: string | null
+          node_id: string
+          text_hash: string
+          updated_at: string
+        }
+        Insert: {
+          embedding: string
+          label?: string | null
+          node_id: string
+          text_hash: string
+          updated_at?: string
+        }
+        Update: {
+          embedding?: string
+          label?: string | null
+          node_id?: string
+          text_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      node_notes: {
+        Row: {
+          created_at: string
+          id: string
+          node_id: string
+          note: string | null
+          summary: string | null
+          tags: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          node_id: string
+          note?: string | null
+          summary?: string | null
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          node_id?: string
+          note?: string | null
+          summary?: string | null
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -79,6 +136,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_nodes: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          label: string
+          node_id: string
+          similarity: number
+        }[]
       }
     }
     Enums: {
