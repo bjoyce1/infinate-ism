@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider, embedText } from "@/lib/ai-gateway.server";
 
 export const Route = createFileRoute("/api/chat")({
