@@ -28,7 +28,8 @@ export const semanticSearch = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const [vec] = await embedText(getKey(), data.query);
-    const sb = supabasePublic();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sb = supabaseAdmin;
     const { data: rows, error } = await sb.rpc("match_nodes", {
       query_embedding: vec as unknown as string,
       match_count: data.limit,
@@ -63,7 +64,8 @@ export const embedNodesBatch = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RebuildBatch.parse(d))
   .handler(async ({ data, context }) => {
     // Only admins may write.
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
       _user_id: context.userId,
       _role: "admin",
     });
@@ -82,7 +84,6 @@ export const embedNodesBatch = createServerFn({ method: "POST" })
     if (todo.length === 0) return { embedded: 0, skipped: data.items.length };
 
     const vectors = await embedText(getKey(), todo.map((i) => i.text));
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const rows = todo.map((i, idx) => ({
       node_id: i.node_id,
       label: i.label,
