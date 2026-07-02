@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const AnalyticsRoute = AnalyticsRouteImport.update({
   id: '/analytics',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/absoulutelycaptivating': typeof AbsoulutelycaptivatingRoute
   '/analytics': typeof AnalyticsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/absoulutelycaptivating' | '/analytics'
+  fullPaths: '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/absoulutelycaptivating' | '/analytics'
-  id: '__root__' | '/' | '/absoulutelycaptivating' | '/analytics'
+  to: '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
+  id: '__root__' | '/' | '/absoulutelycaptivating' | '/analytics' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AbsoulutelycaptivatingRoute: typeof AbsoulutelycaptivatingRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AbsoulutelycaptivatingRoute: AbsoulutelycaptivatingRoute,
   AnalyticsRoute: AnalyticsRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
