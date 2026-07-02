@@ -163,11 +163,11 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
           type="button"
           aria-label="Close sidebar"
           onClick={() => setLeftPanel(false)}
-          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm animate-fade-in"
         />
       )}
       <aside
-        className={`fixed md:relative z-40 top-0 left-0 h-full w-[85vw] max-w-xs md:w-64 lg:w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed md:relative z-40 top-0 left-0 h-full w-[85vw] max-w-xs md:w-64 lg:w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
           leftPanelOpen ? "translate-x-0" : "-translate-x-full"
         } overflow-y-auto`}
       >
