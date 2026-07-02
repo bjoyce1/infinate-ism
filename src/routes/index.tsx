@@ -7,7 +7,7 @@ import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
-import { DetailPanel } from "@/components/graph/DetailPanel";
+import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
@@ -112,7 +112,7 @@ function Index() {
         <TopBar />
         <HubHoverCard graph={graph} />
       </main>
-      <DetailPanel graph={graph} />
+      <RightPanel graph={graph} />
       <SearchCommand graph={graph} />
     </div>
   );
