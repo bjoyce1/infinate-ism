@@ -15106,6 +15106,22 @@
       "tagline": "Houston, TX hip-hop collective and creative coalition.",
       "image": "/__l5e/assets-v1/5597307f-236b-4e9f-91f0-de1ee348ad45/spc-logo.png",
       "artwork": "/__l5e/assets-v1/5597307f-236b-4e9f-91f0-de1ee348ad45/spc-logo.png"
+    },
+    {
+      "id": "spc_betn_on_me_remix",
+      "label": "Betn On Me (Remix)",
+      "file_type": "music",
+      "source_file": "https://bookspc.com",
+      "source_location": "web",
+      "_origin": "spc",
+      "community": 207,
+      "norm_label": "betn on me remix",
+      "weight": 3.0,
+      "url": "https://bookspc.com",
+      "color": "#C81D25",
+      "tagline": "South Park Coalition single — produced by Sean Solo Jemison.",
+      "image": "/__l5e/assets-v1/beb2f51b-577d-446e-aa71-a17e7911385e/spc-betn-on-me-remix.png",
+      "artwork": "/__l5e/assets-v1/beb2f51b-577d-446e-aa71-a17e7911385e/spc-betn-on-me-remix.png"
     }
   ],
   "links": [
@@ -29162,6 +29178,30 @@
       "source": "site_spc_houston",
       "target": "site_mrcap1_com",
       "relation": "spawn",
+      "weight": 4.0,
+      "confidence": "high",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "spc_betn_on_me_remix",
+      "target": "site_spc_houston",
+      "relation": "release",
+      "weight": 3.0,
+      "confidence": "high",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "spc_betn_on_me_remix",
+      "target": "site_bookspc_com",
+      "relation": "book",
+      "weight": 2.5,
+      "confidence": "high",
+      "confidence_score": 0.9
+    },
+    {
+      "source": "site_spc_houston",
+      "target": "site_bookspc_com",
+      "relation": "booking",
       "weight": 4.0,
       "confidence": "high",
       "confidence_score": 0.95
