@@ -71,6 +71,27 @@ export type Database = {
         }
         Relationships: []
       }
+      node_image_overrides: {
+        Row: {
+          image_url: string
+          node_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          image_url: string
+          node_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          image_url?: string
+          node_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       node_notes: {
         Row: {
           created_at: string
