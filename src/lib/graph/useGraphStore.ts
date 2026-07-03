@@ -22,6 +22,8 @@ type State = {
   autoRotate: boolean;
   leftPanelOpen: boolean;
   rightPanelOpen: boolean;
+  leftPanelWidth: number;
+  rightPanelWidth: number;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -46,6 +48,8 @@ type State = {
   setLeftPanel: (v: boolean) => void;
   toggleRightPanel: () => void;
   setRightPanel: (v: boolean) => void;
+  setLeftPanelWidth: (v: number) => void;
+  setRightPanelWidth: (v: number) => void;
   reset: () => void;
 };
 
@@ -71,6 +75,8 @@ export const useGraphStore = create<State>()(
   autoRotate: false,
   leftPanelOpen: false,
   rightPanelOpen: false,
+  leftPanelWidth: 288,
+  rightPanelWidth: 384,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -102,6 +108,8 @@ export const useGraphStore = create<State>()(
   setLeftPanel: (v) => set({ leftPanelOpen: v }),
   toggleRightPanel: () => set((s) => ({ rightPanelOpen: !s.rightPanelOpen })),
   setRightPanel: (v) => set({ rightPanelOpen: v }),
+  setLeftPanelWidth: (v) => set({ leftPanelWidth: Math.max(220, Math.min(560, v)) }),
+  setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(260, Math.min(640, v)) }),
   reset: () =>
     set({
       selectedId: null,
@@ -117,6 +125,8 @@ export const useGraphStore = create<State>()(
       partialize: (s) => ({
         leftPanelOpen: s.leftPanelOpen,
         rightPanelOpen: s.rightPanelOpen,
+        leftPanelWidth: s.leftPanelWidth,
+        rightPanelWidth: s.rightPanelWidth,
       }),
       skipHydration: typeof window === "undefined",
     },
