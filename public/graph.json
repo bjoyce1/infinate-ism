@@ -29197,6 +29197,14 @@
       "weight": 2.5,
       "confidence": "high",
       "confidence_score": 0.9
+    },
+    {
+      "source": "site_spc_houston",
+      "target": "site_bookspc_com",
+      "relation": "booking",
+      "weight": 4.0,
+      "confidence": "high",
+      "confidence_score": 0.95
     }
   ],
   "hyperedges": [],
