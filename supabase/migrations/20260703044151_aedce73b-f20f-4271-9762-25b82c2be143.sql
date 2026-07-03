@@ -1,0 +1,1 @@
+UPDATE public.node_image_overrides SET image_url = '/__l5e/assets-v1/f7cc25fe-5bb1-46bd-bd76-b5db19c3cc6e/absoulutelycaptivating-logo.png', updated_at = now() WHERE node_id = 'site_absoulutelycaptivating_com';
