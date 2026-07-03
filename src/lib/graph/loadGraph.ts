@@ -1,4 +1,5 @@
 import type { Category, GraphNode, NormalizedGraph, RawGraph } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
 /** True if a node's label or source_file points at a TypeScript file. */
 export function isTsSourceNode(n: { label?: string | null; source_file?: string | null }): boolean {
@@ -94,6 +95,15 @@ export async function loadGraph(): Promise<NormalizedGraph> {
   if (!res.ok) throw new Error(`Failed to load graph.json: ${res.status}`);
   const raw = (await res.json()) as RawGraph;
 
+  // Merge in per-node image overrides stored in the DB (best-effort; ignore errors).
+  let overrides = new Map<string, string>();
+  try {
+    const { data: rows } = await supabase.from("node_image_overrides").select("node_id,image_url");
+    if (rows) overrides = new Map(rows.map((r) => [r.node_id, r.image_url]));
+  } catch {
+    /* offline / not signed in — fall back to bundled art only */
+  }
+
   const degrees = new Map<string, number>();
   const neighbors = new Map<string, Set<string>>();
   for (const l of raw.links) {
@@ -111,7 +121,11 @@ export async function loadGraph(): Promise<NormalizedGraph> {
   const nodes: GraphNode[] = raw.nodes.map((n) => {
     const category = inferCategory(n.label ?? "", n.file_type);
     categoryCounts[category] += 1;
-    return { ...n, category, degree: degrees.get(n.id) ?? 0 };
+    const override = overrides.get(n.id);
+    const withOverride = override
+      ? { ...n, image: override, artwork: override }
+      : n;
+    return { ...withOverride, category, degree: degrees.get(n.id) ?? 0 };
   });
 
   const byId = new Map(nodes.map((n) => [n.id, n]));
