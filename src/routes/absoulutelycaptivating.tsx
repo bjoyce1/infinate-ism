@@ -5,7 +5,7 @@ const SITE = "https://infinate-ism.lovable.app";
 const OG_IMAGE = `${SITE}${acOg.url}`;
 const TITLE = "AbSoulutely CAPtivating · Creative System — Mnemosyne";
 const DESC =
-  "Explore the AbSoulutely CAPtivating creative system inside Mnemosyne: roles, tools, the Define → Translate → Build → Launch flow, and every connection back to the mrcap1.com hub.";
+  "Explore the AbSoulutely CAPtivating creative system in Mnemosyne: roles, tools, and the Define → Translate → Build → Launch flow.";
 
 export const Route = createFileRoute("/absoulutelycaptivating")({
   head: () => ({
@@ -25,6 +25,25 @@ export const Route = createFileRoute("/absoulutelycaptivating")({
       { name: "twitter:image", content: OG_IMAGE },
     ],
     links: [{ rel: "canonical", href: `${SITE}/absoulutelycaptivating` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: TITLE,
+          description: DESC,
+          image: OG_IMAGE,
+          url: `${SITE}/absoulutelycaptivating`,
+          author: { "@type": "Person", name: "Cornelius A. Pratt" },
+          publisher: {
+            "@type": "Organization",
+            name: "Mnemosyne",
+            url: SITE,
+          },
+        }),
+      },
+    ],
   }),
   component: RedirectToGraph,
 });
