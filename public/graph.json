@@ -10243,7 +10243,9 @@
       ],
       "year": 2018,
       "weight": 2.0,
-      "color": "#F4C542"
+      "color": "#F4C542",
+      "image": "/__l5e/assets-v1/70193b0f-61cc-44a7-b879-15ea9353714c/today-was-a-great-day.jpg",
+      "artwork": "/__l5e/assets-v1/70193b0f-61cc-44a7-b879-15ea9353714c/today-was-a-great-day.jpg"
     },
     {
       "label": "No More Bloodshed (2016)",
@@ -15299,7 +15301,9 @@
         "Don Ke"
       ],
       "description": "Marcus Lakee Edwards \u2014 'Southside', 'Pimp tha Pen'. The Don Ke of the SUC.",
-      "weight": 2.0
+      "weight": 2.0,
+      "image": "/__l5e/assets-v1/c9c751a1-0038-4402-93d7-a733d1611032/lil-keke.jpg",
+      "artwork": "/__l5e/assets-v1/c9c751a1-0038-4402-93d7-a733d1611032/lil-keke.jpg"
     },
     {
       "id": "suc_member_esg",
@@ -15432,7 +15436,9 @@
         "Swishahouse",
         "Grillz"
       ],
-      "description": "Paul Michael Slayton \u2014 Houston rap icon, People's Champ, Swishahouse legend."
+      "description": "Paul Michael Slayton \u2014 Houston rap icon, People's Champ, Swishahouse legend.",
+      "image": "/__l5e/assets-v1/b641f0f4-a16c-4f59-98c2-6be9f651ff31/paul-wall.jpg",
+      "artwork": "/__l5e/assets-v1/b641f0f4-a16c-4f59-98c2-6be9f651ff31/paul-wall.jpg"
     },
     {
       "id": "artist_lisa_dinero",
