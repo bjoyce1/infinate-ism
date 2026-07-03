@@ -8,6 +8,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ResizeHandle } from "./ResizeHandle";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 function LinkCount({
   children,
@@ -155,6 +157,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
 
   const leftPanelOpen = useGraphStore((s) => s.leftPanelOpen);
   const setLeftPanel = useGraphStore((s) => s.setLeftPanel);
+  const leftPanelWidth = useGraphStore((s) => s.leftPanelWidth);
+  const setLeftPanelWidth = useGraphStore((s) => s.setLeftPanelWidth);
+  const isDesktop = useIsDesktop();
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -167,10 +172,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
         />
       )}
       <aside
-        className={`fixed md:relative z-40 top-0 left-0 h-full w-[85vw] max-w-xs md:w-64 lg:w-72 border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
+        style={isDesktop ? { width: leftPanelWidth } : undefined}
+        className={`fixed md:relative z-40 top-0 left-0 h-full w-[85vw] max-w-xs border-r border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
           leftPanelOpen ? "translate-x-0" : "-translate-x-full"
         } overflow-y-auto`}
       >
+      <ResizeHandle side="left" width={leftPanelWidth} onChange={setLeftPanelWidth} min={220} max={560} />
       <div className="p-6 border-b border-obsidian-border">
         <div className="flex items-center gap-2 mb-8">
           <div className="size-3 rounded-full bg-neon-primary shadow-[0_0_10px_#3DED97]" />
