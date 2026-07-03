@@ -11986,7 +11986,8 @@
       "description": "SPC Member \u00b7 In Memory",
       "url": "https://bookspc.com/artists/dj-screw",
       "image": "/__l5e/assets-v1/2d52ea7d-837e-40b6-b654-ec2b4780a12c/dj-screw.png",
-      "artwork": "/__l5e/assets-v1/2d52ea7d-837e-40b6-b654-ec2b4780a12c/dj-screw.png"
+      "artwork": "/__l5e/assets-v1/2d52ea7d-837e-40b6-b654-ec2b4780a12c/dj-screw.png",
+      "weight": 1.2
     },
     {
       "id": "spc_artist_egypt_e",
