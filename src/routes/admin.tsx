@@ -124,6 +124,15 @@ function AdminPage() {
           <p className="text-[11px] text-muted-text leading-relaxed">
             Not an admin yet? Grant yourself the role once by inserting a row in <code className="font-mono">user_roles</code> with your user id and role <code className="font-mono">admin</code>.
           </p>
+
+          <div className="pt-4 border-t border-obsidian-border">
+            <Link
+              to="/admin/images"
+              className="inline-block px-3 py-2 border border-obsidian-border text-xs font-mono uppercase tracking-widest rounded hover:bg-white/5"
+            >
+              → Bulk image upload
+            </Link>
+          </div>
         </div>
       )}
     </div>
