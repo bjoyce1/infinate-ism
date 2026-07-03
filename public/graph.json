@@ -14937,6 +14937,151 @@
       "norm_label": "yolanda mable",
       "weight": 0.6,
       "color": "#C8A24B"
+    },
+    {
+      "id": "site_mortuary_media",
+      "label": "mortuary-media.lovable.app",
+      "file_type": "other",
+      "source_file": "https://mortuary-media.lovable.app",
+      "source_location": "web",
+      "_origin": "site",
+      "community": 206,
+      "norm_label": "mortuary-media",
+      "weight": 5.0,
+      "url": "https://mortuary-media.lovable.app",
+      "color": "#C9A961",
+      "is_hub": true,
+      "tagline": "Memorial Storytelling Studio \u2014 honor a life with beauty."
+    },
+    {
+      "id": "mm_service_tribute_films",
+      "label": "Tribute Films",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/tribute-films",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "tribute films",
+      "url": "https://mortuary-media.lovable.app/services/tribute-films",
+      "tagline": "Cinematic stories that celebrate a life.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_service_memorial_pages",
+      "label": "Memorial Story Pages",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/memorial-pages",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "memorial story pages",
+      "url": "https://mortuary-media.lovable.app/services/memorial-pages",
+      "tagline": "Beautiful pages to share and remember.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_service_printed",
+      "label": "Printed Tributes",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/printed-tributes",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "printed tributes",
+      "url": "https://mortuary-media.lovable.app/services/printed-tributes",
+      "tagline": "Thoughtful keepsakes that last forever.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_service_livestream",
+      "label": "Livestream & Service Coverage",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/livestream",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "livestream & service coverage",
+      "url": "https://mortuary-media.lovable.app/services/livestream",
+      "tagline": "Present for those who can't be there.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_service_websites",
+      "label": "Memorial Websites",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/memorial-websites",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "memorial websites",
+      "url": "https://mortuary-media.lovable.app/services/memorial-websites",
+      "tagline": "Enduring digital home for a loved one's story.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_service_obituary",
+      "label": "Obituary Writing",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/services/obituary-writing",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "obituary writing",
+      "url": "https://mortuary-media.lovable.app/services/obituary-writing",
+      "tagline": "Words that honor a life with grace.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_studio_life_story",
+      "label": "The Life Story Studio",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/life-story-studio",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "the life story studio",
+      "url": "https://mortuary-media.lovable.app/life-story-studio",
+      "tagline": "AI-guided, hand-finished life stories, eulogies & obituaries.",
+      "color": "#C9A961"
+    },
+    {
+      "id": "mm_page_our_work",
+      "label": "Our Work",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/our-work",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "our work",
+      "url": "https://mortuary-media.lovable.app/our-work",
+      "tagline": "Memorial stories we've crafted.",
+      "color": "#1E293B"
+    },
+    {
+      "id": "mm_page_contact",
+      "label": "Book a Consultation",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/contact",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "book a consultation",
+      "url": "https://mortuary-media.lovable.app/contact",
+      "tagline": "Begin the conversation.",
+      "color": "#1E293B"
+    },
+    {
+      "id": "mm_page_about",
+      "label": "About Mortuary Media",
+      "file_type": "blog",
+      "source_file": "https://mortuary-media.lovable.app/about",
+      "source_location": "web",
+      "_origin": "mortuary-media",
+      "community": 206,
+      "norm_label": "about mortuary media",
+      "url": "https://mortuary-media.lovable.app/about",
+      "tagline": "Who we are and why we care.",
+      "color": "#1E293B"
     }
   ],
   "links": [
@@ -28909,6 +29054,85 @@
       "target": "yates_1992_yolanda_mable",
       "relation": "alumni",
       "weight": 1.0
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_mortuary_media",
+      "relation": "connected_site",
+      "weight": 3.0,
+      "_origin": "hub_spawn"
+    },
+    {
+      "source": "site_mrcap1_com",
+      "target": "site_mortuary_media",
+      "relation": "spawn",
+      "weight": 2.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_tribute_films",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_memorial_pages",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_printed",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_livestream",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_websites",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_service_obituary",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_studio_life_story",
+      "relation": "offers_service",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_page_our_work",
+      "relation": "has_page",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_page_contact",
+      "relation": "has_page",
+      "weight": 1.0
+    },
+    {
+      "source": "site_mortuary_media",
+      "target": "mm_page_about",
+      "relation": "has_page",
+      "weight": 1.0
+    },
+    {
+      "source": "site_absoulutelycaptivating_com",
+      "target": "mm_studio_life_story",
+      "relation": "informs",
+      "weight": 0.5
     }
   ],
   "hyperedges": [],
