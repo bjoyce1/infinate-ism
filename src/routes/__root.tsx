@@ -78,18 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "infinite-ism-v1" },
-      { name: "description", content: "A dark-mode explorer for your knowledge graph." },
+      { title: "Mnemosyne — Second Brain" },
+      { name: "description", content: "Mnemosyne is a dark-mode second brain: a live, force-directed knowledge graph of your notes, code, blogs, music, and art with AI-powered semantic search." },
       { name: "author", content: "Cornelius A. Pratt" },
-      { property: "og:title", content: "infinite-ism-v1" },
-      { property: "og:description", content: "A dark-mode explorer for your knowledge graph." },
+      { property: "og:title", content: "Mnemosyne — Second Brain" },
+      { property: "og:description", content: "A dark-mode second brain: a live knowledge graph of your notes, code, blogs, music, and art with AI-powered semantic search." },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Mnemosyne" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@mrcap1" },
-      { name: "twitter:title", content: "infinite-ism-v1" },
-      { name: "twitter:description", content: "A dark-mode explorer for your knowledge graph." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
+      { name: "twitter:title", content: "Mnemosyne — Second Brain" },
+      { name: "twitter:description", content: "A dark-mode second brain: a live knowledge graph of your notes, code, blogs, music, and art with AI-powered semantic search." },
     ],
     links: [
       {
@@ -101,6 +100,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "WebSite",
+              name: "Mnemosyne",
+              url: "https://infinate-ism.lovable.app",
+              description: "A dark-mode second brain: a live knowledge graph of your notes, code, blogs, music, and art.",
+            },
+            {
+              "@type": "Organization",
+              name: "Mnemosyne",
+              url: "https://infinate-ism.lovable.app",
+              founder: { "@type": "Person", name: "Cornelius A. Pratt" },
+            },
+          ],
+        }),
       },
     ],
   }),
