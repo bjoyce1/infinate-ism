@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "mnemosyne-mcp",
+      "version": "0.1.0",
+      "title": "Mnemosyne Second Brain"
+    },
+    "tools": [
+      {
+        "name": "search_graph",
+        "title": "Search knowledge graph",
+        "description": "Semantic search over the Mnemosyne / Second Brain knowledge graph. Returns matching node ids, labels, and similarity scores.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Natural-language question or keywords to search the graph for."
+            },
+            "limit": {
+              "default": 10,
+              "description": "Maximum number of matches to return.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "query"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_node",
+        "title": "Get node details",
+        "description": "Fetch a single node from the knowledge graph by id, including its immediate neighbors and connecting links.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "node_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The exact node id, e.g. 'site_mrcap1_com'."
+            }
+          },
+          "required": [
+            "node_id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
