@@ -14940,18 +14940,20 @@
     },
     {
       "id": "site_mortuary_media",
-      "label": "mortuary-media.lovable.app",
+      "label": "Mortuary Media LLC",
       "file_type": "other",
       "source_file": "https://mortuary-media.lovable.app",
       "source_location": "web",
       "_origin": "site",
       "community": 206,
-      "norm_label": "mortuary-media",
+      "norm_label": "mortuary media llc",
       "weight": 5.0,
       "url": "https://mortuary-media.lovable.app",
-      "color": "#C9A961",
+      "color": "#2DBFC4",
       "is_hub": true,
-      "tagline": "Memorial Storytelling Studio \u2014 honor a life with beauty."
+      "tagline": "Memorial Storytelling Studio \u2014 honor a life with beauty.",
+      "image": "/__l5e/assets-v1/6835594b-cb82-49bb-8390-2d2f4e0d819b/mortuary-media-logo.png",
+      "artwork": "/__l5e/assets-v1/6835594b-cb82-49bb-8390-2d2f4e0d819b/mortuary-media-logo.png"
     },
     {
       "id": "mm_service_tribute_films",
