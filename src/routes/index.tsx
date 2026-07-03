@@ -28,7 +28,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
       { property: "og:title", content: "Mnemosyne — Second Brain" },
       { property: "og:description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
+      { property: "og:url", content: "https://infinate-ism.lovable.app/" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
     ],
+    links: [{ rel: "canonical", href: "https://infinate-ism.lovable.app/" }],
   }),
   component: Index,
 });
@@ -108,6 +112,7 @@ function Index() {
 
   return (
     <div className="h-screen w-full bg-obsidian-bg text-white font-sora flex overflow-hidden">
+      <h1 className="sr-only">Mnemosyne — Explore Your Second Brain</h1>
       <LeftSidebar graph={graph} />
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
         {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}

@@ -7,7 +7,17 @@ import { embedNodesBatch, embeddingStats } from "@/lib/ai.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Mnemosyne" }] }),
+  head: () => ({
+    meta: [
+      { title: "Admin — Mnemosyne" },
+      { name: "description", content: "Admin tools for Mnemosyne: rebuild the semantic AI index across every node in your knowledge graph." },
+      { property: "og:title", content: "Admin — Mnemosyne" },
+      { property: "og:description", content: "Rebuild the semantic AI index across every node in your Mnemosyne knowledge graph." },
+      { property: "og:url", content: "https://infinate-ism.lovable.app/admin" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+    links: [{ rel: "canonical", href: "https://infinate-ism.lovable.app/admin" }],
+  }),
   component: AdminPage,
 });
 

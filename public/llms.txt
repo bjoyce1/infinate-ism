@@ -1,0 +1,10 @@
+# Mnemosyne
+
+> A dark-mode second brain: a live, force-directed knowledge graph of notes, code, blogs, music, and art, with AI-powered semantic search.
+
+Mnemosyne visualizes the connections between Cornelius A. Pratt's projects, sites, and creative work as an interactive 2D/3D constellation. It combines fuzzy search, semantic (embedding-based) search, focus mode, particle-flow links, and per-node notes powered by Lovable Cloud.
+
+## Pages
+
+- [Home / Graph](/): The main 2D/3D knowledge graph explorer.
+- [AbSoulutely CAPtivating](/absoulutelycaptivating): The AbSoulutely CAPtivating creative system — roles, tools, and the Define → Translate → Build → Launch flow.

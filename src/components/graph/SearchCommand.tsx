@@ -125,6 +125,7 @@ export function SearchCommand({ graph }: { graph: NormalizedGraph }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search your mind..."
+            aria-label="Search nodes"
             className="flex-1 bg-transparent outline-none text-sm font-mono placeholder:text-muted-text/60"
           />
           <span className="text-[10px] font-mono text-muted-text">ESC</span>

@@ -7,7 +7,12 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in — Mnemosyne" },
       { name: "description", content: "Sign in to save notes and AI summaries in your Second Brain." },
+      { property: "og:title", content: "Sign in — Mnemosyne" },
+      { property: "og:description", content: "Sign in to Mnemosyne to save notes, tags, and AI summaries on any node in your knowledge graph." },
+      { property: "og:url", content: "https://infinate-ism.lovable.app/auth" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
+    links: [{ rel: "canonical", href: "https://infinate-ism.lovable.app/auth" }],
   }),
   component: AuthPage,
 });
