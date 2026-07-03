@@ -17,6 +17,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
   if (id === 205) return "AbSoulutely CAPtivating · Creative System";
   if (id === 206) return "Mortuary Media · Memorial Storytelling";
   if (id === 207) return "South Park Coalition · Houston Hip-Hop";
+  if (id === 208) return "Screwed Up Click · DJ Screw Legacy";
   if (id === 300) return "Yates HS · Class of 1992 (Another Planet)";
   if (members.length === 0) return `Cluster ${String(id).padStart(3, "0")}`;
 
