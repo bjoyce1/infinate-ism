@@ -10492,7 +10492,8 @@
       "weight": 8.0,
       "url": "https://713mixhouse.com",
       "color": "#E11D48",
-      "image": "/__l5e/assets-v1/a925cc51-05b6-46fa-aba8-f25af76a712d/713mixhouse-logo.png"
+      "image": "/__l5e/assets-v1/a925cc51-05b6-46fa-aba8-f25af76a712d/713mixhouse-logo.png",
+      "artwork": "/__l5e/assets-v1/a925cc51-05b6-46fa-aba8-f25af76a712d/713mixhouse-logo.png"
     },
     {
       "id": "site_themaasaproject_com",
@@ -10559,7 +10560,9 @@
       "norm_label": "absoulutelycaptivating.com",
       "weight": 5.0,
       "url": "https://absoulutelycaptivating.com",
-      "color": "#A21CAF"
+      "color": "#A21CAF",
+      "image": "/__l5e/assets-v1/28584957-6ca1-4e03-a813-0333417be473/ac-og.jpg",
+      "artwork": "/__l5e/assets-v1/28584957-6ca1-4e03-a813-0333417be473/ac-og.jpg"
     },
     {
       "id": "selflove_story_the_heart_within",
