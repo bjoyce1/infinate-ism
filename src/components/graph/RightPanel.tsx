@@ -4,6 +4,8 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { DetailPanel } from "./DetailPanel";
 import { NotesPanel } from "./NotesPanel";
 import { AskPanel } from "./AskPanel";
+import { ResizeHandle } from "./ResizeHandle";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 type Tab = "info" | "notes" | "ask";
 
@@ -11,6 +13,9 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
   const [tab, setTab] = useState<Tab>("info");
   const open = useGraphStore((s) => s.rightPanelOpen);
   const setOpen = useGraphStore((s) => s.setRightPanel);
+  const width = useGraphStore((s) => s.rightPanelWidth);
+  const setWidth = useGraphStore((s) => s.setRightPanelWidth);
+  const isDesktop = useIsDesktop();
   return (
     <>
       {open && (
@@ -22,10 +27,12 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
         />
       )}
       <aside
-        className={`fixed md:relative z-40 top-0 right-0 h-full w-[92vw] max-w-sm md:w-80 lg:w-96 border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
+        style={isDesktop ? { width } : undefined}
+        className={`fixed md:relative z-40 top-0 right-0 h-full w-[92vw] max-w-sm border-l border-obsidian-border bg-obsidian-surface flex flex-col shrink-0 transform-gpu will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:shadow-none shadow-2xl md:translate-x-0 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
+      <ResizeHandle side="right" width={width} onChange={setWidth} min={260} max={640} />
       <div className="flex border-b border-obsidian-border shrink-0">
         {(["info", "notes", "ask"] as const).map((t) => (
           <button
