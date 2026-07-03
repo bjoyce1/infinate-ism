@@ -1,8 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Mnemosyne" },
@@ -19,6 +22,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = useSearch({ from: "/auth" });
+  const target = next || "/";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -27,9 +32,9 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+      if (data.session) window.location.replace(target);
     });
-  }, [navigate]);
+  }, [target]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,11 +45,14 @@ function AuthPage() {
       const { error } = await fn.call(supabase.auth, {
         email,
         password: pass,
-        options: mode === "signup" ? { emailRedirectTo: `${window.location.origin}/` } : undefined,
+        options:
+          mode === "signup"
+            ? { emailRedirectTo: `${window.location.origin}${target}` }
+            : undefined,
       });
       if (error) throw error;
       if (mode === "signup") setMsg("Check your email to confirm, then sign in.");
-      else navigate({ to: "/" });
+      else window.location.replace(target);
     } catch (err) {
       setMsg(err instanceof Error ? err.message : String(err));
     } finally {
