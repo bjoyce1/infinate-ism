@@ -16,7 +16,7 @@ type Graph = { nodes: GraphNode[]; links: GraphLink[] };
 let cache: Graph | null = null;
 async function loadGraph(): Promise<Graph> {
   if (cache) return cache;
-  const res = await fetch("https://infinate-ism.lovable.app/graph.json");
+  const res = await fetch("https://infinite-ism.lovable.app/graph.json");
   if (!res.ok) throw new Error(`graph.json fetch failed: ${res.status}`);
   cache = (await res.json()) as Graph;
   return cache;
