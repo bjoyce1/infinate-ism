@@ -65,7 +65,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   });
   const [voiceReady, setVoiceReady] = useState(false);
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
-  const recognitionRef = useRef<ReturnType<SpeechRecognitionCtor> | null>(null);
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
   const userUnlockedRef = useRef(false);
 
