@@ -57,6 +57,10 @@ function stripForSpeech(text: string): string {
 export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
   const select = useGraphStore((s) => s.select);
+  const focusMode = useGraphStore((s) => s.focusMode);
+  const toggleFocus = useGraphStore((s) => s.toggleFocus);
+  const setCommunity = useGraphStore((s) => s.setCommunity);
+  const setRightPanel = useGraphStore((s) => s.setRightPanel);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
   const [muted, setMuted] = useState<boolean>(() => {
@@ -67,6 +71,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const flownIdsRef = useRef<Set<string>>(new Set());
   const userUnlockedRef = useRef(false);
 
   const SR = useMemo(() => getSpeechRecognition(), []);
@@ -131,6 +136,36 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
     const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
     if (text.trim()) speak(text);
   }, [busy, messages, speak]);
+
+  // Fly the constellation to source nodes once the answer settles.
+  useEffect(() => {
+    if (busy) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (flownIdsRef.current.has(last.id)) return;
+    const meta = (last as unknown as { metadata?: { sources?: string[]; topSourceId?: string | null } }).metadata;
+    const rawSources = meta?.sources ?? [];
+    const validSources = rawSources.filter((id) => graph.byId.has(id));
+    if (validSources.length === 0) return;
+    flownIdsRef.current.add(last.id);
+    const topId = (meta?.topSourceId && graph.byId.has(meta.topSourceId) ? meta.topSourceId : validSources[0]) as string;
+    if (validSources.length >= 4) {
+      // Cluster reveal: highlight the community, don't tunnel-vision on one node.
+      const comm = graph.byId.get(topId)?.community ?? null;
+      if (focusMode) toggleFocus();
+      if (comm != null) {
+        // setCommunity toggles; only set if not already active
+        const currentComm = useGraphStore.getState().activeCommunity;
+        if (currentComm !== comm) setCommunity(comm);
+      }
+      select(topId);
+    } else {
+      // Single source: fly + focus neighborhood
+      select(topId);
+      if (!focusMode) toggleFocus();
+    }
+    setRightPanel(true);
+  }, [busy, messages, graph, focusMode, toggleFocus, select, setCommunity, setRightPanel]);
 
   // Cancel speech on unmount / mute
   useEffect(() => {
@@ -296,7 +331,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
           return (
             <div key={m.id} className="text-sm leading-relaxed">
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-1">
-                {m.role === "user" ? "You" : "Mnemosyne"}
+                {m.role === "user" ? "CAP" : "ISM"}
               </div>
               <div className="whitespace-pre-wrap break-words">{renderText(text)}</div>
             </div>
