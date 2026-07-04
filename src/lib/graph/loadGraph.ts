@@ -24,7 +24,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
 
   const labels = members.map((m) => m.label.toLowerCase());
   const text = labels.join(" ");
-  const catCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, other: 0 };
+  const catCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, capture: 0, other: 0 };
   for (const m of members) catCounts[m.category] += 1;
 
   const groups = [
@@ -69,6 +69,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
       blog: "Blog & Press",
       music: "Music Content",
       image: "Visual Assets",
+      capture: "Captures",
       other: "Mixed Content",
     };
     return map[dominant[0]];
@@ -117,7 +118,7 @@ export async function loadGraph(): Promise<NormalizedGraph> {
     neighbors.get(t)!.add(s);
   }
 
-  const categoryCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, other: 0 };
+  const categoryCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, capture: 0, other: 0 };
   const nodes: GraphNode[] = raw.nodes.map((n) => {
     const category = inferCategory(n.label ?? "", n.file_type);
     categoryCounts[category] += 1;
@@ -156,5 +157,6 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   blog: "#A78BFA",
   music: "#F59E0B",
   image: "#60A5FA",
+  capture: "#FCD34D",
   other: "#8E9196",
 };
