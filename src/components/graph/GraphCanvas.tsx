@@ -18,6 +18,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const fgRef = useRef<ForceGraphHandle | null>(null);
   const [ForceGraph, setForceGraph] = useState<React.ComponentType<Record<string, unknown>> | null>(null);
   const [imageTick, setImageTick] = useState(0);
+  const [, setPulseTick] = useState(0);
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const hoveredId = useGraphStore((s) => s.hoveredId);
@@ -33,6 +34,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
+  useEffect(() => {
+    if (!pulseNodeId) return;
+    let raf = 0;
+    const loop = () => {
+      setPulseTick((t) => t + 1);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [pulseNodeId]);
 
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const getImage = (url: string): HTMLImageElement | null => {
