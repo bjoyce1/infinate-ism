@@ -414,6 +414,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
               <li>What is the Art of Ism?</li>
               <li>How does 713mixhouse relate to mrcap1?</li>
               <li>Summarize the AbSoulutely CAPtivating creative flow.</li>
+              <li>Remember that: [anything you want to save as a new star]</li>
             </ul>
             {SR && (
               <div className="pt-2 text-muted-text/80">Tip: tap 🎙 and speak.</div>
