@@ -29,7 +29,7 @@ export type RawGraph = {
   links: RawLink[];
 };
 
-export type Category = "code" | "blog" | "music" | "image" | "other";
+export type Category = "code" | "blog" | "music" | "image" | "capture" | "other";
 
 export type GraphNode = RawNode & {
   category: Category;
