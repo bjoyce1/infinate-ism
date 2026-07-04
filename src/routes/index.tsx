@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { loadGraph } from "@/lib/graph/loadGraph";
+import { loadGraph, withCaptures } from "@/lib/graph/loadGraph";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
@@ -12,6 +12,8 @@ import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
 import { BootGreeting } from "@/components/graph/BootGreeting";
+import { listMyCaptures } from "@/lib/ai.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 
@@ -39,7 +41,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [graph, setGraph] = useState<NormalizedGraph | null>(null);
+  const [baseGraph, setBaseGraph] = useState<NormalizedGraph | null>(null);
   const [error, setError] = useState<string | null>(null);
   useSwipeGestures();
   const viewMode = useGraphStore((s) => s.viewMode);
@@ -50,12 +52,19 @@ function Index() {
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
+  const captures = useGraphStore((s) => s.captures);
+  const setCaptures = useGraphStore((s) => s.setCaptures);
+
+  const graph = useMemo(
+    () => (baseGraph ? withCaptures(baseGraph, captures) : null),
+    [baseGraph, captures],
+  );
 
   useEffect(() => {
     let cancelled = false;
     loadGraph()
       .then((g) => {
-        if (!cancelled) setGraph(g);
+        if (!cancelled) setBaseGraph(g);
       })
       .catch((e: unknown) => {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -64,6 +73,34 @@ function Index() {
       cancelled = true;
     };
   }, []);
+
+  // Load user's captures whenever signed-in state changes.
+  useEffect(() => {
+    let cancelled = false;
+    const pull = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          if (!cancelled) setCaptures([]);
+          return;
+        }
+        const res = await listMyCaptures();
+        if (!cancelled) setCaptures(res.captures);
+      } catch {
+        if (!cancelled) setCaptures([]);
+      }
+    };
+    void pull();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        void pull();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [setCaptures]);
 
   // Hydrate store from URL once graph is loaded.
   useEffect(() => {

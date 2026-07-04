@@ -24,7 +24,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
 
   const labels = members.map((m) => m.label.toLowerCase());
   const text = labels.join(" ");
-  const catCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, other: 0 };
+  const catCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, capture: 0, other: 0 };
   for (const m of members) catCounts[m.category] += 1;
 
   const groups = [
@@ -69,6 +69,7 @@ function deriveCommunityLabel(id: number, members: GraphNode[]): string {
       blog: "Blog & Press",
       music: "Music Content",
       image: "Visual Assets",
+      capture: "Captures",
       other: "Mixed Content",
     };
     return map[dominant[0]];
@@ -117,7 +118,7 @@ export async function loadGraph(): Promise<NormalizedGraph> {
     neighbors.get(t)!.add(s);
   }
 
-  const categoryCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, other: 0 };
+  const categoryCounts: Record<Category, number> = { code: 0, blog: 0, music: 0, image: 0, capture: 0, other: 0 };
   const nodes: GraphNode[] = raw.nodes.map((n) => {
     const category = inferCategory(n.label ?? "", n.file_type);
     categoryCounts[category] += 1;
@@ -156,5 +157,56 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   blog: "#A78BFA",
   music: "#F59E0B",
   image: "#60A5FA",
+  capture: "#FCD34D",
   other: "#8E9196",
 };
+
+export type CaptureInput = {
+  id: string;
+  label: string;
+  note: string;
+  related_node_id: string | null;
+};
+
+/** Merge user capture notes into a normalized graph, returning a new graph. */
+export function withCaptures(base: NormalizedGraph, captures: CaptureInput[]): NormalizedGraph {
+  if (!captures.length) return base;
+
+  const nodes: GraphNode[] = base.nodes.slice();
+  const links = base.links.slice();
+  const byId = new Map(base.byId);
+  const neighbors = new Map<string, Set<string>>();
+  for (const [k, v] of base.neighbors) neighbors.set(k, new Set(v));
+  const categoryCounts = { ...base.categoryCounts };
+
+  for (const c of captures) {
+    if (byId.has(c.id)) continue;
+    const node: GraphNode = {
+      id: c.id,
+      label: c.label,
+      category: "capture",
+      degree: 0,
+      color: CATEGORY_COLORS.capture,
+      _origin: "capture",
+      weight: 1,
+    };
+    nodes.push(node);
+    byId.set(node.id, node);
+    categoryCounts.capture += 1;
+
+    const rel = c.related_node_id && byId.has(c.related_node_id) ? c.related_node_id : null;
+    if (rel) {
+      links.push({ source: rel, target: c.id, relation: "captured-near", weight: 1 });
+      if (!neighbors.has(rel)) neighbors.set(rel, new Set());
+      if (!neighbors.has(c.id)) neighbors.set(c.id, new Set());
+      neighbors.get(rel)!.add(c.id);
+      neighbors.get(c.id)!.add(rel);
+      node.degree = 1;
+      byId.set(rel, { ...byId.get(rel)!, degree: (byId.get(rel)!.degree ?? 0) + 1 });
+    } else if (!neighbors.has(c.id)) {
+      neighbors.set(c.id, new Set());
+    }
+  }
+
+  return { ...base, nodes, links, byId, neighbors, categoryCounts };
+}

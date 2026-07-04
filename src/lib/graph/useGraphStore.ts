@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Category } from "./types";
+import type { CaptureInput } from "./loadGraph";
 
 type State = {
   selectedId: string | null;
@@ -24,6 +25,8 @@ type State = {
   rightPanelOpen: boolean;
   leftPanelWidth: number;
   rightPanelWidth: number;
+  captures: CaptureInput[];
+  pulseNodeId: string | null;
   select: (id: string | null) => void;
   hover: (id: string | null) => void;
   toggleFocus: () => void;
@@ -50,6 +53,9 @@ type State = {
   setRightPanel: (v: boolean) => void;
   setLeftPanelWidth: (v: number) => void;
   setRightPanelWidth: (v: number) => void;
+  setCaptures: (c: CaptureInput[]) => void;
+  addCapture: (c: CaptureInput) => void;
+  pulseNode: (id: string | null) => void;
   reset: () => void;
 };
 
@@ -77,6 +83,8 @@ export const useGraphStore = create<State>()(
   rightPanelOpen: false,
   leftPanelWidth: 288,
   rightPanelWidth: 384,
+  captures: [],
+  pulseNodeId: null,
   select: (id) => set({ selectedId: id }),
   hover: (id) => set({ hoveredId: id }),
   toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
@@ -110,6 +118,10 @@ export const useGraphStore = create<State>()(
   setRightPanel: (v) => set({ rightPanelOpen: v }),
   setLeftPanelWidth: (v) => set({ leftPanelWidth: Math.max(220, Math.min(560, v)) }),
   setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(260, Math.min(640, v)) }),
+  setCaptures: (c) => set({ captures: c }),
+  addCapture: (c) =>
+    set((s) => (s.captures.some((x) => x.id === c.id) ? s : { captures: [...s.captures, c] })),
+  pulseNode: (id) => set({ pulseNodeId: id }),
   reset: () =>
     set({
       selectedId: null,

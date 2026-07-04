@@ -63,6 +63,7 @@ export const Route = createFileRoute("/api/chat")({
           "When the notes don't cover something, say so plainly (\"That's not in the brain, CAP\") instead of guessing.",
           "Small talk and greetings get charm and brevity — do not cite nodes, do not pretend to search.",
           "When you do reference a graph node, wrap its id like [[node_id]] using only ids present in the context — never invent ids.",
+          "Nodes whose id starts with `capture:` are things CAP asked you to remember with a \"remember that…\" note — treat them as first-person memories, not external sources.",
           selectedNodeId ? `CAP currently has node [[${selectedNodeId}]] open.` : "",
           contextBlock ? `\n${contextBlock}` : "\nNo graph context matched — treat this as small talk unless CAP obviously means a note.",
         ]

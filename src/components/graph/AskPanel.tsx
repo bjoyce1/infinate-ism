@@ -1,8 +1,11 @@
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { captureNote } from "@/lib/ai.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type SpeechRecognitionCtor = new () => {
   lang: string;
@@ -61,6 +64,8 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const setCommunity = useGraphStore((s) => s.setCommunity);
   const setRightPanel = useGraphStore((s) => s.setRightPanel);
+  const addCapture = useGraphStore((s) => s.addCapture);
+  const pulseNode = useGraphStore((s) => s.pulseNode);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
   const [muted, setMuted] = useState<boolean>(() => {
@@ -103,7 +108,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
     [],
   );
 
-  const { messages, sendMessage, status, error, stop } = useChat({ transport });
+  const { messages, sendMessage, setMessages, status, error, stop } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
 
   const speak = useCallback(
@@ -190,10 +195,99 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
       const t = text.trim();
       if (!t || busy) return;
       unlockAudio();
+      // "remember that…" → Total Recall capture, not a model call.
+      const rememberMatch = t.match(/^\s*remember\s*(?:that|this)?\s*[:,\-—]?\s*(.+)$/is);
+      if (rememberMatch && rememberMatch[1].trim().length > 2) {
+        const body = rememberMatch[1].trim();
+        setInput("");
+        await handleCapture(t, body);
+        return;
+      }
       setInput("");
       await sendMessage({ text: t });
     },
+    // handleCapture is stable-enough; deps intentionally minimal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [busy, sendMessage, unlockAudio],
+  );
+
+  const witty = (title: string) => {
+    const lines = [
+      `Locked in, CAP — filed "${title}" next to its kin.`,
+      `Got it. That one's a new star now, CAP.`,
+      `Consider it remembered. New light in the sky.`,
+      `Saved, CAP. The brain just got a little sharper.`,
+      `Noted. Fresh node, warm from the press.`,
+    ];
+    return lines[Math.floor(Math.random() * lines.length)];
+  };
+
+  const handleCapture = useCallback(
+    async (fullUserText: string, body: string) => {
+      // Require sign-in.
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) {
+        toast.error("Sign in to save captures", {
+          description: "Total Recall stores notes to your account so they persist and reload.",
+        });
+        return;
+      }
+
+      // Echo the user's turn immediately.
+      const userMsg: UIMessage = {
+        id: `local-${Date.now()}`,
+        role: "user",
+        parts: [{ type: "text", text: fullUserText }],
+      };
+      setMessages((m) => [...m, userMsg]);
+
+      // Optimistic thinking bubble.
+      const thinkingId = `local-cap-${Date.now()}`;
+      setMessages((m) => [
+        ...m,
+        { id: thinkingId, role: "assistant", parts: [{ type: "text", text: "…capturing…" }] },
+      ]);
+
+      try {
+        const res = await captureNote({ data: { text: body } });
+        addCapture({
+          id: res.id,
+          label: res.label,
+          note: res.note,
+          related_node_id: res.related_node_id ?? null,
+        });
+
+        // Fly + focus + panel — after next paint so merged graph includes it.
+        setTimeout(() => {
+          select(res.id);
+          if (!focusMode) toggleFocus();
+          setRightPanel(true);
+          pulseNode(res.id);
+          setTimeout(() => pulseNode(null), 2500);
+        }, 60);
+
+        const line = witty(res.label);
+        setMessages((m) =>
+          m.map((msg) =>
+            msg.id === thinkingId
+              ? { ...msg, parts: [{ type: "text", text: line }] }
+              : msg,
+          ),
+        );
+        speak(line);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "capture failed";
+        setMessages((m) =>
+          m.map((mm) =>
+            mm.id === thinkingId
+              ? { ...mm, parts: [{ type: "text", text: `Couldn't save that one, CAP — ${msg}` }] }
+              : mm,
+          ),
+        );
+        toast.error(msg);
+      }
+    },
+    [setMessages, addCapture, select, focusMode, toggleFocus, setRightPanel, pulseNode, speak],
   );
 
   const submit = async (e: React.FormEvent) => {
@@ -320,6 +414,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
               <li>What is the Art of Ism?</li>
               <li>How does 713mixhouse relate to mrcap1?</li>
               <li>Summarize the AbSoulutely CAPtivating creative flow.</li>
+              <li>Remember that: [anything you want to save as a new star]</li>
             </ul>
             {SR && (
               <div className="pt-2 text-muted-text/80">Tip: tap 🎙 and speak.</div>
