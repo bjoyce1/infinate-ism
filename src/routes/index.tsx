@@ -11,6 +11,7 @@ import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
+import { BootGreeting } from "@/components/graph/BootGreeting";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 
@@ -121,6 +122,7 @@ function Index() {
       </main>
       <RightPanel graph={graph} />
       <SearchCommand graph={graph} />
+      <BootGreeting graph={graph} />
     </div>
   );
 }
