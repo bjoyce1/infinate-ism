@@ -215,3 +215,98 @@ export const upsertNodeNote = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, updated_at: row?.updated_at };
   });
+
+// ---------- Capture ("Total Recall") ----------
+
+function makeCaptureTitle(text: string): string {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  const words = cleaned.split(" ");
+  const first = words.slice(0, 8).join(" ");
+  const title = first.length > 60 ? first.slice(0, 57).trimEnd() + "…" : first;
+  // Capitalize first letter, no trailing period.
+  return title.replace(/^./, (c) => c.toUpperCase()).replace(/[.,;:!?]$/, "");
+}
+
+function randomUuid(): string {
+  // crypto.randomUUID is available in the worker runtime.
+  return (globalThis.crypto as Crypto).randomUUID();
+}
+
+export const captureNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ text: z.string().min(1).max(4000) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const key = getKey();
+    const uid = context.userId;
+    const nodeId = `capture:${uid}:${randomUuid()}`;
+    const title = makeCaptureTitle(data.text);
+    const embedText_ = `${title}\n\n${data.text}`;
+
+    // Embed the note first so we can find the nearest existing star.
+    const [vec] = await embedText(key, embedText_);
+
+    // Find nearest non-capture, non-self node from existing embeddings.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: matches } = await supabaseAdmin.rpc("match_nodes", {
+      query_embedding: vec as unknown as string,
+      match_count: 8,
+    });
+    const nearest = (matches ?? []).find(
+      (m: { node_id: string; user_id: string | null }) =>
+        !m.node_id.startsWith("capture:") && m.node_id !== nodeId,
+    );
+    const relatedId = (nearest?.node_id as string | undefined) ?? null;
+
+    // Persist the note (auth-scoped RLS via context.supabase).
+    const { error: noteErr } = await context.supabase.from("node_notes").insert({
+      user_id: uid,
+      node_id: nodeId,
+      summary: title,
+      note: data.text,
+      tags: ["capture"],
+      related_node_id: relatedId,
+    });
+    if (noteErr) throw new Error(noteErr.message);
+
+    // Persist the embedding under the user's own row.
+    const { error: embErr } = await supabaseAdmin.from("node_embeddings").upsert(
+      {
+        node_id: nodeId,
+        label: title,
+        text_hash: `capture-${Date.now()}`,
+        embedding: vec as unknown as string,
+        updated_at: new Date().toISOString(),
+        user_id: uid,
+      },
+      { onConflict: "node_id" },
+    );
+    if (embErr) throw new Error(embErr.message);
+
+    return {
+      id: nodeId,
+      label: title,
+      note: data.text,
+      related_node_id: relatedId,
+    };
+  });
+
+export const listMyCaptures = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("node_notes")
+      .select("node_id, summary, note, related_node_id, updated_at, tags")
+      .eq("user_id", context.userId)
+      .contains("tags", ["capture"])
+      .order("updated_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    const captures = (data ?? []).map((r) => ({
+      id: r.node_id,
+      label: r.summary ?? "Capture",
+      note: r.note ?? "",
+      related_node_id: (r as { related_node_id?: string | null }).related_node_id ?? null,
+    }));
+    return { captures };
+  });
