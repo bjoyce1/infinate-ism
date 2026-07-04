@@ -166,6 +166,7 @@ export type CaptureInput = {
   label: string;
   note: string;
   related_node_id: string | null;
+  updated_at?: string | null;
 };
 
 /** Merge user capture notes into a normalized graph, returning a new graph. */

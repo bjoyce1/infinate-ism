@@ -2,6 +2,7 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Menu, PanelRight } from "lucide-react";
+import { CapturesDrawer } from "./CapturesDrawer";
 
 export function TopBar() {
   const setSearchOpen = useGraphStore((s) => s.setSearchOpen);
@@ -87,6 +88,7 @@ export function TopBar() {
         >
           ANALYTICS
         </Link>
+        <CapturesDrawer />
         {viewMode === "3d" && (
           <button
             type="button"
