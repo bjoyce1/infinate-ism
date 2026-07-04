@@ -160,3 +160,53 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   capture: "#FCD34D",
   other: "#8E9196",
 };
+
+export type CaptureInput = {
+  id: string;
+  label: string;
+  note: string;
+  related_node_id: string | null;
+};
+
+/** Merge user capture notes into a normalized graph, returning a new graph. */
+export function withCaptures(base: NormalizedGraph, captures: CaptureInput[]): NormalizedGraph {
+  if (!captures.length) return base;
+
+  const nodes: GraphNode[] = base.nodes.slice();
+  const links = base.links.slice();
+  const byId = new Map(base.byId);
+  const neighbors = new Map<string, Set<string>>();
+  for (const [k, v] of base.neighbors) neighbors.set(k, new Set(v));
+  const categoryCounts = { ...base.categoryCounts };
+
+  for (const c of captures) {
+    if (byId.has(c.id)) continue;
+    const node: GraphNode = {
+      id: c.id,
+      label: c.label,
+      category: "capture",
+      degree: 0,
+      color: CATEGORY_COLORS.capture,
+      _origin: "capture",
+      weight: 1,
+    };
+    nodes.push(node);
+    byId.set(node.id, node);
+    categoryCounts.capture += 1;
+
+    const rel = c.related_node_id && byId.has(c.related_node_id) ? c.related_node_id : null;
+    if (rel) {
+      links.push({ source: rel, target: c.id, relation: "captured-near", weight: 1 });
+      if (!neighbors.has(rel)) neighbors.set(rel, new Set());
+      if (!neighbors.has(c.id)) neighbors.set(c.id, new Set());
+      neighbors.get(rel)!.add(c.id);
+      neighbors.get(c.id)!.add(rel);
+      node.degree = 1;
+      byId.set(rel, { ...byId.get(rel)!, degree: (byId.get(rel)!.degree ?? 0) + 1 });
+    } else if (!neighbors.has(c.id)) {
+      neighbors.set(c.id, new Set());
+    }
+  }
+
+  return { ...base, nodes, links, byId, neighbors, categoryCounts };
+}
