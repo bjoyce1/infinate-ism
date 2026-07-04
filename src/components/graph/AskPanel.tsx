@@ -1,13 +1,91 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+
+type SpeechRecognitionCtor = new () => {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((e: any) => void) | null;
+  onerror: ((e: any) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+function getSpeechRecognition(): SpeechRecognitionCtor | null {
+  if (typeof window === "undefined") return null;
+  const w = window as any;
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null;
+}
+
+function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  if (!voices.length) return null;
+  const en = voices.filter((v) => v.lang?.toLowerCase().startsWith("en"));
+  const pool = en.length ? en : voices;
+  // Prefer known deep/smooth voices
+  const preferred = [
+    /Google UK English Male/i,
+    /Microsoft Guy/i,
+    /Microsoft Davis/i,
+    /Daniel/i,
+    /Alex/i,
+    /Fred/i,
+    /Arthur/i,
+    /Rishi/i,
+  ];
+  for (const rx of preferred) {
+    const hit = pool.find((v) => rx.test(v.name));
+    if (hit) return hit;
+  }
+  const male = pool.find((v) => /male|guy|david|daniel|alex/i.test(v.name));
+  return male || pool[0];
+}
+
+function stripForSpeech(text: string): string {
+  return text
+    .replace(/\[\[([^\]|]+)\]\]/g, "") // remove node id markers
+    .replace(/`{1,3}[^`]*`{1,3}/g, "")
+    .replace(/[*_#>]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
   const select = useGraphStore((s) => s.select);
   const [input, setInput] = useState("");
+  const [listening, setListening] = useState(false);
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem("ask:muted") === "1";
+  });
+  const [voiceReady, setVoiceReady] = useState(false);
+  const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
+  const userUnlockedRef = useRef(false);
+
+  const SR = useMemo(() => getSpeechRecognition(), []);
+  const ttsSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+
+  // Load voices
+  useEffect(() => {
+    if (!ttsSupported) return;
+    const load = () => {
+      const v = window.speechSynthesis.getVoices();
+      voiceRef.current = pickVoice(v);
+      if (voiceRef.current) setVoiceReady(true);
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, [ttsSupported]);
 
   const transport = useMemo(
     () =>
@@ -23,16 +101,122 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
   const { messages, sendMessage, status, error, stop } = useChat({ transport });
   const busy = status === "submitted" || status === "streaming";
 
+  const speak = useCallback(
+    (text: string) => {
+      if (!ttsSupported || muted) return;
+      const clean = stripForSpeech(text);
+      if (!clean) return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(clean);
+        if (voiceRef.current) u.voice = voiceRef.current;
+        u.rate = 1;
+        u.pitch = 0.85;
+        u.volume = 1;
+        window.speechSynthesis.speak(u);
+      } catch {
+        // ignore
+      }
+    },
+    [muted, ttsSupported],
+  );
+
+  // Speak new assistant messages once streaming is done.
+  useEffect(() => {
+    if (busy) return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    spokenIdsRef.current.add(last.id);
+    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+    if (text.trim()) speak(text);
+  }, [busy, messages, speak]);
+
+  // Cancel speech on unmount / mute
+  useEffect(() => {
+    if (muted && ttsSupported) window.speechSynthesis.cancel();
+  }, [muted, ttsSupported]);
+
+  const unlockAudio = useCallback(() => {
+    if (userUnlockedRef.current || !ttsSupported) return;
+    try {
+      // Play a silent utterance to unlock audio on first interaction.
+      const u = new SpeechSynthesisUtterance(" ");
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+      userUnlockedRef.current = true;
+    } catch {
+      // ignore
+    }
+  }, [ttsSupported]);
+
+  const submitText = useCallback(
+    async (text: string) => {
+      const t = text.trim();
+      if (!t || busy) return;
+      unlockAudio();
+      setInput("");
+      await sendMessage({ text: t });
+    },
+    [busy, sendMessage, unlockAudio],
+  );
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const text = input.trim();
-    if (!text || busy) return;
-    setInput("");
-    await sendMessage({ text });
+    await submitText(input);
+  };
+
+  const toggleMic = useCallback(() => {
+    if (!SR) return;
+    unlockAudio();
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+    try {
+      const rec = new SR();
+      rec.lang = "en-US";
+      rec.interimResults = true;
+      rec.continuous = false;
+      let finalText = "";
+      rec.onresult = (e: any) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) finalText += r[0].transcript;
+          else interim += r[0].transcript;
+        }
+        setInput((finalText + interim).trim());
+      };
+      rec.onerror = () => setListening(false);
+      rec.onend = () => {
+        setListening(false);
+        recognitionRef.current = null;
+        const t = finalText.trim();
+        if (t) void submitText(t);
+      };
+      recognitionRef.current = rec;
+      setListening(true);
+      rec.start();
+    } catch {
+      setListening(false);
+    }
+  }, [SR, listening, submitText, unlockAudio]);
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try {
+        localStorage.setItem("ask:muted", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      if (next && ttsSupported) window.speechSynthesis.cancel();
+      return next;
+    });
   };
 
   const renderText = (text: string) => {
-    // Split around [[node_id]] markers and render clickable chips for known nodes.
     const parts = text.split(/(\[\[[^\]]+\]\])/g);
     return parts.map((p, i) => {
       const m = p.match(/^\[\[([^\]]+)\]\]$/);
@@ -53,15 +237,44 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
     });
   };
 
+  const statusLine = listening
+    ? { text: "listening…", color: "text-amber-300", dot: "bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.9)]" }
+    : busy
+      ? { text: "thinking…", color: "text-purple-300", dot: "bg-purple-300 shadow-[0_0_8px_rgba(216,180,254,0.9)]" }
+      : null;
+
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-obsidian-border">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Ask your graph</div>
+        <div className="flex items-center justify-between">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Ask your graph</div>
+          {ttsSupported && (
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-pressed={muted}
+              title={muted ? "Unmute voice" : "Mute voice"}
+              className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded border transition-colors ${
+                muted
+                  ? "border-white/15 text-muted-text hover:text-white"
+                  : "border-amber-300/40 text-amber-300 hover:bg-amber-300/10"
+              }`}
+            >
+              {muted ? "🔇 muted" : "🔊 voice"}
+            </button>
+          )}
+        </div>
         <div className="text-xs text-white/60 mt-1">
           {selectedId
             ? `Grounded on ${graph.byId.get(selectedId)?.label ?? selectedId} + semantic matches`
             : "Answers cite nodes as clickable chips."}
         </div>
+        {statusLine && (
+          <div className={`mt-2 flex items-center gap-2 text-[11px] font-mono ${statusLine.color}`}>
+            <span className={`inline-block h-2 w-2 rounded-full ${statusLine.dot} animate-pulse`} />
+            <span>{statusLine.text}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -73,6 +286,9 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
               <li>How does 713mixhouse relate to mrcap1?</li>
               <li>Summarize the AbSoulutely CAPtivating creative flow.</li>
             </ul>
+            {SR && (
+              <div className="pt-2 text-muted-text/80">Tip: tap 🎙 and speak.</div>
+            )}
           </div>
         )}
         {messages.map((m) => {
@@ -94,10 +310,25 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
       </div>
 
       <form onSubmit={submit} className="p-3 border-t border-obsidian-border flex gap-2">
+        {SR && (
+          <button
+            type="button"
+            onClick={toggleMic}
+            aria-pressed={listening}
+            title={listening ? "Stop listening" : "Speak your question"}
+            className={`px-3 py-2 rounded border text-sm transition-colors ${
+              listening
+                ? "border-amber-300 text-amber-300 bg-amber-300/10 animate-pulse"
+                : "border-white/20 text-white/80 hover:border-neon-primary/60 hover:text-neon-primary"
+            }`}
+          >
+            🎙
+          </button>
+        )}
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about your nodes…"
+          placeholder={listening ? "Listening…" : "Ask about your nodes…"}
           disabled={busy}
           className="flex-1 bg-obsidian-bg border border-obsidian-border rounded px-3 py-2 text-sm outline-none focus:border-neon-primary/60 disabled:opacity-60"
         />
@@ -119,6 +350,9 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
           </button>
         )}
       </form>
+      {!voiceReady && ttsSupported && !muted && (
+        <div className="px-3 pb-2 text-[10px] font-mono text-muted-text/70">voice loading…</div>
+      )}
     </div>
   );
 }
