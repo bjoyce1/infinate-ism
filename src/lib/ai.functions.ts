@@ -289,6 +289,7 @@ export const captureNote = createServerFn({ method: "POST" })
       label: title,
       note: data.text,
       related_node_id: relatedId,
+      updated_at: new Date().toISOString(),
     };
   });
 
@@ -307,6 +308,7 @@ export const listMyCaptures = createServerFn({ method: "GET" })
       label: r.summary ?? "Capture",
       note: r.note ?? "",
       related_node_id: (r as { related_node_id?: string | null }).related_node_id ?? null,
+      updated_at: r.updated_at ?? null,
     }));
     return { captures };
   });

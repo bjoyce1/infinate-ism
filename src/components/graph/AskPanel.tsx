@@ -255,6 +255,7 @@ export function AskPanel({ graph }: { graph: NormalizedGraph }) {
           label: res.label,
           note: res.note,
           related_node_id: res.related_node_id ?? null,
+          updated_at: res.updated_at ?? new Date().toISOString(),
         });
 
         // Fly + focus + panel — after next paint so merged graph includes it.
