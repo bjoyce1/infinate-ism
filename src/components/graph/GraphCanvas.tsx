@@ -32,6 +32,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
+  const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
 
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   const getImage = (url: string): HTMLImageElement | null => {
@@ -112,6 +113,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ? Math.max(14, Math.min(28, 10 + Math.sqrt(node.degree) * 1.2))
       : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
     const isAnchor = node.id === selectedId || node.id === hoveredId;
+    const isPulsing = node.id === pulseNodeId;
     const dim = highlightSet != null && !highlightSet.has(node.id);
     const color = node.color ?? CATEGORY_COLORS[node.category];
     ctx.globalAlpha = dim ? 0.15 : 1;
@@ -140,6 +142,15 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.shadowBlur = isAnchor ? 18 : 6;
       ctx.fill();
       ctx.shadowBlur = 0;
+    }
+    if (isPulsing) {
+      const t = (Date.now() % 1600) / 1600;
+      const ring = base + 4 + t * 14;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, ring, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(252, 211, 77, ${0.85 * (1 - t)})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
     if (isAnchor || (globalScale > 2.5 && !dim)) {
       const label = node.label ?? node.id;
