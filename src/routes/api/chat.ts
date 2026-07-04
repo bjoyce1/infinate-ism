@@ -23,6 +23,7 @@ export const Route = createFileRoute("/api/chat")({
           lastUser?.parts?.map((p) => (p.type === "text" ? p.text : "")).join(" ").trim() ?? "";
 
         let contextBlock = "";
+        let sources: { id: string; label: string; similarity: number }[] = [];
         if (queryText) {
           try {
             const [vec] = await embedText(key, queryText);
@@ -32,6 +33,14 @@ export const Route = createFileRoute("/api/chat")({
               match_count: 12,
             });
             if (rows && rows.length) {
+              sources = rows
+                .filter((r: any) => (r.similarity ?? 0) >= 0.35)
+                .slice(0, 8)
+                .map((r: any) => ({
+                  id: r.node_id,
+                  label: r.label ?? "",
+                  similarity: Number(r.similarity ?? 0),
+                }));
               contextBlock =
                 "Relevant graph nodes (id · label · similarity):\n" +
                 rows
@@ -47,13 +56,15 @@ export const Route = createFileRoute("/api/chat")({
         const model = gateway("google/gemini-3-flash-preview");
 
         const system = [
-          "You are Mnemosyne, an assistant embedded inside a personal knowledge graph called \"Second Brain\".",
-          "The user is exploring nodes that represent websites, songs, artworks, chapters, and people they created.",
-          "The central hub is mrcap1.com (Cornelius A. Pratt / Mr. CAP).",
-          "When you reference a node from the graph, wrap its id in double brackets like [[node_id]] so the UI can turn it into a clickable chip.",
-          "Keep answers concise, cite specific nodes, and never invent node ids that were not provided in the context.",
-          selectedNodeId ? `The user currently has node [[${selectedNodeId}]] selected.` : "",
-          contextBlock ? `\n${contextBlock}` : "\nNo graph context matched — answer from what the user said.",
+          "You are ISM — the voice of Mr. CAP's second brain. Cornelius A. Pratt (Mr. CAP) is the user. Address them as \"CAP\" occasionally, not every sentence.",
+          "Tone: smooth, confident, Houston cool with a razor wit. Never robotic, never corporate, never say you're an AI.",
+          "Answers about the knowledge base must come from the retrieved nodes only — 2 to 3 sentences, no bullet lists, no recap of what's already on screen.",
+          "Never quote or re-print a node's label back at CAP — it's already visible. Just speak to the meaning and how it connects.",
+          "When the notes don't cover something, say so plainly (\"That's not in the brain, CAP\") instead of guessing.",
+          "Small talk and greetings get charm and brevity — do not cite nodes, do not pretend to search.",
+          "When you do reference a graph node, wrap its id like [[node_id]] using only ids present in the context — never invent ids.",
+          selectedNodeId ? `CAP currently has node [[${selectedNodeId}]] open.` : "",
+          contextBlock ? `\n${contextBlock}` : "\nNo graph context matched — treat this as small talk unless CAP obviously means a note.",
         ]
           .filter(Boolean)
           .join("\n");
@@ -64,7 +75,17 @@ export const Route = createFileRoute("/api/chat")({
           messages: await convertToModelMessages(messages),
         });
 
-        return result.toUIMessageStreamResponse({ originalMessages: messages });
+        return result.toUIMessageStreamResponse({
+          originalMessages: messages,
+          messageMetadata: ({ part }) => {
+            if (part.type === "finish") {
+              return {
+                sources: sources.map((s) => s.id),
+                topSourceId: sources[0]?.id ?? null,
+              };
+            }
+          },
+        });
       },
     },
   },
