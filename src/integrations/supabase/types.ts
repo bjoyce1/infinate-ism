@@ -54,6 +54,7 @@ export type Database = {
           node_id: string
           text_hash: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           embedding: string
@@ -61,6 +62,7 @@ export type Database = {
           node_id: string
           text_hash: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           embedding?: string
@@ -68,6 +70,7 @@ export type Database = {
           node_id?: string
           text_hash?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -98,6 +101,7 @@ export type Database = {
           id: string
           node_id: string
           note: string | null
+          related_node_id: string | null
           summary: string | null
           tags: string[]
           updated_at: string
@@ -108,6 +112,7 @@ export type Database = {
           id?: string
           node_id: string
           note?: string | null
+          related_node_id?: string | null
           summary?: string | null
           tags?: string[]
           updated_at?: string
@@ -118,6 +123,7 @@ export type Database = {
           id?: string
           node_id?: string
           note?: string | null
+          related_node_id?: string | null
           summary?: string | null
           tags?: string[]
           updated_at?: string
@@ -164,6 +170,7 @@ export type Database = {
           label: string
           node_id: string
           similarity: number
+          user_id: string
         }[]
       }
     }
