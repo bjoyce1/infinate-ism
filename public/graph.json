@@ -11726,15 +11726,38 @@
       "file_type": "image",
       "community": 203,
       "color": "#F5C542",
-      "image": "https://bookspc.com/assets/point-blank-DziDqNhg.png",
+      "image": "/__l5e/assets-v1/831afdd3-d706-4ba7-915d-3dd13474f55f/point-blank.png",
       "role": "core",
-      "description": "Houston Rap Icon \u00b7 SPC Original Member \u00b7 Executive Producer",
+      "description": "Reginald Gilland \u2014 Houston rap icon, original South Park Coalition member, and executive producer whose raw delivery and unfiltered realism helped bring Southern street narratives to national attention. His 1992 breakthrough Prone to Bad Dreams became a landmark Southern rap release, praised for gritty authenticity and emotional intensity. A pivotal figure in establishing Houston as a major force in 1990s hip-hop, he now guides SPC's modern initiatives, media projects, and legacy preservation \u2014 a bridge between the raw foundation of Houston street rap and the refined leadership of today's independent movement.",
       "tags": [
         "Street",
-        "Raw"
+        "Raw",
+        "Underground",
+        "Houston",
+        "SPC Original",
+        "Executive Producer"
       ],
       "weight": 2.5,
-      "url": "https://bookspc.com/artists/point-blank"
+      "url": "https://bookspc.com/artists/point-blank",
+      "artwork": "/__l5e/assets-v1/831afdd3-d706-4ba7-915d-3dd13474f55f/point-blank.png",
+      "location": "Houston, TX",
+      "genre": "Hip-Hop / Rap",
+      "real_name": "Reginald Gilland",
+      "booking_url": "https://bookspc.com/booking?type=individual&artistId=2",
+      "discography": [
+        { "title": "Terror Strikes Always Bizness, Never Personal", "year": 1991, "type": "Collaborative", "credit": "The Terrorists" },
+        { "title": "Prone to Bad Dreams", "year": 1992, "type": "Studio Album", "note": "Early SPC solo classic" },
+        { "title": "Mad at the World", "year": 1994, "type": "Studio Album", "note": "Hard-hitting street narratives" },
+        { "title": "Blowin' Up Tha Scene", "year": 1996, "type": "Collaborative", "credit": "Wreckless Klan" },
+        { "title": "3 'N the Mornin' (Part Two)", "year": 1996, "type": "Collaborative", "credit": "DJ Screw" },
+        { "title": "N-Tha-Do'", "year": 1997, "type": "Studio Album", "note": "Signature Southern hip-hop release" },
+        { "title": "Bad Newz Travels Fast", "year": 2000, "type": "Studio Album", "note": "Underground staple" },
+        { "title": "Just When You Thought It Was Safe", "year": 2004, "type": "Studio Album" },
+        { "title": "No Money, No Reason", "year": 2014, "type": "Studio Album", "note": "Two-disc independent fusion" },
+        { "title": "Being a Real Nigga Is a Nine 2 Five 24/7/365", "year": 2017, "type": "Studio Album" },
+        { "title": "The Ties That Bind Us", "year": 2024, "type": "Collaborative", "credit": "South Park Coalition" }
+      ],
+      "release_count": 11
     },
     {
       "id": "spc_artist_klondike_kat",
