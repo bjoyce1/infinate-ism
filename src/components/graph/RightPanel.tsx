@@ -4,10 +4,11 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { DetailPanel } from "./DetailPanel";
 import { NotesPanel } from "./NotesPanel";
 import { AskPanel } from "./AskPanel";
+import { CapismHud } from "./CapismPanel";
 import { ResizeHandle } from "./ResizeHandle";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 
-type Tab = "info" | "notes" | "ask";
+type Tab = "info" | "notes" | "ask" | "capism";
 
 export function RightPanel({ graph }: { graph: NormalizedGraph }) {
   const [tab, setTab] = useState<Tab>("info");
@@ -34,7 +35,7 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
       >
       <ResizeHandle side="right" width={width} onChange={setWidth} min={260} max={640} />
       <div className="flex border-b border-obsidian-border shrink-0">
-        {(["info", "notes", "ask"] as const).map((t) => (
+        {(["info", "notes", "ask", "capism"] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -45,7 +46,7 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
                 : "text-muted-text hover:text-white"
             }`}
           >
-            {t === "info" ? "Info" : t === "notes" ? "Notes" : "Ask AI"}
+            {t === "info" ? "Info" : t === "notes" ? "Notes" : t === "ask" ? "Ask AI" : "◈ HUD"}
           </button>
         ))}
       </div>
@@ -61,6 +62,7 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
           </div>
         )}
         {tab === "ask" && <AskPanel graph={graph} />}
+        {tab === "capism" && <CapismHud graph={graph} />}
       </div>
       </aside>
     </>
