@@ -11718,15 +11718,43 @@
       "file_type": "image",
       "community": 203,
       "color": "#F5C542",
-      "image": "https://bookspc.com/assets/klondike-kat-BIzj3-sa.png",
+      "image": "/__l5e/assets-v1/4ab9362d-cb24-4cff-a4ae-b917a5ff09a1/klondike-kat.png",
       "role": "core",
-      "description": "Houston rapper and SPC core member, respected for sharp lyricism and consistency.",
+      "description": "Houston rapper and South Park Coalition core member, respected for sharp lyricism, consistency, and preserving SPC's underground authenticity across generations. Frequent collaborator with K-Rino, Point Blank, and Mr. CAP. Live sets emphasize bar structure, clarity, and command \u2014 reliable, professional, always prepared.",
       "tags": [
         "Underground",
-        "Lyrical"
+        "Lyrical",
+        "Houston",
+        "SPC Core"
       ],
       "weight": 2.5,
-      "url": "https://bookspc.com/artists/klondike-kat"
+      "url": "https://bookspc.com/artists/klondike-kat",
+      "artwork": "/__l5e/assets-v1/4ab9362d-cb24-4cff-a4ae-b917a5ff09a1/klondike-kat.png",
+      "location": "Houston, TX",
+      "genre": "Hip-Hop / Rap",
+      "booking_url": "https://bookspc.com/booking?type=individual&artistId=3",
+      "discography": [
+        {
+          "title": "Diary of a Klondike",
+          "year": 2002,
+          "type": "Studio Album"
+        },
+        {
+          "title": "Paper Chasin'",
+          "year": 2005,
+          "type": "Studio Album"
+        },
+        {
+          "title": "Street Runnin'",
+          "year": 2008,
+          "type": "Studio Album"
+        },
+        {
+          "title": "The Ties That Bind Us",
+          "year": 2024,
+          "type": "Collaborative \u00b7 South Park Coalition"
+        }
+      ]
     },
     {
       "id": "spc_artist_mr_cap",
