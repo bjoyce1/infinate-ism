@@ -1,9 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import type { NormalizedGraph, GraphNode, Category } from "@/lib/graph/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -509,8 +504,7 @@ function AnalyticsChart({ metrics }: { metrics: Metrics }) {
 // Main panel
 // ────────────────────────────────────────────────────────────────────────────
 
-export function CapismPanel({ graph }: { graph: NormalizedGraph }) {
-  const [open, setOpen] = useState(false);
+export function CapismHud({ graph }: { graph: NormalizedGraph }) {
   const [signedIn, setSignedIn] = useState(false);
   const mountedAtRef = useRef<number>(Date.now());
   const now = useNow(1000);
@@ -560,7 +554,6 @@ export function CapismPanel({ graph }: { graph: NormalizedGraph }) {
 
   const jumpCommunity = (id: number) => {
     setCommunity(id);
-    setOpen(false);
   };
 
   const jumpNode = (id: string) => {
@@ -568,30 +561,10 @@ export function CapismPanel({ graph }: { graph: NormalizedGraph }) {
     pulseNode(id);
     setRightPanel(true);
     window.setTimeout(() => pulseNode(null), 2500);
-    setOpen(false);
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button
-          type="button"
-          className="px-3 sm:px-4 py-2 bg-obsidian-surface border border-cyan-400/40 rounded-lg text-[10px] sm:text-xs font-medium text-cyan-200 hover:bg-cyan-400/10 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5"
-          title="Open C.A.P.I.S.M. HUD"
-        >
-          <span
-            className="size-1.5 rounded-full bg-cyan-300 animate-pulse"
-            style={{ boxShadow: "0 0 6px #22d3ee" }}
-          />
-          <span className="hidden sm:inline">C.A.P.I.S.M.</span>
-          <span className="sm:hidden">HUD</span>
-        </button>
-      </SheetTrigger>
-
-      <SheetContent
-        side="right"
-        className="bg-[#050914] border-l border-cyan-500/20 text-white w-[95vw] sm:max-w-lg p-0 flex flex-col"
-      >
+    <div className="h-full flex flex-col bg-[#050914] text-white">
         <style>{`
           @keyframes capism-spin { to { transform: rotate(360deg); } }
           @keyframes capism-scan {
@@ -839,7 +812,6 @@ export function CapismPanel({ graph }: { graph: NormalizedGraph }) {
             </div>
           </section>
         </div>
-      </SheetContent>
-    </Sheet>
+    </div>
   );
 }
