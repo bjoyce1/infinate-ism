@@ -138,6 +138,12 @@ function AdminPage() {
             >
               → Logo scraper
             </Link>
+            <Link
+              to="/admin/status"
+              className="ml-2 inline-block px-3 py-2 border border-obsidian-border text-xs font-mono uppercase tracking-widest rounded hover:bg-white/5"
+            >
+              → Integration status
+            </Link>
           </div>
         </div>
       )}
