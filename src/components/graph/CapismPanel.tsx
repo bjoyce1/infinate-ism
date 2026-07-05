@@ -829,20 +829,48 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             <AnalyticsChart metrics={metrics} />
             <div className="mt-2 grid grid-cols-4 gap-2 text-[9px] font-mono">
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Events/s</div>
-                <div className="text-cyan-300 text-sm">{metrics.eventsPerSec.toLocaleString()}</div>
+                <div className="text-white/40 uppercase tracking-widest">Events/60s</div>
+                <div className="text-cyan-300 text-sm">{stats.events_60s.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Queries/s</div>
-                <div className="text-fuchsia-300 text-sm">{metrics.queriesPerSec.toLocaleString()}</div>
+                <div className="text-white/40 uppercase tracking-widest">Clicks/60s</div>
+                <div className="text-fuchsia-300 text-sm">{stats.clicks_60s.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Err %</div>
-                <div className="text-rose-300 text-sm">{metrics.errorRate.toFixed(2)}</div>
+                <div className="text-white/40 uppercase tracking-widest">24h Evt</div>
+                <div className="text-rose-300 text-sm">{stats.events_24h.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Success</div>
-                <div className="text-emerald-300 text-sm">{metrics.successRate.toFixed(2)}</div>
+                <div className="text-white/40 uppercase tracking-widest">24h Clk</div>
+                <div className="text-emerald-300 text-sm">{stats.clicks_24h.toLocaleString()}</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Data Sources — live totals from Lovable Cloud */}
+          <section className="rounded-lg border border-white/10 bg-black/40 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
+                Data Sources
+              </h3>
+              <span className="text-[9px] font-mono text-emerald-300">CLOUD</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Total Clicks</div>
+                <div className="text-cyan-300 text-sm">{stats.clicks_total.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Nodes Engaged</div>
+                <div className="text-fuchsia-300 text-sm">{stats.nodes_engaged.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Image Overrides</div>
+                <div className="text-amber-300 text-sm">{stats.overrides_total.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Total Events</div>
+                <div className="text-emerald-300 text-sm">{stats.events_total.toLocaleString()}</div>
               </div>
             </div>
           </section>
