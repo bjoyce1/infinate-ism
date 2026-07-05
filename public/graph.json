@@ -10567,7 +10567,13 @@
       "norm_label": "dabsheets.com",
       "weight": 5.0,
       "url": "https://dabsheets.com",
-      "color": "#16A34A"
+      "color": "#16A34A",
+      "tagline": "Men's Finishing Hygiene \u2014 catch the last drop.",
+      "description": "DabSheets is a discreet dry sheet designed for a cleaner, drier finish after you pee \u2014 at work, at home, or on the go. Purpose-built dry, unscented, trash-dispose men's hygiene product. Currently in concept validation with a Pilot Waitlist opening soon. Flow: Pee \u2192 Dab \u2192 Go. Ships as a slim case + refill Starter Kit in three formats for wherever the day takes you.",
+      "image": "/__l5e/assets-v1/9e903f92-d635-4e41-a4ed-2b5b9f7bc53c/dabsheets-logo.png",
+      "artwork": "/__l5e/assets-v1/9e903f92-d635-4e41-a4ed-2b5b9f7bc53c/dabsheets-logo.png",
+      "category_hint": "product",
+      "status": "concept validation \u00b7 pilot waitlist"
     },
     {
       "id": "site_absoulutelycaptivating_com",
@@ -10583,7 +10589,6 @@
       "color": "#A21CAF",
       "image": "/__l5e/assets-v1/f7cc25fe-5bb1-46bd-bd76-b5db19c3cc6e/absoulutelycaptivating-logo.png",
       "artwork": "/__l5e/assets-v1/f7cc25fe-5bb1-46bd-bd76-b5db19c3cc6e/absoulutelycaptivating-logo.png"
-
     },
     {
       "id": "selflove_story_the_heart_within",
