@@ -515,6 +515,41 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
   const select = useGraphStore((s) => s.select);
   const pulseNode = useGraphStore((s) => s.pulseNode);
   const setRightPanel = useGraphStore((s) => s.setRightPanel);
+  const selectedId = useGraphStore((s) => s.selectedId);
+  const activeCommunity = useGraphStore((s) => s.activeCommunity);
+
+  // Live database feed
+  const { events: liveEvents, stats, connected } = useCapismLive(8);
+
+  // Boot heartbeat on first mount
+  const bootedRef = useRef(false);
+  useEffect(() => {
+    if (bootedRef.current) return;
+    bootedRef.current = true;
+    logCapismEvent("boot", {
+      payload: { nodes: graph.nodes.length, links: graph.links.length },
+    });
+  }, [graph.nodes.length, graph.links.length]);
+
+  // Log selections + community focus as live events
+  useEffect(() => {
+    if (!selectedId) return;
+    const n = graph.byId.get(selectedId);
+    if (!n) return;
+    logCapismEvent("node_select", {
+      node_id: n.id,
+      node_label: n.label,
+      community: n.community ?? null,
+    });
+  }, [selectedId, graph.byId]);
+  useEffect(() => {
+    if (activeCommunity == null) return;
+    const c = graph.communities.find((x) => x.id === activeCommunity);
+    logCapismEvent("community_focus", {
+      community: activeCommunity,
+      payload: { name: c?.name ?? null, count: c?.count ?? null },
+    });
+  }, [activeCommunity, graph.communities]);
 
   const reducedMotion =
     typeof window !== "undefined" &&
