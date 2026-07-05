@@ -239,6 +239,26 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
 
   return (
     <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
+      {/* Static starfield background — never rotates or orbits with the nodes */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundColor: "#0A0A0B",
+          backgroundImage: [
+            "radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.55), transparent 60%)",
+            "radial-gradient(1px 1px at 78% 32%, rgba(255,255,255,0.45), transparent 60%)",
+            "radial-gradient(1.2px 1.2px at 44% 74%, rgba(255,255,255,0.5), transparent 60%)",
+            "radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.35), transparent 60%)",
+            "radial-gradient(1px 1px at 26% 58%, rgba(255,255,255,0.4), transparent 60%)",
+            "radial-gradient(1.5px 1.5px at 62% 12%, rgba(255,255,255,0.35), transparent 60%)",
+            "radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,0.3), transparent 60%)",
+            "radial-gradient(1px 1px at 96% 54%, rgba(255,255,255,0.35), transparent 60%)",
+            "radial-gradient(circle at 50% 50%, rgba(61,237,151,0.05), transparent 70%)",
+          ].join(", "),
+          backgroundSize: "600px 600px, 720px 720px, 540px 540px, 800px 800px, 660px 660px, 700px 700px, 620px 620px, 580px 580px, 100% 100%",
+        }}
+      />
       <div
         className="absolute inset-0"
         style={
@@ -253,7 +273,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           graphData={data}
           width={size.w}
           height={size.h}
-          backgroundColor="#0A0A0B"
+          backgroundColor="rgba(0,0,0,0)"
           nodeCanvasObject={nodeCanvasObject}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
