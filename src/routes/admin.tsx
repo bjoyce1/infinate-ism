@@ -132,6 +132,12 @@ function AdminPage() {
             >
               → Bulk image upload
             </Link>
+            <Link
+              to="/admin/scrape"
+              className="ml-2 inline-block px-3 py-2 border border-obsidian-border text-xs font-mono uppercase tracking-widest rounded hover:bg-white/5"
+            >
+              → Logo scraper
+            </Link>
           </div>
         </div>
       )}
