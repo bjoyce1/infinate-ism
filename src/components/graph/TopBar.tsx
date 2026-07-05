@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, PanelRight } from "lucide-react";
 import { CapturesDrawer } from "./CapturesDrawer";
 import { SpcArtistsDrawer } from "./SpcArtistsDrawer";
+import { CapismPanel } from "./CapismPanel";
 import type { NormalizedGraph } from "@/lib/graph/types";
 
 export function TopBar({ graph }: { graph?: NormalizedGraph }) {
@@ -92,6 +93,7 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
         </Link>
         <CapturesDrawer />
         {graph && <SpcArtistsDrawer graph={graph} />}
+        {graph && <CapismPanel graph={graph} />}
         {viewMode === "3d" && (
           <button
             type="button"
