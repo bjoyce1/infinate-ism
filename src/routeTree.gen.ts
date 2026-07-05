@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AbsoulutelycaptivatingRouteImport } from './routes/absoulutelycaptivating'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminScrapeRouteImport } from './routes/admin.scrape'
 import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -64,6 +65,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStatusRoute = AdminStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminScrapeRoute = AdminScrapeRouteImport.update({
   id: '/scrape',
   path: '/scrape',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/scrape': typeof AdminScrapeRoute
+  '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/scrape': typeof AdminScrapeRoute
+  '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/scrape': typeof AdminScrapeRoute
+  '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
     | '/admin/scrape'
+    | '/admin/status'
     | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
     | '/admin/scrape'
+    | '/admin/status'
     | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
     | '/admin/scrape'
+    | '/admin/status'
     | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -271,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/status': {
+      id: '/admin/status'
+      path: '/status'
+      fullPath: '/admin/status'
+      preLoaderRoute: typeof AdminStatusRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/scrape': {
       id: '/admin/scrape'
       path: '/scrape'
@@ -319,11 +338,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminImagesRoute: typeof AdminImagesRoute
   AdminScrapeRoute: typeof AdminScrapeRoute
+  AdminStatusRoute: typeof AdminStatusRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminImagesRoute: AdminImagesRoute,
   AdminScrapeRoute: AdminScrapeRoute,
+  AdminStatusRoute: AdminStatusRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
