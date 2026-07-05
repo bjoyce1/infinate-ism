@@ -8,6 +8,8 @@ type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
   zoom: (v: number, ms?: number) => void;
   zoomToFit: (ms?: number, padding?: number) => void;
+  d3Force: (name: string, force: unknown) => ForceGraphHandle;
+  d3ReheatSimulation: () => void;
 };
 
 const HUB_ID = "site_mrcap1_com";
@@ -34,6 +36,58 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
+
+  // Orbital motion — inject a custom tangential force around each community's
+  // centroid, and keep the simulation permanently warm so orbits never freeze.
+  useEffect(() => {
+    if (!ForceGraph || !fgRef.current) return;
+    type OrbitNode = GraphNode & {
+      x?: number;
+      y?: number;
+      vx?: number;
+      vy?: number;
+    };
+    let nodes: OrbitNode[] = [];
+    const force = (alpha: number) => {
+      if (!nodes.length) return;
+      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        const key = n.community ?? "__none";
+        const c = centers.get(key) ?? { cx: 0, cy: 0, n: 0 };
+        c.cx += n.x;
+        c.cy += n.y;
+        c.n += 1;
+        centers.set(key, c);
+      }
+      for (const c of centers.values()) {
+        c.cx /= c.n;
+        c.cy /= c.n;
+      }
+      const speed = 0.55 * Math.max(alpha, 0.15);
+      for (const n of nodes) {
+        if (n.is_hub || n.x == null || n.y == null) continue;
+        const c = centers.get(n.community ?? "__none");
+        if (!c) continue;
+        const dx = n.x - c.cx;
+        const dy = n.y - c.cy;
+        const r = Math.hypot(dx, dy) || 1;
+        // Tangential push (perpendicular to radius) — counter-clockwise
+        n.vx = (n.vx ?? 0) + (-dy / r) * speed;
+        n.vy = (n.vy ?? 0) + (dx / r) * speed;
+        // Gentle radial spring to keep orbit radius stable
+        const targetR = 40 + (n.degree ?? 0) * 6;
+        const pull = (targetR - r) * 0.002;
+        n.vx += (dx / r) * pull;
+        n.vy += (dy / r) * pull;
+      }
+    };
+    (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
+      nodes = n;
+    };
+    fgRef.current.d3Force("orbital", force);
+    fgRef.current.d3ReheatSimulation();
+  }, [ForceGraph, data]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
@@ -200,6 +254,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           width={size.w}
           height={size.h}
           backgroundColor="#0A0A0B"
+          d3AlphaDecay={0}
+          d3AlphaMin={0}
+          d3VelocityDecay={0.55}
+          cooldownTicks={Infinity}
           nodeCanvasObject={nodeCanvasObject}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
