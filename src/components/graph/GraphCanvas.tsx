@@ -289,7 +289,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const t = typeof link.target === "string" ? link.target : link.target.id;
             return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
           }}
-          cooldownTicks={100}
+          cooldownTicks={Infinity}
+          d3AlphaDecay={0}
+          d3AlphaMin={0}
+          d3VelocityDecay={0.55}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
