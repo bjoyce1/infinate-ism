@@ -643,6 +643,10 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             <span>OS v4.3.7</span>
             <span>|</span>
             <span>Build {String(graph.nodes.length).padStart(4, "0")}.{String(graph.links.length).padStart(2, "0")}</span>
+            <span>|</span>
+            <span className={connected ? "text-emerald-300" : "text-amber-300"}>
+              {connected ? "◉ DB LINK" : "◌ DB SYNC"}
+            </span>
           </div>
         </div>
 
