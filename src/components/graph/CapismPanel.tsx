@@ -402,7 +402,7 @@ function CoreRing({
           C.A.P.I.S.M.
         </div>
         <div className="mt-1 text-[8px] font-mono uppercase tracking-widest text-white/50">
-          Central AI Processing Interface
+          Second Brain · Live Constellation
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-[9px] font-mono text-emerald-300">
           <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" style={{ boxShadow: "0 0 6px #34d399" }} />
@@ -412,15 +412,15 @@ function CoreRing({
 
       {/* Corner readouts */}
       <div className="absolute top-2 left-8 text-[10px] font-mono">
-        <div className="text-rose-400/80 uppercase tracking-widest text-[8px]">Threat Lvl</div>
-        <div className="text-rose-300 text-sm">LOW</div>
+        <div className="text-rose-400/80 uppercase tracking-widest text-[8px]">Focus</div>
+        <div className="text-rose-300 text-sm uppercase">{/* stable label */}FREE</div>
       </div>
       <div className="absolute top-2 right-8 text-[10px] font-mono text-right">
-        <div className="text-fuchsia-400/80 uppercase tracking-widest text-[8px]">Efficiency</div>
+        <div className="text-fuchsia-400/80 uppercase tracking-widest text-[8px]">Enriched</div>
         <div className="text-fuchsia-300 text-sm">{e.toFixed(1)}%</div>
       </div>
       <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-center">
-        <div className="text-[8px] font-mono uppercase tracking-widest text-white/50">// Core Sync</div>
+        <div className="text-[8px] font-mono uppercase tracking-widest text-white/50">// Graph Sync</div>
         <div className="text-cyan-300 font-mono text-sm">{s.toFixed(2)}%</div>
       </div>
     </div>
