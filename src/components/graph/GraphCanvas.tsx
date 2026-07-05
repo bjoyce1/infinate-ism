@@ -87,7 +87,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     };
     fgRef.current.d3Force("orbital", force);
     fgRef.current.d3ReheatSimulation();
-  }, [ForceGraph, data]);
+  }, [ForceGraph]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
@@ -254,10 +254,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           width={size.w}
           height={size.h}
           backgroundColor="#0A0A0B"
-          d3AlphaDecay={0}
-          d3AlphaMin={0}
-          d3VelocityDecay={0.55}
-          cooldownTicks={Infinity}
           nodeCanvasObject={nodeCanvasObject}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
