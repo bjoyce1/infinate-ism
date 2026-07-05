@@ -763,39 +763,55 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
           <section className="rounded-lg border border-white/10 bg-black/40 p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
-                Notifications
+                Live Event Stream
               </h3>
-              <span className="text-[9px] font-mono text-cyan-300">
-                {recentCaptures.length} NEW
+              <span className="flex items-center gap-1 text-[9px] font-mono text-cyan-300">
+                <span
+                  className={`size-1.5 rounded-full ${connected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}
+                  style={{ boxShadow: connected ? "0 0 6px #34d399" : "0 0 6px #fbbf24" }}
+                />
+                {stats.events_total.toLocaleString()} LOGGED
               </span>
             </div>
-            {recentCaptures.length === 0 ? (
+            {liveEvents.length === 0 && recentCaptures.length === 0 ? (
               <div className="text-[10px] font-mono text-white/40 py-3 text-center">
-                No captures yet.
+                Awaiting signal…
               </div>
             ) : (
               <ul className="space-y-1.5">
-                {recentCaptures.map((c, i) => (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      onClick={() => jumpNode(c.id)}
-                      className="w-full flex items-center gap-2 text-[10px] font-mono text-left hover:text-cyan-200 transition-colors"
-                    >
-                      <span
-                        className="size-1.5 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: ACCENTS[i % ACCENTS.length],
-                          boxShadow: `0 0 4px ${ACCENTS[i % ACCENTS.length]}`,
-                        }}
-                      />
-                      <span className="text-white/50 tabular-nums w-10 shrink-0">
-                        {timeAgo(c.updated_at)}
-                      </span>
-                      <span className="truncate text-white/80">{c.label}</span>
-                    </button>
-                  </li>
-                ))}
+                {liveEvents.map((ev, i) => {
+                  const color = ACCENTS[i % ACCENTS.length];
+                  const kindLabel = ev.kind.replace(/_/g, " ").toUpperCase();
+                  const label =
+                    ev.node_label ??
+                    (ev.community != null ? `Cluster ${ev.community}` : kindLabel);
+                  const clickable = ev.node_id && graph.byId.has(ev.node_id);
+                  return (
+                    <li key={ev.id}>
+                      <button
+                        type="button"
+                        disabled={!clickable}
+                        onClick={() => clickable && jumpNode(ev.node_id!)}
+                        className="w-full flex items-center gap-2 text-[10px] font-mono text-left hover:text-cyan-200 transition-colors disabled:cursor-default"
+                      >
+                        <span
+                          className="size-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: color, boxShadow: `0 0 4px ${color}` }}
+                        />
+                        <span className="text-white/50 tabular-nums w-10 shrink-0">
+                          {timeAgo(ev.created_at)}
+                        </span>
+                        <span
+                          className="text-[8px] uppercase tracking-widest w-16 shrink-0"
+                          style={{ color }}
+                        >
+                          {kindLabel}
+                        </span>
+                        <span className="truncate text-white/80">{label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
