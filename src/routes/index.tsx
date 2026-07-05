@@ -154,7 +154,7 @@ function Index() {
       <LeftSidebar graph={graph} />
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
         {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}
-        <TopBar />
+        <TopBar graph={graph} />
         <HubHoverCard graph={graph} />
       </main>
       <RightPanel graph={graph} />

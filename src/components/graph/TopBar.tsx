@@ -3,8 +3,10 @@ import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Menu, PanelRight } from "lucide-react";
 import { CapturesDrawer } from "./CapturesDrawer";
+import { SpcArtistsDrawer } from "./SpcArtistsDrawer";
+import type { NormalizedGraph } from "@/lib/graph/types";
 
-export function TopBar() {
+export function TopBar({ graph }: { graph?: NormalizedGraph }) {
   const setSearchOpen = useGraphStore((s) => s.setSearchOpen);
   const focusMode = useGraphStore((s) => s.focusMode);
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
@@ -89,6 +91,7 @@ export function TopBar() {
           ANALYTICS
         </Link>
         <CapturesDrawer />
+        {graph && <SpcArtistsDrawer graph={graph} />}
         {viewMode === "3d" && (
           <button
             type="button"
