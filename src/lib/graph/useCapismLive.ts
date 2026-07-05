@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+type JsonValue = string | number | boolean | null | { [k: string]: JsonValue } | JsonValue[];
+
 export type CapismEvent = {
   id: string;
   kind: string;
   node_id: string | null;
   node_label: string | null;
   community: number | null;
-  payload: Record<string, unknown>;
+  payload: JsonValue;
   session_id: string | null;
   created_at: string;
 };
@@ -57,7 +59,12 @@ function getSessionId(): string {
 /** Fire-and-forget event log. Failures are swallowed (offline / RLS). */
 export function logCapismEvent(
   kind: CapismEvent["kind"],
-  extra: Partial<Omit<CapismEvent, "id" | "created_at" | "kind">> = {},
+  extra: {
+    node_id?: string | null;
+    node_label?: string | null;
+    community?: number | null;
+    payload?: JsonValue;
+  } = {},
 ): void {
   try {
     void supabase.from("capism_events").insert({
