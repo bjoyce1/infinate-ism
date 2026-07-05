@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import type { NormalizedGraph, GraphNode, Category } from "@/lib/graph/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useCapismLive, logCapismEvent, type CapismEvent } from "@/lib/graph/useCapismLive";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Small helpers
