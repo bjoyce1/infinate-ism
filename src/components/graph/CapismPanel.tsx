@@ -628,8 +628,8 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
                 C.A.P.I.S.M.
               </div>
               <div className="text-[8px] font-mono uppercase tracking-widest text-white/50 leading-tight mt-0.5">
-                Cognitive Adaptive Processing
-                <br />& Intelligent Systems Matrix
+                Constellation Analysis, Pattern
+                <br />& Insight Synthesis Matrix
               </div>
             </div>
             <div className="text-right shrink-0">
@@ -640,9 +640,9 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             </div>
           </div>
           <div className="mt-2 flex items-center gap-3 text-[9px] font-mono text-white/40 uppercase tracking-widest">
-            <span>OS v4.3.7</span>
+            <span>MNEMOSYNE v2.6</span>
             <span>|</span>
-            <span>Build {String(graph.nodes.length).padStart(4, "0")}.{String(graph.links.length).padStart(2, "0")}</span>
+            <span>GRAPH {String(graph.nodes.length).padStart(4, "0")}.{String(graph.links.length).padStart(2, "0")}</span>
             <span>|</span>
             <span className={connected ? "text-emerald-300" : "text-amber-300"}>
               {connected ? "◉ DB LINK" : "◌ DB SYNC"}
@@ -654,28 +654,28 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
           {/* Top stat cards */}
           <div className="grid grid-cols-2 gap-2">
             <StatCard
-              label="AI Core Temp"
+              label="Graph Heat"
               value={metrics.coreTemp.toFixed(1)}
-              suffix="°C"
+              suffix="deg"
               color="#f59e0b"
               series={tempSeries}
             />
             <StatCard
-              label="Neural Load"
+              label="Focus Load"
               value={`${metrics.neuralLoad.toFixed(0)}`}
               suffix="%"
               color="#a855f7"
               series={loadSeries}
             />
             <StatCard
-              label="System Uptime"
+              label="Session Uptime"
               value={uptime}
               color="#22d3ee"
               series={[]}
             />
             <StatCard
-              label="Security Lvl"
-              value={signedIn ? "ALPHA" : "BETA"}
+              label="Auth Tier"
+              value={signedIn ? "LINKED" : "GUEST"}
               color={signedIn ? "#22c55e" : "#f59e0b"}
               series={[]}
             />
@@ -690,15 +690,17 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             />
             <div className="mt-1 grid grid-cols-2 gap-4 text-[10px] font-mono">
               <div>
-                <div className="text-white/40 uppercase tracking-widest text-[9px]">Data Flow</div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Link Density</div>
                 <div className="text-cyan-300 text-sm">
-                  {(metrics.throughput / 100).toFixed(2)} <span className="text-white/40 text-[9px]">TB/s</span>
+                  {(graph.links.length / Math.max(1, graph.nodes.length)).toFixed(2)}
+                  <span className="text-white/40 text-[9px] ml-1">edges/node</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white/40 uppercase tracking-widest text-[9px]">Response</div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Coverage</div>
                 <div className="text-fuchsia-300 text-sm">
-                  {(4 + (100 - metrics.coreSync) * 0.1).toFixed(1)} <span className="text-white/40 text-[9px]">ms</span>
+                  {metrics.imageShare.toFixed(0)}
+                  <span className="text-white/40 text-[9px] ml-1">% imaged</span>
                 </div>
               </div>
             </div>
@@ -708,27 +710,27 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
           <section className="rounded-lg border border-white/10 bg-black/40 p-3 space-y-2">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
-                System Status
+                Category Mix
               </h3>
               <span className="flex items-center gap-1 text-[9px] font-mono text-emerald-300">
                 <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
               </span>
             </div>
-            <StatusBar label="CPU" value={metrics.cpu} color="#22d3ee" />
-            <StatusBar label="Memory" value={metrics.memory} color="#a855f7" />
-            <StatusBar label="GPU" value={metrics.gpu} color="#f43f5e" />
-            <StatusBar label="Network" value={metrics.network} color="#22c55e" />
-            <StatusBar label="Storage" value={metrics.storage} color="#38bdf8" />
-            <StatusBar label="Power" value={metrics.power} color="#f59e0b" />
+            <StatusBar label="Code" value={metrics.cpu} color="#22d3ee" />
+            <StatusBar label="Blog" value={metrics.memory} color="#a855f7" />
+            <StatusBar label="Image" value={metrics.gpu} color="#f43f5e" />
+            <StatusBar label="Links" value={metrics.network} color="#22c55e" />
+            <StatusBar label="Captures" value={metrics.storage} color="#38bdf8" />
+            <StatusBar label="Signal" value={metrics.coreSync} color="#f59e0b" />
           </section>
 
           {/* AI Models = top communities */}
           <section className="rounded-lg border border-white/10 bg-black/40 p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
-                AI Models
+                Constellations
               </h3>
-              <span className="text-[9px] font-mono text-emerald-300">ACTIVE</span>
+              <span className="text-[9px] font-mono text-emerald-300">TAP TO FOCUS</span>
             </div>
             <div className="space-y-2">
               {metrics.topCommunities.map((c) => (
@@ -878,20 +880,19 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
           {/* Footer readouts */}
           <section className="grid grid-cols-3 gap-2 text-[10px] font-mono">
             <div className="rounded-lg border border-white/10 bg-black/40 p-2">
-              <div className="text-white/40 uppercase tracking-widest text-[9px]">Nodes</div>
+              <div className="text-white/40 uppercase tracking-widest text-[9px]">Active Nodes</div>
               <div className="text-cyan-300 text-sm">
                 {metrics.nodesActive.toLocaleString()}
               </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-black/40 p-2">
-              <div className="text-white/40 uppercase tracking-widest text-[9px]">Regions</div>
+              <div className="text-white/40 uppercase tracking-widest text-[9px]">Clusters</div>
               <div className="text-fuchsia-300 text-sm">{metrics.regionsOnline}</div>
             </div>
             <div className="rounded-lg border border-white/10 bg-black/40 p-2">
-              <div className="text-white/40 uppercase tracking-widest text-[9px]">Throughput</div>
+              <div className="text-white/40 uppercase tracking-widest text-[9px]">Edges</div>
               <div className="text-emerald-300 text-sm">
-                {(metrics.throughput / 100).toFixed(2)}
-                <span className="text-white/40 text-[9px] ml-1">PB/s</span>
+                {metrics.throughput.toLocaleString()}
               </div>
             </div>
           </section>
