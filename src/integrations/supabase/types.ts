@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      capism_events: {
+        Row: {
+          community: number | null
+          created_at: string
+          id: string
+          kind: string
+          node_id: string | null
+          node_label: string | null
+          payload: Json
+          session_id: string | null
+        }
+        Insert: {
+          community?: number | null
+          created_at?: string
+          id?: string
+          kind: string
+          node_id?: string | null
+          node_label?: string | null
+          payload?: Json
+          session_id?: string | null
+        }
+        Update: {
+          community?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          node_id?: string | null
+          node_label?: string | null
+          payload?: Json
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       link_clicks: {
         Row: {
           clicked_at: string
@@ -154,7 +187,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      capism_stats: {
+        Row: {
+          clicks_24h: number | null
+          clicks_60s: number | null
+          clicks_total: number | null
+          events_24h: number | null
+          events_60s: number | null
+          events_total: number | null
+          nodes_engaged: number | null
+          overrides_total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
