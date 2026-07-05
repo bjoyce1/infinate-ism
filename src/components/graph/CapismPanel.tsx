@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import type { NormalizedGraph, GraphNode, Category } from "@/lib/graph/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useCapismLive, logCapismEvent } from "@/lib/graph/useCapismLive";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Small helpers
@@ -514,6 +515,41 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
   const select = useGraphStore((s) => s.select);
   const pulseNode = useGraphStore((s) => s.pulseNode);
   const setRightPanel = useGraphStore((s) => s.setRightPanel);
+  const selectedId = useGraphStore((s) => s.selectedId);
+  const activeCommunity = useGraphStore((s) => s.activeCommunity);
+
+  // Live database feed
+  const { events: liveEvents, stats, connected } = useCapismLive(8);
+
+  // Boot heartbeat on first mount
+  const bootedRef = useRef(false);
+  useEffect(() => {
+    if (bootedRef.current) return;
+    bootedRef.current = true;
+    logCapismEvent("boot", {
+      payload: { nodes: graph.nodes.length, links: graph.links.length },
+    });
+  }, [graph.nodes.length, graph.links.length]);
+
+  // Log selections + community focus as live events
+  useEffect(() => {
+    if (!selectedId) return;
+    const n = graph.byId.get(selectedId);
+    if (!n) return;
+    logCapismEvent("node_select", {
+      node_id: n.id,
+      node_label: n.label,
+      community: n.community ?? null,
+    });
+  }, [selectedId, graph.byId]);
+  useEffect(() => {
+    if (activeCommunity == null) return;
+    const c = graph.communities.find((x) => x.id === activeCommunity);
+    logCapismEvent("community_focus", {
+      community: activeCommunity,
+      payload: { name: c?.name ?? null, count: c?.count ?? null },
+    });
+  }, [activeCommunity, graph.communities]);
 
   const reducedMotion =
     typeof window !== "undefined" &&
@@ -607,6 +643,10 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             <span>OS v4.3.7</span>
             <span>|</span>
             <span>Build {String(graph.nodes.length).padStart(4, "0")}.{String(graph.links.length).padStart(2, "0")}</span>
+            <span>|</span>
+            <span className={connected ? "text-emerald-300" : "text-amber-300"}>
+              {connected ? "◉ DB LINK" : "◌ DB SYNC"}
+            </span>
           </div>
         </div>
 
@@ -723,39 +763,55 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
           <section className="rounded-lg border border-white/10 bg-black/40 p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
-                Notifications
+                Live Event Stream
               </h3>
-              <span className="text-[9px] font-mono text-cyan-300">
-                {recentCaptures.length} NEW
+              <span className="flex items-center gap-1 text-[9px] font-mono text-cyan-300">
+                <span
+                  className={`size-1.5 rounded-full ${connected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}
+                  style={{ boxShadow: connected ? "0 0 6px #34d399" : "0 0 6px #fbbf24" }}
+                />
+                {stats.events_total.toLocaleString()} LOGGED
               </span>
             </div>
-            {recentCaptures.length === 0 ? (
+            {liveEvents.length === 0 && recentCaptures.length === 0 ? (
               <div className="text-[10px] font-mono text-white/40 py-3 text-center">
-                No captures yet.
+                Awaiting signal…
               </div>
             ) : (
               <ul className="space-y-1.5">
-                {recentCaptures.map((c, i) => (
-                  <li key={c.id}>
-                    <button
-                      type="button"
-                      onClick={() => jumpNode(c.id)}
-                      className="w-full flex items-center gap-2 text-[10px] font-mono text-left hover:text-cyan-200 transition-colors"
-                    >
-                      <span
-                        className="size-1.5 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: ACCENTS[i % ACCENTS.length],
-                          boxShadow: `0 0 4px ${ACCENTS[i % ACCENTS.length]}`,
-                        }}
-                      />
-                      <span className="text-white/50 tabular-nums w-10 shrink-0">
-                        {timeAgo(c.updated_at)}
-                      </span>
-                      <span className="truncate text-white/80">{c.label}</span>
-                    </button>
-                  </li>
-                ))}
+                {liveEvents.map((ev, i) => {
+                  const color = ACCENTS[i % ACCENTS.length];
+                  const kindLabel = ev.kind.replace(/_/g, " ").toUpperCase();
+                  const label =
+                    ev.node_label ??
+                    (ev.community != null ? `Cluster ${ev.community}` : kindLabel);
+                  const clickable = ev.node_id && graph.byId.has(ev.node_id);
+                  return (
+                    <li key={ev.id}>
+                      <button
+                        type="button"
+                        disabled={!clickable}
+                        onClick={() => clickable && jumpNode(ev.node_id!)}
+                        className="w-full flex items-center gap-2 text-[10px] font-mono text-left hover:text-cyan-200 transition-colors disabled:cursor-default"
+                      >
+                        <span
+                          className="size-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: color, boxShadow: `0 0 4px ${color}` }}
+                        />
+                        <span className="text-white/50 tabular-nums w-10 shrink-0">
+                          {timeAgo(ev.created_at)}
+                        </span>
+                        <span
+                          className="text-[8px] uppercase tracking-widest w-16 shrink-0"
+                          style={{ color }}
+                        >
+                          {kindLabel}
+                        </span>
+                        <span className="truncate text-white/80">{label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
@@ -773,20 +829,48 @@ export function CapismHud({ graph }: { graph: NormalizedGraph }) {
             <AnalyticsChart metrics={metrics} />
             <div className="mt-2 grid grid-cols-4 gap-2 text-[9px] font-mono">
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Events/s</div>
-                <div className="text-cyan-300 text-sm">{metrics.eventsPerSec.toLocaleString()}</div>
+                <div className="text-white/40 uppercase tracking-widest">Events/60s</div>
+                <div className="text-cyan-300 text-sm">{stats.events_60s.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Queries/s</div>
-                <div className="text-fuchsia-300 text-sm">{metrics.queriesPerSec.toLocaleString()}</div>
+                <div className="text-white/40 uppercase tracking-widest">Clicks/60s</div>
+                <div className="text-fuchsia-300 text-sm">{stats.clicks_60s.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Err %</div>
-                <div className="text-rose-300 text-sm">{metrics.errorRate.toFixed(2)}</div>
+                <div className="text-white/40 uppercase tracking-widest">24h Evt</div>
+                <div className="text-rose-300 text-sm">{stats.events_24h.toLocaleString()}</div>
               </div>
               <div>
-                <div className="text-white/40 uppercase tracking-widest">Success</div>
-                <div className="text-emerald-300 text-sm">{metrics.successRate.toFixed(2)}</div>
+                <div className="text-white/40 uppercase tracking-widest">24h Clk</div>
+                <div className="text-emerald-300 text-sm">{stats.clicks_24h.toLocaleString()}</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Data Sources — live totals from Lovable Cloud */}
+          <section className="rounded-lg border border-white/10 bg-black/40 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-white/70">
+                Data Sources
+              </h3>
+              <span className="text-[9px] font-mono text-emerald-300">CLOUD</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Total Clicks</div>
+                <div className="text-cyan-300 text-sm">{stats.clicks_total.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Nodes Engaged</div>
+                <div className="text-fuchsia-300 text-sm">{stats.nodes_engaged.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Image Overrides</div>
+                <div className="text-amber-300 text-sm">{stats.overrides_total.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-white/40 uppercase tracking-widest text-[9px]">Total Events</div>
+                <div className="text-emerald-300 text-sm">{stats.events_total.toLocaleString()}</div>
               </div>
             </div>
           </section>
