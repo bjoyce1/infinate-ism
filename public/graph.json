@@ -10527,8 +10527,31 @@
       "weight": 6.0,
       "url": "https://themaasaproject.com",
       "color": "#DC2626",
-      "image": "https://www.themaasaproject.com/images/hero-background.png",
-      "description": "MAASA \u2014 Make African Americans Slaves Again. A single-original digital artwork and cinematic essay by Mr. CAP."
+      "image": "/__l5e/assets-v1/83813520-18a4-45c1-80d8-828f8707cea5/maasa-logo.png",
+      "artwork": "/__l5e/assets-v1/83813520-18a4-45c1-80d8-828f8707cea5/maasa-logo.png",
+      "tagline": "Make African Americans Slaves Again",
+      "description": "MAASA \u2014 Make African Americans Slaves Again. A single-original digital artwork and cinematic essay by Mr. CAP (Cornelius A. Pratt, filed 2025). Reads as five words the country buried and keeps digging back up: Make / African / American's / Slaves / Again. Painted red because the wound never closed \u2014 a witness, an accusation, a refusal to forget. Chapters trace the image, its meaning, the artist's statement, the old chains rewritten as policy (voter suppression, mass incarceration, predatory lending, surveillance, the algorithm as the new overseer), the political theater of left and right, and an archive of voting-rights erosion from Shelby v. Holder to gerrymandering, ID laws, roll purges, felony disenfranchisement.",
+      "artist": "Mr. CAP",
+      "artist_real_name": "Cornelius A. Pratt",
+      "filed": "2025",
+      "medium": "Single-original digital artwork \u00b7 Cinematic essay",
+      "themes": [
+        "Slavery",
+        "Racial Injustice",
+        "Voting Rights",
+        "Mass Incarceration",
+        "Political Theater",
+        "Surveillance",
+        "Systemic Racism"
+      ],
+      "chapters": [
+        "Chapter 01 \u2014 The Image",
+        "Chapter 02 \u2014 The Meaning",
+        "Chapter 03 \u2014 Artist Statement",
+        "Chapter 04 \u2014 The Old Chains / The New Chains",
+        "Chapter 05 \u2014 Political Theater",
+        "Chapter 06 \u2014 Voting Rights / Control Systems"
+      ]
     },
     {
       "id": "site_themilkmoney_com",
