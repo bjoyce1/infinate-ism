@@ -11684,15 +11684,40 @@
       "file_type": "image",
       "community": 203,
       "color": "#F5C542",
-      "image": "https://bookspc.com/assets/k-rino-DgQIAVK0.png",
+      "image": "/__l5e/assets-v1/c66d87ca-ae24-403e-baef-17e3d66d9399/k-rino.png",
       "role": "founder",
-      "description": "Houston rap legend and South Park Coalition founder, one of hip-hop's most prolific and intellectually respected lyricists.",
+      "description": "Eric Kaiser \u2014 Houston rap legend, founding architect of the South Park Coalition (SPC), and one of hip-hop's most prolific and intellectually formidable emcees. Since emerging from Houston's South Park in the late 1980s, he built SPC into a philosophy of artistic independence, lyrical excellence, and cultural self-determination. Renowned for conceptual albums, metaphysical themes, political analysis, and spiritual inquiry \u2014 operating outside mainstream industry structures by choice. His legacy is measured in intellectual impact, cultural preservation, and creative sovereignty; a living blueprint for independence in hip-hop.",
       "tags": [
         "Conscious",
-        "Lyrical"
+        "Lyrical",
+        "Underground",
+        "Houston",
+        "SPC Founder",
+        "Prolific"
       ],
       "weight": 2.5,
-      "url": "https://bookspc.com/artists/k-rino"
+      "url": "https://bookspc.com/artists/k-rino",
+      "artwork": "/__l5e/assets-v1/c66d87ca-ae24-403e-baef-17e3d66d9399/k-rino.png",
+      "location": "Houston, TX",
+      "genre": "Hip-Hop / Rap",
+      "real_name": "Eric Kaiser",
+      "booking_url": "https://bookspc.com/booking?type=individual&artistId=1",
+      "discography": [
+        { "title": "Stories from the Black Book", "year": 1993, "type": "Studio Album" },
+        { "title": "Danger Zone", "year": 1995, "type": "Studio Album" },
+        { "title": "K-Rino", "year": 1998, "type": "Studio Album" },
+        { "title": "No Mercy", "year": 1999, "type": "Studio Album" },
+        { "title": "Fear No Evil", "year": 2004, "type": "Studio Album" },
+        { "title": "The Hitt List", "year": 2004, "type": "Studio Album" },
+        { "title": "Worst Rapper Alive", "year": 2005, "type": "Studio Album" },
+        { "title": "Time Traveler", "year": 2006, "type": "Studio Album" },
+        { "title": "Book Number 7", "year": 2007, "type": "Studio Album" },
+        { "title": "Triple Darkness Vol. 1: Wreck Time", "year": 2008, "type": "Studio Album" },
+        { "title": "Triple Darkness Vol. 2: The Lyrics", "year": 2008, "type": "Studio Album" },
+        { "title": "Triple Darkness Vol. 3: Coalition Ambush", "year": 2008, "type": "Studio Album" },
+        { "title": "The Ties That Bind Us", "year": 2024, "type": "Collaborative" }
+      ],
+      "release_count": 47
     },
     {
       "id": "spc_artist_point_blank",
