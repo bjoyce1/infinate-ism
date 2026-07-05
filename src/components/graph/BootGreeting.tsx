@@ -21,7 +21,7 @@ export function BootGreeting({ graph }: { graph: NormalizedGraph }) {
     if (firedRef.current) return;
     firedRef.current = true;
     const count = graph.nodes.length;
-    const line = `What's good, CAP — ${count} nodes indexed, every star accounted for`;
+    const line = `C.A.P.I.S.M. online — ${count} nodes indexed, every star accounted for.`;
 
     toast(line, {
       duration: 6000,
