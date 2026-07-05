@@ -1,46 +1,54 @@
-## Goal
 
-Turn Mnemosyne into an AI-aware second brain backed by Lovable Cloud. Four capabilities, one cohesive UX.
+## 1. Rename JARVIS → C.A.P.I.S.M.
 
-## 1. AI Chat with your graph
+In `src/components/graph/BootGreeting.tsx`, update the greeting line to introduce the assistant as **C.A.P.I.S.M.** (Cognitive Adaptive Processing & Intelligent Systems Matrix). New line: `"C.A.P.I.S.M. online — {count} nodes indexed, every star accounted for."` Keep the same toast + TTS behavior.
 
-- New right-panel tab **Ask** next to the existing detail view (toggle in `DetailPanel.tsx`).
-- Uses `useChat` → `POST /api/chat` (TanStack server route).
-- Server route injects graph context: top-K semantically relevant nodes for the user's question (via embeddings, below), plus the currently selected node.
-- Streams answers with `google/gemini-3-flash-preview` through the Lovable AI Gateway.
-- Answers cite nodes as `[[node_id]]`; the UI turns them into clickable chips that select the node in the graph.
+## 2. New `CapismPanel` drawer
 
-## 2. AI auto-tagging & summaries
+Create `src/components/graph/CapismPanel.tsx`, mounted from `TopBar.tsx` beside the SPC Artists drawer as a **right-side Sheet** (reusing `@/components/ui/sheet`). Trigger button: `◈ C.A.P.I.S.M.` styled like the other TopBar chips, with a subtle cyan pulse dot when open.
 
-- **Summarize / Suggest tags** buttons in `DetailPanel` for the selected node.
-- Server fn `summarizeNode({ id })` uses `generateText` + structured output (`{ summary, tags[] }`).
-- Result saved to Cloud (`node_notes` table) so it persists and shows on reload.
+### Layout (single scrollable column, HUD-styled)
 
-## 3. Semantic search
+Dark obsidian surface + neon cyan/magenta/red accents matching the reference. Sections:
 
-- Cloud table `node_embeddings (node_id text pk, embedding vector(1536), text_hash text, updated_at)`.
-- One-time server fn `rebuildEmbeddings()` (admin-gated) walks `graph.json`, embeds `label + snippet` with `openai/text-embedding-3-small`, upserts.
-- Search palette gets a **Semantic** toggle: server fn `semanticSearch({ q, limit })` embeds the query and returns top matches via `match_nodes()` SQL function. Falls back to Fuse when off.
+1. **Header strip** — "C.A.P.I.S.M." title, subtitle "COGNITIVE ADAPTIVE PROCESSING & INTELLIGENT SYSTEMS MATRIX", live clock (updates every second), build id derived from graph node count.
+2. **Top stat row** (4 mini cards, animated sparklines):
+   - `CORE TEMP` — derived from average node degree (mapped to °C)
+   - `NEURAL LOAD` — % of nodes currently in the active filter set
+   - `SYSTEM UPTIME` — time since page mount
+   - `SECURITY LEVEL` — ALPHA when signed in, BETA when anonymous
+3. **Core Sync Ring** — SVG concentric rings, slowly rotating (CSS `@keyframes spin` at 40s/60s counter-rotating), center label "C.A.P.I.S.M. — CENTRAL AI PROCESSING INTERFACE — ONLINE". Ring fill % = share of nodes with images (from `node_image_overrides` if already loaded, otherwise `node.image` presence). Left gauge (0–100) = focus/selected community coverage; right gauge = filter efficiency.
+4. **System Status bars** — animated progress bars (Radix `Progress`):
+   - CPU = code node share, MEMORY = blog share, GPU = image share, NETWORK = link density, STORAGE = capture count / max, POWER = 100% pulsing.
+5. **AI Models** — top 4 communities by size, each row shows community name, node count as %, colored bar. Click a row → `setCommunity(id)` in graph store.
+6. **Notifications** — most recent captures (from `useGraphStore.captures`, newest 4) with relative timestamps.
+7. **Real-time Analytics** — small SVG multi-line chart (4 colored lines) showing rolling category counts over the last 60s, updated each second by sampling filtered graph state.
 
-## 4. Cloud-persisted notes/tags
+### Animation
 
-- Table `node_notes (node_id text pk, user_id uuid, summary text, tags text[], note text, updated_at)`.
-- RLS: user reads/writes only their own rows.
-- Detail panel shows editable note + tag chips; auto-saves via `createServerFn` (`upsertNodeNote`).
-- Requires sign-in. Add a lightweight `/auth` route (email + Google) — no protected subtree needed; graph stays public, only note editing gates on auth.
+- CSS keyframes: `hud-pulse`, `hud-scan` (top→bottom sweep on ring), `hud-spin-slow`, `hud-spin-reverse`, `hud-flicker` (subtle on numbers).
+- All numbers animate via a small `useCountUp` hook.
+- Sparklines drawn as SVG `polyline` with `stroke-dasharray` draw-in on mount.
+- Respect `prefers-reduced-motion` — freeze rotations and sweeps.
 
-## Technical notes
+### Data wiring
 
-- All AI + DB calls go through `createServerFn` (never from loaders on the public `/` route).
-- `LOVABLE_API_KEY` already provisioned.
-- Migration: enable `pgvector`, create both tables with GRANTs + RLS + `has_role` reuse for admin rebuild, add `match_nodes` RPC.
-- Chat context builder caps at ~15 nodes / ~4k tokens to stay cheap.
-- Google auth configured via `supabase--configure_social_auth` in the same turn.
+New hook `useCapismMetrics(graph)` in the same file that computes derived metrics from `NormalizedGraph`, `useGraphStore` (activeCategories, activeCommunity, selectedId, captures), and `supabase.auth.getSession()` for the security level. Ticks every 1s via `setInterval` to advance uptime, clock, sparkline buffers.
 
-## Out of scope (this pass)
+### Interactions
 
-- Editing graph structure (add/remove nodes/links) from the UI.
-- Multi-user shared notes.
-- Streaming tool-call agent (single-shot RAG only).
+- Clicking a community row jumps and highlights that community.
+- Clicking a notification calls `select(id) + pulseNode(id) + setRightPanel(true)`.
+- "VIEW ALL ALERTS" opens the existing `CapturesDrawer` (dispatch a custom event it listens for, or lift open state).
 
-Ship in this order so each step is usable on its own: (1) migration + embeddings rebuild, (2) semantic search toggle, (3) chat panel, (4) auth + notes + auto-tag.
+## 3. TopBar wiring
+
+Add `<CapismPanel graph={graph} />` next to `<SpcArtistsDrawer />` in `TopBar.tsx`. Guard on `graph` prop (already optional).
+
+## Files
+
+- edit `src/components/graph/BootGreeting.tsx`
+- create `src/components/graph/CapismPanel.tsx`
+- edit `src/components/graph/TopBar.tsx`
+
+No backend, schema, or route changes.
