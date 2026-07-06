@@ -103,132 +103,137 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Radial hierarchy layout — central hub at origin, community leaders fan
-  // out on a ring, satellites orbit each leader. Simulation settles then
-  // freezes (see cooldownTicks + onEngineStop below).
+  // Orbital motion — inject a custom tangential force around each community's
+  // centroid, and keep the simulation permanently warm so orbits never freeze.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
-    type SimNode = GraphNode & {
+    type OrbitNode = GraphNode & {
       x?: number;
       y?: number;
       vx?: number;
       vy?: number;
-      fx?: number | null;
-      fy?: number | null;
     };
-    let nodes: SimNode[] = [];
-    // Per-node target anchor computed once from community membership.
-    let anchors = new Map<string, { ax: number; ay: number; strong: boolean }>();
-
-    const computeAnchors = () => {
-      anchors = new Map();
-      // Group by community.
-      const byComm = new Map<number | string, SimNode[]>();
+    let nodes: OrbitNode[] = [];
+    // Assign each community an evenly-spaced angular slot on a master ring
+    // centered at the origin. This keeps clusters from piling into each other
+    // and gives the whole graph a uniform, organized layout.
+    let slots = new Map<number | string, { angle: number; targetR: number; size: number }>();
+    const recomputeSlots = () => {
+      const sizes = new Map<number | string, number>();
       for (const n of nodes) {
         const key = n.community ?? "__none";
-        if (!byComm.has(key)) byComm.set(key, []);
-        byComm.get(key)!.push(n);
+        sizes.set(key, (sizes.get(key) ?? 0) + 1);
       }
-      // Order communities largest-first for stable slot assignment.
-      const commKeys = Array.from(byComm.keys()).sort(
-        (a, b) => (byComm.get(b)!.length - byComm.get(a)!.length),
+      const keys = Array.from(sizes.keys()).sort((a, b) =>
+        (sizes.get(b) ?? 0) - (sizes.get(a) ?? 0),
       );
-      const N = Math.max(commKeys.length, 1);
-      const RING1 = 260 + Math.sqrt(N) * 40; // community-leader ring
-      commKeys.forEach((key, i) => {
-        const members = byComm.get(key)!;
-        // Pick a leader: hub/image node with highest degree, else highest degree.
-        const leader = [...members].sort((a, b) => {
-          const ah = a.is_hub || a.image ? 1 : 0;
-          const bh = b.is_hub || b.image ? 1 : 0;
-          if (ah !== bh) return bh - ah;
-          return (b.degree ?? 0) - (a.degree ?? 0);
-        })[0];
-        const angle = (i / N) * Math.PI * 2;
-        const lx = Math.cos(angle) * RING1;
-        const ly = Math.sin(angle) * RING1;
-        // Satellite ring radius scales with cluster size; overlap tolerance ~4/10.
-        const RING2 = 40 + Math.sqrt(members.length) * 14;
-        // Satellites: evenly distribute on RING2 around the leader.
-        const satellites = members.filter((m) => m.id !== leader.id);
-        // Sort satellites by id for deterministic placement.
-        satellites.sort((a, b) => a.id.localeCompare(b.id));
-        satellites.forEach((m, j) => {
-          const sa = (j / Math.max(satellites.length, 1)) * Math.PI * 2;
-          anchors.set(m.id, {
-            ax: lx + Math.cos(sa) * RING2,
-            ay: ly + Math.sin(sa) * RING2,
-            strong: false,
-          });
+      const N = Math.max(keys.length, 1);
+      // Master ring radius scales with number of communities.
+      const ringR = 180 + Math.sqrt(N) * 90;
+      slots = new Map();
+      keys.forEach((k, i) => {
+        const size = sizes.get(k) ?? 1;
+        slots.set(k, {
+          angle: (i / N) * Math.PI * 2,
+          targetR: ringR,
+          size,
         });
-        anchors.set(leader.id, { ax: lx, ay: ly, strong: true });
       });
-      // Pin the master hub at the origin if present.
-      const hub = nodes.find((n) => n.id === HUB_ID);
-      if (hub) anchors.set(hub.id, { ax: 0, ay: 0, strong: true });
     };
-
-    const anchorForce = (alpha: number) => {
+    const force = (alpha: number) => {
       if (!nodes.length) return;
-      if (anchors.size === 0) computeAnchors();
+      if (slots.size === 0) recomputeSlots();
+      // 1. Compute live centroids per community.
+      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        const a = anchors.get(n.id);
-        if (!a) continue;
-        const k = (a.strong ? 0.35 : 0.18) * alpha;
-        n.vx = (n.vx ?? 0) + (a.ax - n.x) * k;
-        n.vy = (n.vy ?? 0) + (a.ay - n.y) * k;
+        const key = n.community ?? "__none";
+        const c = centers.get(key) ?? { cx: 0, cy: 0, n: 0 };
+        c.cx += n.x;
+        c.cy += n.y;
+        c.n += 1;
+        centers.set(key, c);
+      }
+      for (const c of centers.values()) {
+        c.cx /= c.n;
+        c.cy /= c.n;
+      }
+      // 2. Anchor each centroid toward its slot on the master ring.
+      const anchorPull = 0.04 * Math.max(alpha, 0.2);
+      const anchors = new Map<number | string, { ax: number; ay: number }>();
+      for (const [key, slot] of slots) {
+        const ax = Math.cos(slot.angle) * slot.targetR;
+        const ay = Math.sin(slot.angle) * slot.targetR;
+        anchors.set(key, { ax, ay });
+      }
+      // 3. Per-node: gentle tangential orbit + strong radial spring toward
+      //    a uniform per-cluster orbit radius, plus a pull toward the slot.
+      const speed = 0.28 * Math.max(alpha, 0.15);
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        const key = n.community ?? "__none";
+        const c = centers.get(key);
+        const a = anchors.get(key);
+        const slot = slots.get(key);
+        if (!c || !a || !slot) continue;
+        // Pull the whole cluster toward its anchor slot.
+        n.vx = (n.vx ?? 0) + (a.ax - c.cx) * anchorPull;
+        n.vy = (n.vy ?? 0) + (a.ay - c.cy) * anchorPull;
+        if (n.is_hub) continue;
+        // Uniform per-cluster orbit radius — scales with cluster size, not
+        // per-node degree, so every satellite sits on a clean ring.
+        const targetR = 22 + Math.sqrt(slot.size) * 8;
+        const dx = n.x - c.cx;
+        const dy = n.y - c.cy;
+        const r = Math.hypot(dx, dy) || 1;
+        // Tangential (counter-clockwise) — calm, uniform speed.
+        n.vx += (-dy / r) * speed;
+        n.vy += (dx / r) * speed;
+        // Strong radial spring toward the target ring.
+        const pull = (targetR - r) * 0.02;
+        n.vx += (dx / r) * pull;
+        n.vy += (dy / r) * pull;
       }
     };
-    (anchorForce as unknown as { initialize: (n: SimNode[]) => void }).initialize = (n) => {
+    (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
       nodes = n;
-      // Seed positions near their anchor so the first few ticks are already
-      // roughly organized — avoids the initial "big bang" chaos.
-      computeAnchors();
-      for (const node of nodes) {
-        const a = anchors.get(node.id);
-        if (!a) continue;
-        node.x = a.ax + (Math.random() - 0.5) * 6;
-        node.y = a.ay + (Math.random() - 0.5) * 6;
-        node.vx = 0;
-        node.vy = 0;
-      }
+      slots = new Map();
+      recomputeSlots();
     };
-    fgRef.current.d3Force("anchor", anchorForce);
-    // Mild repulsion, only within a small radius, so overlapping labels
-    // separate without breaking the radial structure.
+    fgRef.current.d3Force("orbital", force);
+    // Uniform repulsion so nothing clumps into a blob.
     fgRef.current.d3Force(
       "charge",
-      forceManyBody<SimNode>()
-        .strength((n) => (n.is_hub || n.image ? -80 : -12))
-        .distanceMax(90),
+      forceManyBody<OrbitNode>()
+        .strength((n) => (n.is_hub || n.image ? -120 : -18))
+        .distanceMax(220),
     );
-    // Prevent visual overlap of nodes and images (overlap tolerance ~4/10).
-    const collide = forceCollide<SimNode>()
+    // Prevent nodes (and hub/image nodes) from overlapping inside their cluster.
+    const collide = forceCollide<OrbitNode>()
       .radius((n) => {
         const isHub = Boolean(n.is_hub || n.image);
         const r = isHub
           ? Math.max(14, Math.min(28, 10 + Math.sqrt(n.degree ?? 0) * 1.2))
           : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0)));
-        return r + 3;
+        return r + 4;
       })
-      .strength(0.9)
-      .iterations(2);
+      .strength(1)
+      .iterations(3);
     fgRef.current.d3Force("collide", collide);
-    // Kill link + center forces — anchors define the layout, links would
-    // otherwise pull everything back toward a blob.
-    type LinkEndpoint = string | SimNode;
+    // Loosen links between main (hub / image) nodes so highly-connected
+    // hubs don't pull each other into a tight ball, but keep them loosely grouped.
+    type LinkEndpoint = string | OrbitNode;
     type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
+    const isMain = (n: LinkEndpoint) =>
+      typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
     const linkForce = (fgRef.current.d3Force("link") as unknown) as
-      | (ForceLink<SimNode, SimLink> & {
-          distance: (fn: (l: SimLink) => number) => unknown;
-          strength: (fn: (l: SimLink) => number) => unknown;
-        })
+      | (ForceLink<OrbitNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
       | null;
     if (linkForce) {
-      linkForce.distance(() => 40).strength(() => 0);
+      linkForce
+        .distance((l) => (isMain(l.source) && isMain(l.target) ? 200 : 36))
+        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
     }
-    fgRef.current.d3Force("center", null as unknown);
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph]);
   useEffect(() => {
@@ -456,19 +461,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const t = typeof link.target === "string" ? link.target : link.target.id;
             return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
           }}
-          cooldownTicks={400}
-          d3AlphaDecay={0.02}
-          d3AlphaMin={0.001}
-          d3VelocityDecay={0.55}
-          onEngineStop={() => {
-            // Freeze every node in place once the radial layout has settled.
-            type SimNode = GraphNode & { x?: number; y?: number; fx?: number | null; fy?: number | null };
-            const gd = data as { nodes: SimNode[] };
-            for (const n of gd.nodes) {
-              if (n.x != null) n.fx = n.x;
-              if (n.y != null) n.fy = n.y;
-            }
-          }}
+          cooldownTicks={Infinity}
+          d3AlphaDecay={0}
+          d3AlphaMin={0}
+          d3VelocityDecay={0.65}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
