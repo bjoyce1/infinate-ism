@@ -9,6 +9,7 @@ import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
+import { InfiniteIsmHud } from "@/components/graph/InfiniteIsmHud";
 import { SearchCommand } from "@/components/graph/SearchCommand";
 import { HubHoverCard } from "@/components/graph/HubHoverCard";
 import { BootGreeting } from "@/components/graph/BootGreeting";
@@ -154,7 +155,7 @@ function Index() {
       <LeftSidebar graph={graph} />
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
         {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}
-        <TopBar graph={graph} />
+        {viewMode === "2d" ? <TopBar graph={graph} /> : <InfiniteIsmHud graph={graph} />}
         <HubHoverCard graph={graph} />
       </main>
       <RightPanel graph={graph} />
