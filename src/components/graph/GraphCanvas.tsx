@@ -374,7 +374,11 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   };
 
   return (
-    <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
+    <div
+      ref={wrapRef}
+      className="absolute inset-0 overflow-hidden"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* Static starfield background — never rotates or orbits with the nodes */}
       <div
         aria-hidden
