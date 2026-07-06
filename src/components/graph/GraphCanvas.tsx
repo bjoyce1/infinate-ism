@@ -70,6 +70,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     };
   }, [ctxMenu]);
 
+  // Suppress the browser's native context menu anywhere inside the graph wrapper.
+  // React's synthetic onContextMenu can be shadowed by the canvas element in
+  // some browsers (Chrome shows "Save image as…" for <canvas>). A capture-phase
+  // native listener on the wrapper guarantees preventDefault runs first.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const block = (e: Event) => e.preventDefault();
+    el.addEventListener("contextmenu", block, { capture: true });
+    return () => el.removeEventListener("contextmenu", block, { capture: true } as EventListenerOptions);
+  }, []);
+
   const mirrorImageToNode = async (nodeId: string, sourceUrl: string | null) => {
     const url = window.prompt(
       "Mirror image to node — paste an image URL:",
