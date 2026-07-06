@@ -45,6 +45,9 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const SpriteTextCtorRef = useRef<SpriteTextConstructor | null>(null);
   const spritesRef = useRef<Map<string, LabelSprite>>(new Map());
   const rafRef = useRef<number | null>(null);
+  const hoverRafRef = useRef<number | null>(null);
+  const pendingHoverIdRef = useRef<string | null>(null);
+  const selectedHighlightRef = useRef<Set<string> | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const focusMode = useGraphStore((s) => s.focusMode);
@@ -147,6 +150,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const focusNeighborhoodRef = useRef<Set<string> | null>(null);
   const hoveredRef = useRef<string | null>(null);
   useEffect(() => {
+    selectedHighlightRef.current = selectedHighlightSet;
     if (!hoveredRef.current) highlightRef.current = selectedHighlightSet;
     selectedRef.current = selectedId;
     if (focusMode && selectedId) {
@@ -359,18 +363,35 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
     return "rgba(255,255,255,0.12)";
   }, []);
 
-  const handleNodeHover = useCallback(
-    (node: GraphNode | null) => {
-      const nextId = node?.id ?? null;
-      if (hoveredRef.current === nextId) return;
-      hoveredRef.current = nextId;
-      highlightRef.current = nextId ? getNeighborhood(nextId) : selectedHighlightSet;
-      hoverRef.current(nextId);
-      if (!nextId && tooltipRef.current) tooltipRef.current.style.display = "none";
-      fgRef.current?.refresh?.();
-    },
-    [getNeighborhood, selectedHighlightSet],
-  );
+  // Hover is throttled to one commit per animation frame and never rebuilds
+  // the scene. We only mutate refs; the per-frame label tick loop already
+  // reads them, and link-particle accessors are re-evaluated by the sim on
+  // its own cadence. We deliberately skip pushing hover into the zustand
+  // store from 3D — the tooltip is handled locally via `tooltipRef`, and
+  // waking global subscribers on every mousemove was a major stall source.
+  const handleNodeHover = useCallback((node: GraphNode | null) => {
+    const nextId = node?.id ?? null;
+    if (hoveredRef.current === nextId && pendingHoverIdRef.current === nextId) return;
+    pendingHoverIdRef.current = nextId;
+    if (hoverRafRef.current != null) return;
+    hoverRafRef.current = requestAnimationFrame(() => {
+      hoverRafRef.current = null;
+      const id = pendingHoverIdRef.current;
+      if (hoveredRef.current === id) return;
+      hoveredRef.current = id;
+      if (id) {
+        const set = new Set<string>([id]);
+        for (const nb of graph.neighbors.get(id) ?? []) set.add(nb);
+        highlightRef.current = set;
+      } else {
+        highlightRef.current = selectedHighlightRef.current;
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
+      }
+    });
+  }, [graph.neighbors]);
+  useEffect(() => () => {
+    if (hoverRafRef.current != null) cancelAnimationFrame(hoverRafRef.current);
+  }, []);
 
   const linkParticleCount = useCallback(
     (link: { source: GraphNode | string; target: GraphNode | string }) => {
@@ -424,6 +445,15 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
           nodeThreeObject={(node: NodeWithCoords) => {
             const SpriteText = SpriteTextCtorRef.current;
             if (!SpriteText) return null;
+            // Reuse cached sprite so any incidental refresh() (filter change,
+            // selection change) does not allocate a fresh canvas texture and
+            // material for every node — that was the multi-second stall on
+            // large graphs.
+            const cached = spritesRef.current.get(node.id);
+            if (cached && cached.__label === (node.label ?? node.id)) {
+              cached.__node = node;
+              return cached;
+            }
             const label = node.label ?? node.id;
             const sprite = new SpriteText(label) as LabelSprite;
             sprite.color = "#E4E4E7";
