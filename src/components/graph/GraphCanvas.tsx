@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { forceCollide } from "d3-force";
+import { forceCollide, type ForceLink } from "d3-force";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
@@ -9,7 +9,7 @@ type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
   zoom: (v: number, ms?: number) => void;
   zoomToFit: (ms?: number, padding?: number) => void;
-  d3Force: (name: string, force: unknown) => ForceGraphHandle;
+  d3Force: ((name: string, force: unknown) => ForceGraphHandle) & ((name: string) => unknown);
   d3ReheatSimulation: () => void;
 };
 
@@ -99,6 +99,20 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .strength(0.9)
       .iterations(2);
     fgRef.current.d3Force("collide", collide);
+    // Loosen links between main (hub / image) nodes so highly-connected
+    // hubs don't pull each other into a tight ball.
+    type LinkEndpoint = string | OrbitNode;
+    type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
+    const isMain = (n: LinkEndpoint) =>
+      typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
+    const linkForce = (fgRef.current.d3Force("link") as unknown) as
+      | (ForceLink<OrbitNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
+      | null;
+    if (linkForce) {
+      linkForce
+        .distance((l) => (isMain(l.source) && isMain(l.target) ? 260 : 40))
+        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.4));
+    }
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph]);
   useEffect(() => {
