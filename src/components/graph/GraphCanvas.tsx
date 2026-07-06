@@ -42,6 +42,97 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
   const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
+
+  // Pre-compute an initial orbit layout for every node the moment the graph
+  // loads, so the organization is visible immediately instead of settling in.
+  // Mutates x/y on the node objects — d3-force uses these as initial positions.
+  useEffect(() => {
+    type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number };
+    // Parent map for spawn links (same logic as the orbital force).
+    const parentOf = new Map<string, string>();
+    const childrenOf = new Map<string, string[]>();
+    for (const l of graph.links) {
+      if (l.relation !== "spawn") continue;
+      const s = typeof l.source === "string" ? l.source : (l.source as { id: string }).id;
+      const t = typeof l.target === "string" ? l.target : (l.target as { id: string }).id;
+      const sn = graph.byId.get(s);
+      const tn = graph.byId.get(t);
+      if (!sn || !tn) continue;
+      const sMain = Boolean(sn.is_hub || sn.image);
+      const tMain = Boolean(tn.is_hub || tn.image);
+      const parent = sMain && !tMain ? s : !sMain && tMain ? t : s;
+      const child = parent === s ? t : s;
+      if (parent === child) continue;
+      if (!parentOf.has(child)) parentOf.set(child, parent);
+      if (!childrenOf.has(parent)) childrenOf.set(parent, []);
+      childrenOf.get(parent)!.push(child);
+    }
+    // Community slot ring (mirrors recomputeSlots in the orbital force).
+    const communitySizes = new Map<number | string, number>();
+    for (const n of graph.nodes) {
+      const k = n.community ?? "__none";
+      communitySizes.set(k, (communitySizes.get(k) ?? 0) + 1);
+    }
+    const commKeys = [...communitySizes.keys()].sort(
+      (a, b) => (communitySizes.get(b) ?? 0) - (communitySizes.get(a) ?? 0),
+    );
+    const N = Math.max(commKeys.length, 1);
+    const ringR = 180 + Math.sqrt(N) * 90;
+    const commAnchor = new Map<number | string, { cx: number; cy: number; size: number }>();
+    commKeys.forEach((k, i) => {
+      const angle = (i / N) * Math.PI * 2;
+      commAnchor.set(k, {
+        cx: Math.cos(angle) * ringR,
+        cy: Math.sin(angle) * ringR,
+        size: communitySizes.get(k) ?? 1,
+      });
+    });
+    // Deterministic angle per node id — same graph = same layout every load.
+    const hash = (s: string) => {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+      return (h >>> 0) / 0xffffffff;
+    };
+    // First pass: place hubs + non-spawn nodes on their community ring.
+    for (const raw of graph.nodes) {
+      const n = raw as Pos;
+      if (parentOf.has(n.id)) continue; // spawn children handled below
+      const a = commAnchor.get(n.community ?? "__none");
+      if (!a) continue;
+      if (n.is_hub || n.image) {
+        // Main node sits at the community anchor.
+        n.x = a.cx;
+        n.y = a.cy;
+      } else {
+        const orbitR = 22 + Math.sqrt(a.size) * 8;
+        const theta = hash(n.id) * Math.PI * 2;
+        n.x = a.cx + Math.cos(theta) * orbitR;
+        n.y = a.cy + Math.sin(theta) * orbitR;
+      }
+      n.vx = 0;
+      n.vy = 0;
+    }
+    // Second pass: spawn children get evenly-spaced slots around their parent.
+    for (const [parentId, kids] of childrenOf) {
+      const p = graph.byId.get(parentId) as Pos | undefined;
+      if (!p || p.x == null || p.y == null) continue;
+      const siblings = kids.length;
+      const orbitR = 26 + Math.sqrt(siblings) * 6;
+      kids.forEach((cid, i) => {
+        const n = graph.byId.get(cid) as Pos | undefined;
+        if (!n) return;
+        // Evenly spaced + a per-parent phase so different parents don't align.
+        const theta = (i / siblings) * Math.PI * 2 + hash(parentId) * Math.PI * 2;
+        n.x = (p.x ?? 0) + Math.cos(theta) * orbitR;
+        n.y = (p.y ?? 0) + Math.sin(theta) * orbitR;
+        n.vx = 0;
+        n.vy = 0;
+      });
+    }
+    // If the sim is already running, kick it so it picks up the new positions.
+    fgRef.current?.d3ReheatSimulation();
+  }, [graph]);
+
   // Refs so the force closure always reads the latest values without re-registering.
   const spawnRadiusRef = useRef(spawnOrbitRadius);
   const spawnSpeedRef = useRef(spawnOrbitSpeed);
