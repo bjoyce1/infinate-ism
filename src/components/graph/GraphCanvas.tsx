@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { forceCollide, type ForceLink } from "d3-force";
+import { forceCollide, forceManyBody, type ForceLink } from "d3-force";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
@@ -97,8 +97,36 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       vy?: number;
     };
     let nodes: OrbitNode[] = [];
+    // Assign each community an evenly-spaced angular slot on a master ring
+    // centered at the origin. This keeps clusters from piling into each other
+    // and gives the whole graph a uniform, organized layout.
+    let slots = new Map<number | string, { angle: number; targetR: number; size: number }>();
+    const recomputeSlots = () => {
+      const sizes = new Map<number | string, number>();
+      for (const n of nodes) {
+        const key = n.community ?? "__none";
+        sizes.set(key, (sizes.get(key) ?? 0) + 1);
+      }
+      const keys = Array.from(sizes.keys()).sort((a, b) =>
+        (sizes.get(b) ?? 0) - (sizes.get(a) ?? 0),
+      );
+      const N = Math.max(keys.length, 1);
+      // Master ring radius scales with number of communities.
+      const ringR = 180 + Math.sqrt(N) * 90;
+      slots = new Map();
+      keys.forEach((k, i) => {
+        const size = sizes.get(k) ?? 1;
+        slots.set(k, {
+          angle: (i / N) * Math.PI * 2,
+          targetR: ringR,
+          size,
+        });
+      });
+    };
     const force = (alpha: number) => {
       if (!nodes.length) return;
+      if (slots.size === 0) recomputeSlots();
+      // 1. Compute live centroids per community.
       const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
@@ -113,28 +141,56 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         c.cx /= c.n;
         c.cy /= c.n;
       }
-      const speed = 0.55 * Math.max(alpha, 0.15);
+      // 2. Anchor each centroid toward its slot on the master ring.
+      const anchorPull = 0.04 * Math.max(alpha, 0.2);
+      const anchors = new Map<number | string, { ax: number; ay: number }>();
+      for (const [key, slot] of slots) {
+        const ax = Math.cos(slot.angle) * slot.targetR;
+        const ay = Math.sin(slot.angle) * slot.targetR;
+        anchors.set(key, { ax, ay });
+      }
+      // 3. Per-node: gentle tangential orbit + strong radial spring toward
+      //    a uniform per-cluster orbit radius, plus a pull toward the slot.
+      const speed = 0.28 * Math.max(alpha, 0.15);
       for (const n of nodes) {
-        if (n.is_hub || n.x == null || n.y == null) continue;
-        const c = centers.get(n.community ?? "__none");
-        if (!c) continue;
+        if (n.x == null || n.y == null) continue;
+        const key = n.community ?? "__none";
+        const c = centers.get(key);
+        const a = anchors.get(key);
+        const slot = slots.get(key);
+        if (!c || !a || !slot) continue;
+        // Pull the whole cluster toward its anchor slot.
+        n.vx = (n.vx ?? 0) + (a.ax - c.cx) * anchorPull;
+        n.vy = (n.vy ?? 0) + (a.ay - c.cy) * anchorPull;
+        if (n.is_hub) continue;
+        // Uniform per-cluster orbit radius — scales with cluster size, not
+        // per-node degree, so every satellite sits on a clean ring.
+        const targetR = 22 + Math.sqrt(slot.size) * 8;
         const dx = n.x - c.cx;
         const dy = n.y - c.cy;
         const r = Math.hypot(dx, dy) || 1;
-        // Tangential push (perpendicular to radius) — counter-clockwise
-        n.vx = (n.vx ?? 0) + (-dy / r) * speed;
-        n.vy = (n.vy ?? 0) + (dx / r) * speed;
-        // Gentle radial spring to keep orbit radius stable
-        const targetR = 30 + (n.degree ?? 0) * 4;
-        const pull = (targetR - r) * 0.003;
+        // Tangential (counter-clockwise) — calm, uniform speed.
+        n.vx += (-dy / r) * speed;
+        n.vy += (dx / r) * speed;
+        // Strong radial spring toward the target ring.
+        const pull = (targetR - r) * 0.02;
         n.vx += (dx / r) * pull;
         n.vy += (dy / r) * pull;
       }
     };
     (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
       nodes = n;
+      slots = new Map();
+      recomputeSlots();
     };
     fgRef.current.d3Force("orbital", force);
+    // Uniform repulsion so nothing clumps into a blob.
+    fgRef.current.d3Force(
+      "charge",
+      forceManyBody<OrbitNode>()
+        .strength((n) => (n.is_hub || n.image ? -120 : -18))
+        .distanceMax(220),
+    );
     // Prevent nodes (and hub/image nodes) from overlapping inside their cluster.
     const collide = forceCollide<OrbitNode>()
       .radius((n) => {
@@ -142,10 +198,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const r = isHub
           ? Math.max(14, Math.min(28, 10 + Math.sqrt(n.degree ?? 0) * 1.2))
           : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0)));
-        return r + 2;
+        return r + 4;
       })
-      .strength(0.9)
-      .iterations(2);
+      .strength(1)
+      .iterations(3);
     fgRef.current.d3Force("collide", collide);
     // Loosen links between main (hub / image) nodes so highly-connected
     // hubs don't pull each other into a tight ball, but keep them loosely grouped.
@@ -158,8 +214,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       | null;
     if (linkForce) {
       linkForce
-        .distance((l) => (isMain(l.source) && isMain(l.target) ? 130 : 45))
-        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.08 : 0.45));
+        .distance((l) => (isMain(l.source) && isMain(l.target) ? 200 : 36))
+        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
     }
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph]);
