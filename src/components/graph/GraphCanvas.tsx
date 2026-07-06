@@ -126,7 +126,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const p = graph.byId.get(parentId) as Pos | undefined;
       if (!p || p.x == null || p.y == null) continue;
       const siblings = kids.length;
-      const orbitR = 26 + Math.sqrt(siblings) * 6;
+      const orbitR = 14 + Math.sqrt(siblings) * 3.5;
       kids.forEach((cid, i) => {
         const n = graph.byId.get(cid) as Pos | undefined;
         if (!n) return;
