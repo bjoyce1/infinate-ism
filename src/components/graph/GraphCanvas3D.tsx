@@ -56,7 +56,6 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   const hideCode = useGraphStore((s) => s.hideCode);
   const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
-  const hoverRef = useRef(useGraphStore.getState().hover);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
