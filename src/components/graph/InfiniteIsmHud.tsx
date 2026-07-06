@@ -45,6 +45,7 @@ export function InfiniteIsmHud({ graph }: { graph: NormalizedGraph }) {
   const setLinkIntensity = useGraphStore((s) => s.setLinkIntensity);
   const setParticleIntensity = useGraphStore((s) => s.setParticleIntensity);
   const setAutoRotate = useGraphStore((s) => s.setAutoRotate);
+  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
 
   // Layout mode → drives density of shown links & particles.
@@ -150,6 +151,14 @@ export function InfiniteIsmHud({ graph }: { graph: NormalizedGraph }) {
           >
             <span className="inline-block h-2.5 w-2.5 border-l-[3px] border-r-[3px] border-zinc-300" />
             {paused ? "Play" : "Pause"}
+          </button>
+          <button
+            type="button"
+            onClick={toggleViewMode}
+            className="flex items-center gap-1.5 rounded border border-white/10 px-2 py-1 hover:border-white/25"
+            title="Switch back to 2D view"
+          >
+            <span>◫</span> 2D
           </button>
           <button
             type="button"
