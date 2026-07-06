@@ -53,7 +53,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
 
   useEffect(() => {
     if (!ctxMenu) return;
-    const onDown = () => closeCtx();
+    // Right-click also fires a mousedown (button 2) which would immediately
+    // close the menu we just opened — only close on primary/middle clicks.
+    const onDown = (e: MouseEvent) => {
+      if (e.button === 2) return;
+      closeCtx();
+    };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeCtx();
     };
