@@ -42,11 +42,20 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
   const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
+  const orbitLayout = useGraphStore((s) => s.orbitLayout);
+  const orbitLayoutRef = useRef(orbitLayout);
+  useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
+  useEffect(() => {
+    // Reheat + relax link distances when toggling so nodes spread out in free-drift
+    // mode and re-organize in orbit mode.
+    fgRef.current?.d3ReheatSimulation();
+  }, [orbitLayout]);
 
   // Pre-compute an initial orbit layout for every node the moment the graph
   // loads, so the organization is visible immediately instead of settling in.
   // Mutates x/y on the node objects — d3-force uses these as initial positions.
   useEffect(() => {
+    if (!orbitLayout) return;
     type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number };
     // Parent map for spawn links (same logic as the orbital force).
     const parentOf = new Map<string, string>();
@@ -131,7 +140,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
     // If the sim is already running, kick it so it picks up the new positions.
     fgRef.current?.d3ReheatSimulation();
-  }, [graph]);
+  }, [graph, orbitLayout]);
 
   // Refs so the force closure always reads the latest values without re-registering.
   const spawnRadiusRef = useRef(spawnOrbitRadius);
