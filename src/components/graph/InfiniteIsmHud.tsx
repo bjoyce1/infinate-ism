@@ -45,6 +45,7 @@ export function InfiniteIsmHud({ graph }: { graph: NormalizedGraph }) {
   const setLinkIntensity = useGraphStore((s) => s.setLinkIntensity);
   const setParticleIntensity = useGraphStore((s) => s.setParticleIntensity);
   const setAutoRotate = useGraphStore((s) => s.setAutoRotate);
+  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
 
   // Layout mode → drives density of shown links & particles.
