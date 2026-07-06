@@ -275,6 +275,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     };
     const force = (alpha: number) => {
       if (!nodes.length) return;
+      if (!orbitLayoutRef.current) return; // free-drift mode: default forces only
       if (slots.size === 0) recomputeSlots();
       // 1. Compute live centroids per community.
       const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
