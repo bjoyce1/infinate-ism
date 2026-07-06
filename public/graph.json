@@ -15265,9 +15265,26 @@
         "SUC",
         "Legacy"
       ],
-      "description": "The Screwed Up Click (S.U.C.) \u2014 the Houston rap collective founded by DJ Screw in the early 1990s. Home of the chopped & screwed sound, the Screw Tapes, and the freestyle roll call that defined Southside Houston hip-hop.",
+      "description": "The Screwed Up Click (S.U.C., also known as Soldiers United 4 Cash) \u2014 American hip hop collective from Houston, Texas, led by DJ Screw and active since 1990. Born from freestyles on DJ Screw's mixtapes at 'The Screw House' in South Park, the SUC pioneered the chopped & screwed sound and Southside Houston rap. Signature members include Big Hawk, Big Moe, Big Pokey, Botany Boyz, E.S.G., Fat Pat, Lil' Flip, Lil' Keke, Lil' O, Mr. 3-2, and Z-Ro; Devin the Dude, K-Rino, Lil' Troy, South Park Mexican and UGK are considered Screwed Up Affiliated. Members hail from South Park, 3rd Ward, Sunnyside, Cloverland, Hiram Clarke and South Acres.",
       "url": "https://en.wikipedia.org/wiki/Screwed_Up_Click",
-      "tagline": "Founded by DJ Screw \u00b7 Southside Houston",
+      "tagline": "Led by DJ Screw \u00b7 Houston, TX \u00b7 1990\u2013present",
+      "also_known_as": ["Soldiers United 4 Cash", "S.U.C."],
+      "origin": "Houston, Texas, U.S.",
+      "genres": ["Chopped and screwed", "Southern hip hop"],
+      "years_active": "1990\u2013present",
+      "record_label": "Screwed Up Records",
+      "members": [
+        "Al-D", "B.G. Duke", "Big Troy", "Botany Boyz", "Chris Ward", "C-Note",
+        "Enjoli", "E.S.G.", "Kay-K", "Lil' Flip", "Lil' Head", "Lil' Keke",
+        "DJ TALPH", "Lil' O", "Lil' 3rd", "Mike D", "Southside Playaz",
+        "Yungstar", "Z-Ro"
+      ],
+      "past_members": [
+        "B.G. Gator", "Big Hawk", "Big Jut", "Big Mello", "Big Moe",
+        "Big Pokey", "Big Steve (GrandPappy Mafioso)", "DJ Screw", "Fat Pat",
+        "Macc Grace (Dat Boy Grace)", "Mr. 3-2", "Big Floyd"
+      ],
+      "affiliated": ["Devin the Dude", "K-Rino", "Lil' Troy", "South Park Mexican", "UGK"],
       "weight": 5.0
     },
     {
