@@ -144,6 +144,12 @@ function AdminPage() {
             >
               → Integration status
             </Link>
+            <Link
+              to="/admin/pointblank"
+              className="ml-2 inline-block px-3 py-2 border border-amber-500/40 text-xs font-mono uppercase tracking-widest rounded text-amber-300 hover:bg-amber-500/10"
+            >
+              → Resync Point Blank
+            </Link>
           </div>
         </div>
       )}
