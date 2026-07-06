@@ -9,7 +9,7 @@ type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
   zoom: (v: number, ms?: number) => void;
   zoomToFit: (ms?: number, padding?: number) => void;
-  d3Force: (name: string, force: unknown) => ForceGraphHandle;
+  d3Force: ((name: string, force: unknown) => ForceGraphHandle) & ((name: string) => unknown);
   d3ReheatSimulation: () => void;
 };
 
