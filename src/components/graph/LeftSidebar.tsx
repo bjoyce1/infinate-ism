@@ -422,6 +422,44 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             </div>
           </div>
 
+          <div>
+            <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-4">
+              Spawn Orbits
+            </h3>
+            <div className="space-y-3">
+              <label className="block">
+                <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                  <span>Orbit radius</span>
+                  <span>{spawnOrbitRadius.toFixed(1)}×</span>
+                </div>
+                <input
+                  type="range"
+                  min={0.3}
+                  max={3}
+                  step={0.1}
+                  value={spawnOrbitRadius}
+                  onChange={(e) => setSpawnOrbitRadius(Number(e.target.value))}
+                  className="w-full accent-neon-primary cursor-pointer"
+                />
+              </label>
+              <label className="block">
+                <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                  <span>Rotation speed</span>
+                  <span>{spawnOrbitSpeed.toFixed(1)}×</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={3}
+                  step={0.1}
+                  value={spawnOrbitSpeed}
+                  onChange={(e) => setSpawnOrbitSpeed(Number(e.target.value))}
+                  className="w-full accent-neon-primary cursor-pointer"
+                />
+              </label>
+            </div>
+          </div>
+
           {viewMode === "3d" && (
             <div>
               <div className="flex items-center justify-between mb-4">
