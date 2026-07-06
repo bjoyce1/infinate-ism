@@ -53,6 +53,10 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setParticleIntensity = useGraphStore((s) => s.setParticleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const setLinkIntensity = useGraphStore((s) => s.setLinkIntensity);
+  const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
+  const setSpawnOrbitRadius = useGraphStore((s) => s.setSpawnOrbitRadius);
+  const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
+  const setSpawnOrbitSpeed = useGraphStore((s) => s.setSpawnOrbitSpeed);
   const viewMode = useGraphStore((s) => s.viewMode);
   const showLabels = useGraphStore((s) => s.showLabels);
   const setShowLabels = useGraphStore((s) => s.setShowLabels);
