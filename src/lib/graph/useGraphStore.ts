@@ -15,6 +15,7 @@ type State = {
   linkIntensity: number;
   spawnOrbitRadius: number;
   spawnOrbitSpeed: number;
+  orbitLayout: boolean;
   showLabels: boolean;
   labelSize: number;
   labelDensity: number;
@@ -40,6 +41,8 @@ type State = {
   setLinkIntensity: (v: number) => void;
   setSpawnOrbitRadius: (v: number) => void;
   setSpawnOrbitSpeed: (v: number) => void;
+  toggleOrbitLayout: () => void;
+  setOrbitLayout: (v: boolean) => void;
   setShowLabels: (v: boolean) => void;
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
@@ -77,6 +80,7 @@ export const useGraphStore = create<State>()(
   linkIntensity: 1,
   spawnOrbitRadius: 1,
   spawnOrbitSpeed: 1,
+  orbitLayout: true,
   showLabels: true,
   labelSize: 1,
   labelDensity: 1,
@@ -109,6 +113,8 @@ export const useGraphStore = create<State>()(
   setLinkIntensity: (v) => set({ linkIntensity: v }),
   setSpawnOrbitRadius: (v) => set({ spawnOrbitRadius: v }),
   setSpawnOrbitSpeed: (v) => set({ spawnOrbitSpeed: v }),
+  toggleOrbitLayout: () => set((s) => ({ orbitLayout: !s.orbitLayout })),
+  setOrbitLayout: (v) => set({ orbitLayout: v }),
   setShowLabels: (v) => set({ showLabels: v }),
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
