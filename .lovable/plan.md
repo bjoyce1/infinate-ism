@@ -1,54 +1,34 @@
+## Problem
 
-## 1. Rename JARVIS → C.A.P.I.S.M.
+Hovering a node in the 3D view stalls for several seconds because `handleNodeHover` calls `fgRef.current.refresh()` (in `src/components/graph/GraphCanvas3D.tsx`). In `react-force-graph-3d`, `refresh()` tears down and rebuilds **every** node's Three.js object — for every node it re-invokes `nodeThreeObject`, which allocates a brand-new `SpriteText` (new canvas texture, new material, new geometry). On a graph with hundreds of nodes this is tens of MB of GPU/CPU churn per hover, plus a GC pause. Every mousemove that crosses a node triggers it again.
 
-In `src/components/graph/BootGreeting.tsx`, update the greeting line to introduce the assistant as **C.A.P.I.S.M.** (Cognitive Adaptive Processing & Intelligent Systems Matrix). New line: `"C.A.P.I.S.M. online — {count} nodes indexed, every star accounted for."` Keep the same toast + TTS behavior.
+Secondary contributors:
+- `handleNodeHover` depends on `selectedHighlightSet`, so the callback identity changes whenever selection changes, which can force `react-force-graph-3d` to re-diff props.
+- Hovering writes `hoveredId` into the zustand store on every enter/leave, waking every subscriber (`HubHoverCard`, etc.), even though the 3D canvas already tracks hover in a ref.
 
-## 2. New `CapismPanel` drawer
+## Fix
 
-Create `src/components/graph/CapismPanel.tsx`, mounted from `TopBar.tsx` beside the SPC Artists drawer as a **right-side Sheet** (reusing `@/components/ui/sheet`). Trigger button: `◈ C.A.P.I.S.M.` styled like the other TopBar chips, with a subtle cyan pulse dot when open.
+Keep hover purely visual and cheap — never rebuild the scene:
 
-### Layout (single scrollable column, HUD-styled)
+1. **Remove `fgRef.current.refresh()`** from `handleNodeHover`. Instead, mutate the cached Three.js materials in place:
+   - Keep a `Map<string, THREE.Object3D>` populated inside `nodeThreeObject` (the sphere passed in as the first arg when using `nodeThreeObjectExtend`), plus the existing sprite cache.
+   - On hover, walk the neighborhood set and set `material.color`/`material.opacity` on the cached sphere + link materials directly. Non-neighbors get dimmed; neighbors get their category color. This is O(nodes) simple assignments, no allocations.
+   - Link particle intensity was already reading `highlightRef` — since the library recomputes accessors each frame for particles, that keeps working without `refresh()`.
 
-Dark obsidian surface + neon cyan/magenta/red accents matching the reference. Sections:
+2. **Stabilize `handleNodeHover`** — drop `selectedHighlightSet` from its deps and read it from a ref (`selectedHighlightRef`) that a small effect keeps in sync. That way the prop passed to `<ForceGraph3D>` never changes identity from hover/selection.
 
-1. **Header strip** — "C.A.P.I.S.M." title, subtitle "COGNITIVE ADAPTIVE PROCESSING & INTELLIGENT SYSTEMS MATRIX", live clock (updates every second), build id derived from graph node count.
-2. **Top stat row** (4 mini cards, animated sparklines):
-   - `CORE TEMP` — derived from average node degree (mapped to °C)
-   - `NEURAL LOAD` — % of nodes currently in the active filter set
-   - `SYSTEM UPTIME` — time since page mount
-   - `SECURITY LEVEL` — ALPHA when signed in, BETA when anonymous
-3. **Core Sync Ring** — SVG concentric rings, slowly rotating (CSS `@keyframes spin` at 40s/60s counter-rotating), center label "C.A.P.I.S.M. — CENTRAL AI PROCESSING INTERFACE — ONLINE". Ring fill % = share of nodes with images (from `node_image_overrides` if already loaded, otherwise `node.image` presence). Left gauge (0–100) = focus/selected community coverage; right gauge = filter efficiency.
-4. **System Status bars** — animated progress bars (Radix `Progress`):
-   - CPU = code node share, MEMORY = blog share, GPU = image share, NETWORK = link density, STORAGE = capture count / max, POWER = 100% pulsing.
-5. **AI Models** — top 4 communities by size, each row shows community name, node count as %, colored bar. Click a row → `setCommunity(id)` in graph store.
-6. **Notifications** — most recent captures (from `useGraphStore.captures`, newest 4) with relative timestamps.
-7. **Real-time Analytics** — small SVG multi-line chart (4 colored lines) showing rolling category counts over the last 60s, updated each second by sampling filtered graph state.
+3. **Throttle hover to one update per animation frame.** Wrap the handler so repeated `onNodeHover` calls during a fast mousemove coalesce into a single rAF-scheduled update.
 
-### Animation
+4. **Stop writing hover into the zustand store from 3D.** Move `hoverRef.current(nextId)` behind a check — only fire it when the tooltip/hover consumers actually need it (they don't in 3D; the tooltip is already handled locally via `tooltipRef`). This eliminates cross-component re-renders on every hover.
 
-- CSS keyframes: `hud-pulse`, `hud-scan` (top→bottom sweep on ring), `hud-spin-slow`, `hud-spin-reverse`, `hud-flicker` (subtle on numbers).
-- All numbers animate via a small `useCountUp` hook.
-- Sparklines drawn as SVG `polyline` with `stroke-dasharray` draw-in on mount.
-- Respect `prefers-reduced-motion` — freeze rotations and sweeps.
+5. **Guard `nodeThreeObject` against duplicate builds.** Cache the returned sprite per node id and return the cached instance on subsequent calls so an accidental rebuild (e.g. filter change) reuses existing sprites instead of leaking them.
 
-### Data wiring
+## Files to edit
 
-New hook `useCapismMetrics(graph)` in the same file that computes derived metrics from `NormalizedGraph`, `useGraphStore` (activeCategories, activeCommunity, selectedId, captures), and `supabase.auth.getSession()` for the security level. Ticks every 1s via `setInterval` to advance uptime, clock, sparkline buffers.
+- `src/components/graph/GraphCanvas3D.tsx` — the four changes above (hover handler, ref stabilization, rAF throttle, sphere/material cache).
 
-### Interactions
+## Verification
 
-- Clicking a community row jumps and highlights that community.
-- Clicking a notification calls `select(id) + pulseNode(id) + setRightPanel(true)`.
-- "VIEW ALL ALERTS" opens the existing `CapturesDrawer` (dispatch a custom event it listens for, or lift open state).
-
-## 3. TopBar wiring
-
-Add `<CapismPanel graph={graph} />` next to `<SpcArtistsDrawer />` in `TopBar.tsx`. Guard on `graph` prop (already optional).
-
-## Files
-
-- edit `src/components/graph/BootGreeting.tsx`
-- create `src/components/graph/CapismPanel.tsx`
-- edit `src/components/graph/TopBar.tsx`
-
-No backend, schema, or route changes.
+- Open `/?view=3d`, sweep the mouse across dense clusters — no multi-second freeze; highlight still dims non-neighbors and brightens the ego-network.
+- Selecting a node still works, focus mode still filters, tooltip still tracks the hovered node.
+- No new console warnings; no growth in Three.js object count across many hovers (spot-check via `renderer.info` if needed).
