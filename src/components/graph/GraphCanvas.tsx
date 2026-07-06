@@ -40,6 +40,17 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
+  const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
+  const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
+  // Refs so the force closure always reads the latest values without re-registering.
+  const spawnRadiusRef = useRef(spawnOrbitRadius);
+  const spawnSpeedRef = useRef(spawnOrbitSpeed);
+  useEffect(() => { spawnRadiusRef.current = spawnOrbitRadius; }, [spawnOrbitRadius]);
+  useEffect(() => { spawnSpeedRef.current = spawnOrbitSpeed; }, [spawnOrbitSpeed]);
+  // Keep the sim warm when knobs move so changes are visible immediately.
+  useEffect(() => {
+    fgRef.current?.d3ReheatSimulation();
+  }, [spawnOrbitRadius, spawnOrbitSpeed]);
 
   const setNodeImageFn = useServerFn(setNodeImage);
   const [ctxMenu, setCtxMenu] = useState<{
@@ -200,12 +211,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           if (p && p.x != null && p.y != null) {
             const siblings = childrenOf.get(parentId)?.length ?? 1;
             // Tight orbit around the parent — radius grows with sibling count.
-            const targetR = 26 + Math.sqrt(siblings) * 6;
+            const targetR = (26 + Math.sqrt(siblings) * 6) * spawnRadiusRef.current;
             const dx = n.x - p.x;
             const dy = n.y - p.y;
             const r = Math.hypot(dx, dy) || 1;
             // Tangential orbit (counter-clockwise), slightly faster than cluster orbit.
-            const s = 0.4 * Math.max(alpha, 0.15);
+            const s = 0.4 * Math.max(alpha, 0.15) * spawnSpeedRef.current;
             n.vx = (n.vx ?? 0) + (-dy / r) * s;
             n.vy = (n.vy ?? 0) + (dx / r) * s;
             // Strong radial spring to keep it on the ring around the parent.
