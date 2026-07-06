@@ -126,7 +126,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const p = graph.byId.get(parentId) as Pos | undefined;
       if (!p || p.x == null || p.y == null) continue;
       const siblings = kids.length;
-      const orbitR = 26 + Math.sqrt(siblings) * 6;
+      const orbitR = 14 + Math.sqrt(siblings) * 3.5;
       kids.forEach((cid, i) => {
         const n = graph.byId.get(cid) as Pos | undefined;
         if (!n) return;
@@ -312,7 +312,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           if (p && p.x != null && p.y != null) {
             const siblings = childrenOf.get(parentId)?.length ?? 1;
             // Tight orbit around the parent — radius grows with sibling count.
-            const targetR = (26 + Math.sqrt(siblings) * 6) * spawnRadiusRef.current;
+            const targetR = (14 + Math.sqrt(siblings) * 3.5) * spawnRadiusRef.current;
             const dx = n.x - p.x;
             const dy = n.y - p.y;
             const r = Math.hypot(dx, dy) || 1;
@@ -365,14 +365,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         .strength((n) => (n.is_hub || n.image ? -120 : -18))
         .distanceMax(220),
     );
-    // Prevent nodes (and hub/image nodes) from overlapping inside their cluster.
+    // Prevent small satellite nodes from overlapping. Image / hub nodes are
+    // allowed to overlap freely so main-node art can stack visually.
     const collide = forceCollide<OrbitNode>()
       .radius((n) => {
         const isHub = Boolean(n.is_hub || n.image);
-        const r = isHub
-          ? Math.max(14, Math.min(28, 10 + Math.sqrt(n.degree ?? 0) * 1.2))
-          : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0)));
-        return r + 4;
+        if (isHub) return 0;
+        return Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
       })
       .strength(1)
       .iterations(3);
