@@ -13,6 +13,8 @@ type State = {
   viewMode: "2d" | "3d";
   particleIntensity: number;
   linkIntensity: number;
+  spawnOrbitRadius: number;
+  spawnOrbitSpeed: number;
   showLabels: boolean;
   labelSize: number;
   labelDensity: number;
@@ -36,6 +38,8 @@ type State = {
   toggleViewMode: () => void;
   setParticleIntensity: (v: number) => void;
   setLinkIntensity: (v: number) => void;
+  setSpawnOrbitRadius: (v: number) => void;
+  setSpawnOrbitSpeed: (v: number) => void;
   setShowLabels: (v: boolean) => void;
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
@@ -71,6 +75,8 @@ export const useGraphStore = create<State>()(
   viewMode: "2d",
   particleIntensity: 1,
   linkIntensity: 1,
+  spawnOrbitRadius: 1,
+  spawnOrbitSpeed: 1,
   showLabels: true,
   labelSize: 1,
   labelDensity: 1,
@@ -101,6 +107,8 @@ export const useGraphStore = create<State>()(
   toggleViewMode: () => set((s) => ({ viewMode: s.viewMode === "2d" ? "3d" : "2d" })),
   setParticleIntensity: (v) => set({ particleIntensity: v }),
   setLinkIntensity: (v) => set({ linkIntensity: v }),
+  setSpawnOrbitRadius: (v) => set({ spawnOrbitRadius: v }),
+  setSpawnOrbitSpeed: (v) => set({ spawnOrbitSpeed: v }),
   setShowLabels: (v) => set({ showLabels: v }),
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
