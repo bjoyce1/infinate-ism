@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { forceCollide } from "d3-force";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
@@ -86,6 +87,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       nodes = n;
     };
     fgRef.current.d3Force("orbital", force);
+    // Prevent nodes (and hub/image nodes) from overlapping inside their cluster.
+    const collide = forceCollide<OrbitNode>()
+      .radius((n) => {
+        const isHub = Boolean(n.is_hub || n.image);
+        const r = isHub
+          ? Math.max(14, Math.min(28, 10 + Math.sqrt(n.degree ?? 0) * 1.2))
+          : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0)));
+        return r + 2;
+      })
+      .strength(0.9)
+      .iterations(2);
+    fgRef.current.d3Force("collide", collide);
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph]);
   useEffect(() => {
