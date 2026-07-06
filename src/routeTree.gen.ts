@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminScrapeRouteImport } from './routes/admin.scrape'
+import { Route as AdminPointblankRouteImport } from './routes/admin.pointblank'
 import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -75,6 +76,11 @@ const AdminScrapeRoute = AdminScrapeRouteImport.update({
   path: '/scrape',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPointblankRoute = AdminPointblankRouteImport.update({
+  id: '/pointblank',
+  path: '/pointblank',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminImagesRoute = AdminImagesRouteImport.update({
   id: '/images',
   path: '/images',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
+  '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
   '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
+  '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
   '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
+  '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
   '/admin/status': typeof AdminStatusRoute
   '/api/chat': typeof ApiChatRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
+    | '/admin/pointblank'
     | '/admin/scrape'
     | '/admin/status'
     | '/api/chat'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
+    | '/admin/pointblank'
     | '/admin/scrape'
     | '/admin/status'
     | '/api/chat'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
+    | '/admin/pointblank'
     | '/admin/scrape'
     | '/admin/status'
     | '/api/chat'
@@ -297,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminScrapeRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pointblank': {
+      id: '/admin/pointblank'
+      path: '/pointblank'
+      fullPath: '/admin/pointblank'
+      preLoaderRoute: typeof AdminPointblankRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/images': {
       id: '/admin/images'
       path: '/images'
@@ -337,12 +356,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminImagesRoute: typeof AdminImagesRoute
+  AdminPointblankRoute: typeof AdminPointblankRoute
   AdminScrapeRoute: typeof AdminScrapeRoute
   AdminStatusRoute: typeof AdminStatusRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminImagesRoute: AdminImagesRoute,
+  AdminPointblankRoute: AdminPointblankRoute,
   AdminScrapeRoute: AdminScrapeRoute,
   AdminStatusRoute: AdminStatusRoute,
 }
