@@ -113,7 +113,29 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       vx?: number;
       vy?: number;
     };
+    // Build a parent map for spawn children so they orbit their originating
+    // main node instead of drifting around the community centroid.
+    const parentOf = new Map<string, string>();
+    const childrenOf = new Map<string, string[]>();
+    for (const l of graph.links) {
+      if (l.relation !== "spawn") continue;
+      const s = typeof l.source === "string" ? l.source : (l.source as { id: string }).id;
+      const t = typeof l.target === "string" ? l.target : (l.target as { id: string }).id;
+      // parent = the "main" endpoint (hub/image); child = the other.
+      const sn = graph.byId.get(s);
+      const tn = graph.byId.get(t);
+      if (!sn || !tn) continue;
+      const sMain = Boolean(sn.is_hub || sn.image);
+      const tMain = Boolean(tn.is_hub || tn.image);
+      const parent = sMain && !tMain ? s : !sMain && tMain ? t : s;
+      const child = parent === s ? t : s;
+      if (parent === child) continue;
+      if (!parentOf.has(child)) parentOf.set(child, parent);
+      if (!childrenOf.has(parent)) childrenOf.set(parent, []);
+      childrenOf.get(parent)!.push(child);
+    }
     let nodes: OrbitNode[] = [];
+    let byIdSim = new Map<string, OrbitNode>();
     // Assign each community an evenly-spaced angular slot on a master ring
     // centered at the origin. This keeps clusters from piling into each other
     // and gives the whole graph a uniform, organized layout.
@@ -171,6 +193,28 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const speed = 0.28 * Math.max(alpha, 0.15);
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
+        // 3a. Spawn children orbit their PARENT node instead of the community.
+        const parentId = parentOf.get(n.id);
+        if (parentId) {
+          const p = byIdSim.get(parentId);
+          if (p && p.x != null && p.y != null) {
+            const siblings = childrenOf.get(parentId)?.length ?? 1;
+            // Tight orbit around the parent — radius grows with sibling count.
+            const targetR = 26 + Math.sqrt(siblings) * 6;
+            const dx = n.x - p.x;
+            const dy = n.y - p.y;
+            const r = Math.hypot(dx, dy) || 1;
+            // Tangential orbit (counter-clockwise), slightly faster than cluster orbit.
+            const s = 0.4 * Math.max(alpha, 0.15);
+            n.vx = (n.vx ?? 0) + (-dy / r) * s;
+            n.vy = (n.vy ?? 0) + (dx / r) * s;
+            // Strong radial spring to keep it on the ring around the parent.
+            const pull = (targetR - r) * 0.05;
+            n.vx += (dx / r) * pull;
+            n.vy += (dy / r) * pull;
+            continue;
+          }
+        }
         const key = n.community ?? "__none";
         const c = centers.get(key);
         const a = anchors.get(key);
@@ -197,6 +241,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     };
     (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
       nodes = n;
+      byIdSim = new Map(n.map((x) => [x.id, x]));
       slots = new Map();
       recomputeSlots();
     };
@@ -235,7 +280,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
     }
     fgRef.current.d3ReheatSimulation();
-  }, [ForceGraph]);
+  }, [ForceGraph, graph]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
