@@ -312,7 +312,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           if (p && p.x != null && p.y != null) {
             const siblings = childrenOf.get(parentId)?.length ?? 1;
             // Tight orbit around the parent — radius grows with sibling count.
-            const targetR = (26 + Math.sqrt(siblings) * 6) * spawnRadiusRef.current;
+            const targetR = (14 + Math.sqrt(siblings) * 3.5) * spawnRadiusRef.current;
             const dx = n.x - p.x;
             const dy = n.y - p.y;
             const r = Math.hypot(dx, dy) || 1;
