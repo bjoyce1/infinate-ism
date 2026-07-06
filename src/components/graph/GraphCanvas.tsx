@@ -100,7 +100,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .iterations(2);
     fgRef.current.d3Force("collide", collide);
     // Loosen links between main (hub / image) nodes so highly-connected
-    // hubs don't pull each other into a tight ball.
+    // hubs don't pull each other into a tight ball, but keep them loosely grouped.
     type LinkEndpoint = string | OrbitNode;
     type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
     const isMain = (n: LinkEndpoint) =>
@@ -110,8 +110,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       | null;
     if (linkForce) {
       linkForce
-        .distance((l) => (isMain(l.source) && isMain(l.target) ? 260 : 40))
-        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.4));
+        .distance((l) => (isMain(l.source) && isMain(l.target) ? 130 : 45))
+        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.08 : 0.45));
     }
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph]);
