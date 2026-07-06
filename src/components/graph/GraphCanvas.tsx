@@ -77,8 +77,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         n.vx = (n.vx ?? 0) + (-dy / r) * speed;
         n.vy = (n.vy ?? 0) + (dx / r) * speed;
         // Gentle radial spring to keep orbit radius stable
-        const targetR = 40 + (n.degree ?? 0) * 6;
-        const pull = (targetR - r) * 0.002;
+        const targetR = 30 + (n.degree ?? 0) * 4;
+        const pull = (targetR - r) * 0.003;
         n.vx += (dx / r) * pull;
         n.vy += (dy / r) * pull;
       }
