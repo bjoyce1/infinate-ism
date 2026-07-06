@@ -18,6 +18,8 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
   const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const toggleAutoRotate = useGraphStore((s) => s.toggleAutoRotate);
+  const orbitLayout = useGraphStore((s) => s.orbitLayout);
+  const toggleOrbitLayout = useGraphStore((s) => s.toggleOrbitLayout);
   const toggleLeftPanel = useGraphStore((s) => s.toggleLeftPanel);
   const toggleRightPanel = useGraphStore((s) => s.toggleRightPanel);
   const handleRecenter = () => {
@@ -129,6 +131,18 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
           title="Slowly rotate the graph"
         >
           {autoRotate ? "↻ ROTATE ON" : "↻ ROTATE OFF"}
+        </button>
+        <button
+          type="button"
+          onClick={toggleOrbitLayout}
+          className={`px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-colors cursor-pointer border whitespace-nowrap ${
+            orbitLayout
+              ? "bg-amber-500/20 border-amber-400 text-amber-200"
+              : "bg-obsidian-surface border-obsidian-border hover:border-neon-primary"
+          }`}
+          title="Toggle between organized orbit layout and free-drift physics"
+        >
+          {orbitLayout ? "◎ ORBIT" : "∿ FREE DRIFT"}
         </button>
         <button
           type="button"
