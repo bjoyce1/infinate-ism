@@ -342,7 +342,7 @@ export function GraphCanvas3D({ graph }: { graph: NormalizedGraph }) {
   }, [ForceGraph3D]);
 
   const nodeVal = useCallback(
-    (n: GraphNode) => (n.is_hub ? 40 : Math.max(1, 1 + Math.sqrt(n.degree))),
+    (n: GraphNode) => (n.is_hub ? 80 : Math.max(3, 3 + Math.sqrt(n.degree) * 2.2)),
     [],
   );
   const nodeColor = useCallback((n: GraphNode) => {
