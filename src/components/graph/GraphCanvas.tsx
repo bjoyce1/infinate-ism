@@ -456,10 +456,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const t = typeof link.target === "string" ? link.target : link.target.id;
             return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
           }}
-          cooldownTicks={Infinity}
-          d3AlphaDecay={0}
-          d3AlphaMin={0}
-          d3VelocityDecay={0.65}
+          cooldownTicks={400}
+          d3AlphaDecay={0.02}
+          d3AlphaMin={0.001}
+          d3VelocityDecay={0.55}
+          onEngineStop={() => {
+            // Freeze every node in place once the radial layout has settled.
+            type SimNode = GraphNode & { x?: number; y?: number; fx?: number | null; fy?: number | null };
+            const gd = data as { nodes: SimNode[] };
+            for (const n of gd.nodes) {
+              if (n.x != null) n.fx = n.x;
+              if (n.y != null) n.fy = n.y;
+            }
+          }}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
