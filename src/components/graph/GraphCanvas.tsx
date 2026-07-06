@@ -4,6 +4,9 @@ import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
+import { useServerFn } from "@tanstack/react-start";
+import { setNodeImage } from "@/lib/setNodeImage.functions";
+import { toast } from "sonner";
 
 type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
@@ -37,6 +40,51 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const autoRotate = useGraphStore((s) => s.autoRotate);
   const pulseNodeId = useGraphStore((s) => s.pulseNodeId);
+
+  const setNodeImageFn = useServerFn(setNodeImage);
+  const [ctxMenu, setCtxMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+    label: string;
+    image: string | null;
+  } | null>(null);
+  const closeCtx = () => setCtxMenu(null);
+
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const onDown = () => closeCtx();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeCtx();
+    };
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [ctxMenu]);
+
+  const mirrorImageToNode = async (nodeId: string, sourceUrl: string | null) => {
+    const url = window.prompt(
+      "Mirror image to node — paste an image URL:",
+      sourceUrl ?? "",
+    );
+    if (!url) return;
+    try {
+      new URL(url);
+    } catch {
+      toast.error("Invalid URL");
+      return;
+    }
+    try {
+      await setNodeImageFn({ data: { node_id: nodeId, image_url: url } });
+      toast.success("Image mirrored — reloading graph…");
+      setTimeout(() => window.location.reload(), 600);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to set image");
+    }
+  };
 
   // Orbital motion — inject a custom tangential force around each community's
   // centroid, and keep the simulation permanently warm so orbits never freeze.
@@ -343,6 +391,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
+          onNodeRightClick={(
+            node: GraphNode,
+            event: MouseEvent,
+          ) => {
+            event.preventDefault();
+            setCtxMenu({
+              x: event.clientX,
+              y: event.clientY,
+              nodeId: node.id,
+              label: node.label ?? node.id,
+              image: node.image ?? null,
+            });
+          }}
           enableNodeDrag={true}
         />
       )}
@@ -352,6 +413,46 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         </div>
       )}
       </div>
+      {ctxMenu && (
+        <div
+          className="fixed z-50 min-w-[220px] rounded-md border border-white/10 bg-[#0f0f11]/95 shadow-xl backdrop-blur-sm py-1 font-mono text-xs text-zinc-200"
+          style={{ left: ctxMenu.x, top: ctxMenu.y }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-zinc-500 truncate">
+            {ctxMenu.label}
+          </div>
+          <div className="h-px bg-white/10" />
+          <button
+            type="button"
+            className="w-full text-left px-3 py-2 hover:bg-white/5 disabled:opacity-40 disabled:hover:bg-transparent"
+            disabled={!ctxMenu.image}
+            onClick={() => {
+              const src = ctxMenu.image;
+              closeCtx();
+              if (src) mirrorImageToNode(ctxMenu.nodeId, src);
+            }}
+          >
+            Mirror image to node
+            {!ctxMenu.image && (
+              <span className="block text-[10px] text-zinc-500">no image available</span>
+            )}
+          </button>
+          <button
+            type="button"
+            className="w-full text-left px-3 py-2 hover:bg-white/5"
+            onClick={() => {
+              const id = ctxMenu.nodeId;
+              const cur = ctxMenu.image;
+              closeCtx();
+              mirrorImageToNode(id, cur);
+            }}
+          >
+            Set image from URL…
+          </button>
+        </div>
+      )}
     </div>
   );
 }
