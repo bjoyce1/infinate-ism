@@ -154,6 +154,14 @@ export function InfiniteIsmHud({ graph }: { graph: NormalizedGraph }) {
           </button>
           <button
             type="button"
+            onClick={toggleViewMode}
+            className="flex items-center gap-1.5 rounded border border-white/10 px-2 py-1 hover:border-white/25"
+            title="Switch back to 2D view"
+          >
+            <span>◫</span> 2D
+          </button>
+          <button
+            type="button"
             onClick={() => setFlow((f) => !f)}
             className={`flex items-center gap-1.5 rounded border px-2 py-1 transition-colors ${
               flow ? "border-white/25 bg-white/[0.05]" : "border-white/10 hover:border-white/25"
