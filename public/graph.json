@@ -15717,6 +15717,259 @@
         "collab"
       ],
       "description": "Houston recording artist featured on Mr. CAP's 'Today Was A Great Day'."
+    },
+    {
+      "id": "ogpb_site",
+      "label": "ogpointblank.com",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.ogpointblank.com",
+      "description": "Official website of OG Point Blank — 'The Bull.' Home base for singles, merch, videos, and booking. Wix-hosted.",
+      "tags": [
+        "Official Site",
+        "Web"
+      ],
+      "weight": 2.0,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_single_bust_a_uee",
+      "label": "Bust A Uee (Single)",
+      "category": "music",
+      "file_type": "music",
+      "url": "https://www.ogpointblank.com",
+      "description": "New single dropping February 11, 2026. Produced by Folk Hero. Cinematic, bass-heavy Houston record built around the U-turn as a metaphor for control — knowing when to pivot and double back.",
+      "tags": [
+        "Single",
+        "2026",
+        "Folk Hero",
+        "Houston"
+      ],
+      "weight": 2.2,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_single_worth_more_dead",
+      "label": "Worth More Dead (Single)",
+      "category": "music",
+      "file_type": "music",
+      "url": "https://www.ogpointblank.com/musicstore",
+      "description": "Single available in Point Blank's official music store on ogpointblank.com.",
+      "tags": [
+        "Single",
+        "Music Store"
+      ],
+      "weight": 1.8,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_video_ova",
+      "label": "\"OVA\" ft. Cl'Che' (Video)",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.youtube.com/watch?v=iijDB8CgpPw",
+      "description": "Official video for 'OVA' by OG Point Blank featuring Cl'Che'. Directed by Frank Meta Lopez / Compound Films. Hosted on the OG POINTBLANK TV YouTube channel.",
+      "tags": [
+        "Music Video",
+        "YouTube",
+        "Cl'Che'",
+        "Compound Films"
+      ],
+      "weight": 1.8,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_yt_channel",
+      "label": "OG POINTBLANK TV",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.youtube.com/channel/UCbI9lVfefoe3O16ZiiTheGw",
+      "description": "Official YouTube channel — 4.67K subscribers. Music videos, visuals, and Point Blank media.",
+      "tags": [
+        "YouTube",
+        "Channel"
+      ],
+      "weight": 1.6,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_album_hate_is_the_new_love",
+      "label": "Hate Is The New Love (Original Replication)",
+      "category": "music",
+      "file_type": "music",
+      "url": "https://www.ogpointblank.com",
+      "description": "Album available as Original Replication pressing for $19.99 through the ogpointblank.com store.",
+      "tags": [
+        "Album",
+        "Physical",
+        "$19.99"
+      ],
+      "weight": 1.8,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_album_my_personal_screw_tape",
+      "label": "My Personal Screw Tape",
+      "category": "music",
+      "file_type": "music",
+      "url": "https://www.ogpointblank.com",
+      "description": "Personal Screw Tape release — $19.99 physical, sold through ogpointblank.com. Nods to the DJ Screw / SUC lineage Point Blank came up in.",
+      "tags": [
+        "Screw Tape",
+        "Physical",
+        "$19.99"
+      ],
+      "weight": 1.8,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_merch_mad_at_the_world_vinyl",
+      "label": "Mad At The World (Vinyl)",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.ogpointblank.com",
+      "description": "Mad At The World vinyl pressing sold via the official site.",
+      "tags": [
+        "Vinyl",
+        "Merch"
+      ],
+      "weight": 1.5,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_nft_mad_at_the_world",
+      "label": "Mad At The World (NFT Single)",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://opensea.io/item/ethereum/0x495f947276749ce646f68ac8c248420045cb7b5e/111525374491507330879718694062290749651333153209192724132274812147041742881768",
+      "description": "Point Blank's Mad At The World single tokenized as an NFT on OpenSea (Ethereum).",
+      "tags": [
+        "NFT",
+        "OpenSea",
+        "Ethereum",
+        "Web3"
+      ],
+      "weight": 1.5,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_cd_promo",
+      "label": "CD Promo — Buy 2 Get 1 Free",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.ogpointblank.com/cd",
+      "description": "Standing CD promotion on ogpointblank.com: buy 2, get 1 free.",
+      "tags": [
+        "Merch",
+        "CD",
+        "Promo"
+      ],
+      "weight": 1.2,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_triple_9_feature",
+      "label": "Triple 9 (Film Soundtrack Feature)",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.ogpointblank.com",
+      "description": "Point Blank music featured in the box-office film 'Triple 9,' highlighted on the site's landing page.",
+      "tags": [
+        "Film",
+        "Sync",
+        "Triple 9"
+      ],
+      "weight": 1.4,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_events_tickets",
+      "label": "Events & Tickets",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://www.ogpointblank.com/events",
+      "description": "Live events page. Standing offer: free event ticket with any $50 purchase.",
+      "tags": [
+        "Events",
+        "Tickets",
+        "Live"
+      ],
+      "weight": 1.3,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_twitter",
+      "label": "@POINTBLANK713 (Twitter/X)",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://twitter.com/POINTBLANK713",
+      "description": "Official Twitter/X handle, embedded on the site as a live feed.",
+      "tags": [
+        "Twitter",
+        "X",
+        "Social"
+      ],
+      "weight": 1.3,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_booking_bookspc",
+      "label": "Booking → bookspc.com",
+      "category": "other",
+      "file_type": "other",
+      "url": "https://bookspc.com/artists/point-blank",
+      "description": "Site's Book button routes to Point Blank's bookspc.com artist page — the SPC booking channel.",
+      "tags": [
+        "Booking",
+        "SPC"
+      ],
+      "weight": 1.6,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
+    },
+    {
+      "id": "ogpb_bio_the_bull",
+      "label": "Bio — 'The Bull'",
+      "category": "blog",
+      "file_type": "blog",
+      "description": "\"Houston Texas — Home of the brave, land of the legendary OG POINT BLANK! One of Texas' finest and a veteran of the Southern Hip-Hop scene, OG Point Blank 'The Bull' has been moving crowds all across the globe since his 1992 debut Prone to Bad Dreams.\"",
+      "tags": [
+        "Bio",
+        "The Bull",
+        "1992",
+        "Prone to Bad Dreams"
+      ],
+      "weight": 1.5,
+      "community": 203,
+      "color": "#F5C542",
+      "_origin": "ogpointblank_spawn"
     }
   ],
   "links": [
@@ -30040,6 +30293,180 @@
       "confidence": "CURATED",
       "confidence_score": 1.0,
       "weight": 1.2
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_site",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_single_bust_a_uee",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_single_worth_more_dead",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_video_ova",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_yt_channel",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_album_hate_is_the_new_love",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_album_my_personal_screw_tape",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_merch_mad_at_the_world_vinyl",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_nft_mad_at_the_world",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_cd_promo",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_triple_9_feature",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_events_tickets",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_twitter",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_booking_bookspc",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "spc_artist_point_blank",
+      "target": "ogpb_bio_the_bull",
+      "weight": 1.5,
+      "relation": "spawn"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_single_bust_a_uee",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_single_worth_more_dead",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_video_ova",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_yt_channel",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_album_hate_is_the_new_love",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_album_my_personal_screw_tape",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_merch_mad_at_the_world_vinyl",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_nft_mad_at_the_world",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_cd_promo",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_triple_9_feature",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_events_tickets",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_twitter",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_booking_bookspc",
+      "weight": 1.0,
+      "relation": "hosts"
+    },
+    {
+      "source": "ogpb_site",
+      "target": "ogpb_bio_the_bull",
+      "weight": 1.0,
+      "relation": "hosts"
     }
   ],
   "hyperedges": [],
