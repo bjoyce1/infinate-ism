@@ -339,7 +339,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           cooldownTicks={Infinity}
           d3AlphaDecay={0}
           d3AlphaMin={0}
-          d3VelocityDecay={0.55}
+          d3VelocityDecay={0.65}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
