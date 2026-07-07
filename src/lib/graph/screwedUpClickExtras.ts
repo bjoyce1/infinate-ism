@@ -1,4 +1,5 @@
 import type { GraphNode, NormalizedGraph } from "./types";
+import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
 // neighborhood on the street map. The street layout treats every direct
@@ -194,6 +195,12 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     if (n.id === HUB_ID) nodes[i] = { ...n, degree: (n.degree ?? 0) + degreeBump };
     else if (n.id === SUC_HUB)
       nodes[i] = { ...n, ...SUC_PROFILE, degree: (n.degree ?? 0) + degreeBump, is_hub: true };
+    else if (n.id === "suc_legacy_screw_tapes")
+      nodes[i] = { ...n, image: screwTapeAsset.url, artwork: screwTapeAsset.url };
+  }
+  {
+    const tape = byId.get("suc_legacy_screw_tapes");
+    if (tape) byId.set(tape.id, { ...tape, image: screwTapeAsset.url, artwork: screwTapeAsset.url });
   }
 
   // Add landmark nodes + wire them to the SUC HQ (skip if already merged).
