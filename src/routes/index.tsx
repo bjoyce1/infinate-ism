@@ -4,6 +4,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { loadGraph, withCaptures } from "@/lib/graph/loadGraph";
 import { withSwishahouse } from "@/lib/graph/swishahouseExtras";
+import { withScrewedUpClick } from "@/lib/graph/screwedUpClickExtras";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
@@ -59,7 +60,7 @@ function Index() {
   const setCaptures = useGraphStore((s) => s.setCaptures);
 
   const graph = useMemo(
-    () => (baseGraph ? withSwishahouse(withCaptures(baseGraph, captures)) : null),
+    () => (baseGraph ? withScrewedUpClick(withSwishahouse(withCaptures(baseGraph, captures))) : null),
     [baseGraph, captures],
   );
 
