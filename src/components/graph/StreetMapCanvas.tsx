@@ -322,19 +322,22 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
           ctx.fill();
           ctx.stroke();
         } else if (n.kind === "hub") {
-          // Hub HQ = rounded rectangle "building" pin with color underlay.
-          const w = 20 + (isSelected ? 4 : 0);
-          const h = 20 + (isSelected ? 4 : 0);
-          ctx.fillStyle = `${color}33`;
-          ctx.beginPath(); ctx.arc(p.x, p.y, w * 1.4, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = color;
-          ctx.strokeStyle = "#0b0d10";
+          // Hub HQ = GPS destination pin: outer ring + inner dot in hub color.
+          const rOuter = 11 + (isSelected ? 3 : 0);
+          ctx.strokeStyle = color;
           ctx.lineWidth = 2;
-          const r = 4;
           ctx.beginPath();
-          ctx.roundRect(p.x - w / 2, p.y - h / 2, w, h, r);
-          ctx.fill();
+          ctx.arc(p.x, p.y, rOuter, 0, Math.PI * 2);
           ctx.stroke();
+          ctx.strokeStyle = `${color}55`;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, rOuter + 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+          ctx.fill();
         } else {
           // Building.
           const s = 6 + (isHover ? 2 : 0) + (isSelected ? 3 : 0);
