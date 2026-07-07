@@ -259,6 +259,15 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                 const other = graph.byId.get(otherId);
                 if (!other) return null;
                 const walkDirections = (l as unknown as Record<string, unknown>).walk_directions;
+                const walkDaysRaw = (l as unknown as Record<string, unknown>).walk_days;
+                const walkDays = Array.isArray(walkDaysRaw)
+                  ? (walkDaysRaw as Array<{
+                      label?: string;
+                      distance?: string;
+                      duration?: string;
+                      directions?: string;
+                    }>)
+                  : [];
                 return (
                   <button
                     key={`${otherId}-${i}`}
@@ -286,6 +295,24 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                       <div className="mt-1 text-[10px] text-white/60 leading-relaxed normal-case">
                         🚶 {walkDirections}
                       </div>
+                    )}
+                    {walkDays.length > 0 && (
+                      <ol className="mt-2 space-y-2 border-t border-white/10 pt-2">
+                        {walkDays.map((d, di) => (
+                          <li
+                            key={di}
+                            className="text-[10px] text-white/70 leading-relaxed normal-case"
+                          >
+                            <div className="font-mono uppercase tracking-wider text-neon-primary">
+                              {d.label ?? `Day ${di + 1}`}
+                            </div>
+                            <div className="text-white/50 font-mono">
+                              {d.distance ?? "—"} · {d.duration ?? "—"}
+                            </div>
+                            {d.directions && <div className="mt-0.5">🚶 {d.directions}</div>}
+                          </li>
+                        ))}
+                      </ol>
                     )}
                   </button>
                 );
