@@ -13,7 +13,7 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
   const reset = useGraphStore((s) => s.reset);
   const viewMode = useGraphStore((s) => s.viewMode);
-  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
+  const setViewMode = useGraphStore((s) => s.setViewMode);
   const resetCamera = useGraphStore((s) => s.resetCamera);
   const recenterOnHub = useGraphStore((s) => s.recenterOnHub);
   const autoRotate = useGraphStore((s) => s.autoRotate);
@@ -112,14 +112,23 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
           <span className="sm:hidden">◎ HUB</span>
           <span className="hidden sm:inline">◎ RE-CENTER · MRCAP1</span>
         </button>
-        <button
-          type="button"
-          onClick={toggleViewMode}
-          className="px-3 sm:px-4 py-2 bg-obsidian-surface border border-obsidian-border rounded-lg text-[10px] sm:text-xs font-medium hover:border-neon-primary transition-colors cursor-pointer whitespace-nowrap"
-          title="Toggle 2D / 3D view"
-        >
-          {viewMode === "2d" ? "2D VIEW" : "3D VIEW"}
-        </button>
+        <div className="pointer-events-auto inline-flex rounded-lg border border-obsidian-border bg-obsidian-surface overflow-hidden">
+          {(["2d", "3d", "street"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setViewMode(v)}
+              className={`px-3 py-2 text-[10px] sm:text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                viewMode === v
+                  ? "bg-neon-primary text-obsidian-bg"
+                  : "hover:bg-white/5"
+              }`}
+              title={v === "street" ? "CAPISM Street View — city map layout" : `${v.toUpperCase()} view`}
+            >
+              {v === "street" ? "STREET VIEW" : v === "2d" ? "2D" : "3D"}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           onClick={toggleAutoRotate}
