@@ -198,6 +198,22 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       c.y += (c.ty - c.y) * Math.min(1, dt * 6);
       c.zoom += (c.tzoom - c.zoom) * Math.min(1, dt * 6);
 
+      // Selection highlight sets — connections and neighbors of selected node.
+      let highlightRoads: Set<string> | null = null;
+      let highlightNodes: Set<string> | null = null;
+      if (selectedId && layout.nodes.has(selectedId)) {
+        highlightRoads = new Set();
+        highlightNodes = new Set([selectedId]);
+        for (const r of layout.roads) {
+          if (r.from === selectedId || r.to === selectedId) {
+            highlightRoads.add(r.id);
+            highlightNodes.add(r.from === selectedId ? r.to : r.from);
+          }
+        }
+      }
+      const dimmed = (id: string) => highlightRoads !== null && !highlightRoads.has(id);
+      const dimmedNode = (id: string) => highlightNodes !== null && !highlightNodes.has(id);
+
       // Background — deep navy with subtle radial vignette (matches reference map).
       const bg = ctx.createRadialGradient(size.w / 2, size.h / 2, 0, size.w / 2, size.h / 2, Math.max(size.w, size.h) * 0.7);
       bg.addColorStop(0, "#0f1f38");
