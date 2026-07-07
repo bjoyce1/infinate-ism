@@ -258,6 +258,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                 const dir = l.source === node.id ? "→" : "←";
                 const other = graph.byId.get(otherId);
                 if (!other) return null;
+                const walkDirections = (l as unknown as Record<string, unknown>).walk_directions;
                 return (
                   <button
                     key={`${otherId}-${i}`}
@@ -279,6 +280,11 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                       <div className="mt-1 text-[10px] font-mono text-muted-text">
                         {l.relation ?? "link"}
                         {l.weight != null ? ` · w${l.weight}` : ""}
+                      </div>
+                    )}
+                    {typeof walkDirections === "string" && walkDirections && (
+                      <div className="mt-1 text-[10px] text-white/60 leading-relaxed normal-case">
+                        🚶 {walkDirections}
                       </div>
                     )}
                   </button>
