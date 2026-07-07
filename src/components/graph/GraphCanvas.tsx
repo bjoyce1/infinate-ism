@@ -203,13 +203,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     // Uniform repulsion so nothing clumps into a blob.
     fgRef.current.d3Force(
       "charge",
-      forceManyBody<OrbitNode>()
+      forceManyBody<ClusterNode>()
         .strength((n) => (n.is_hub || n.image ? -120 : -18))
         .distanceMax(220),
     );
     // Prevent small satellite nodes from overlapping. Image / hub nodes are
     // allowed to overlap freely so main-node art can stack visually.
-    const collide = forceCollide<OrbitNode>()
+    const collide = forceCollide<ClusterNode>()
       .radius((n) => {
         const isHub = Boolean(n.is_hub || n.image);
         if (isHub) return 0;
@@ -220,12 +220,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current.d3Force("collide", collide);
     // Loosen links between main (hub / image) nodes so highly-connected
     // hubs don't pull each other into a tight ball, but keep them loosely grouped.
-    type LinkEndpoint = string | OrbitNode;
+    type LinkEndpoint = string | ClusterNode;
     type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
     const isMain = (n: LinkEndpoint) =>
       typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
     const linkForce = (fgRef.current.d3Force("link") as unknown) as
-      | (ForceLink<OrbitNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
+      | (ForceLink<ClusterNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
       | null;
     if (linkForce) {
       linkForce
