@@ -284,33 +284,39 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         if (r.kind === "alley") continue;
         const isGps = r.from === HUB_ID || r.to === HUB_ID;
         const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        const core = isGps ? "#7df9ff" : "#22c8ff";
-        const glow = isGps ? "rgba(125,249,255," : "rgba(34,200,255,";
+        const isHi = highlightRoads?.has(r.id);
+        ctx.globalAlpha = dimmed(r.id) ? 0.15 : 1;
+        const core = isHi ? "#ffe066" : isGps ? "#7df9ff" : "#22c8ff";
+        const glow = isHi ? "rgba(255,224,102," : isGps ? "rgba(125,249,255," : "rgba(34,200,255,";
         // Outer glow.
-        ctx.strokeStyle = `${glow}${(isGps ? 0.22 : 0.14) * pulse})`;
-        ctx.lineWidth = roadWidthFor(r) + (isGps ? 14 : 8);
+        ctx.strokeStyle = `${glow}${(isHi ? 0.5 : isGps ? 0.22 : 0.14) * pulse})`;
+        ctx.lineWidth = roadWidthFor(r) + (isHi ? 18 : isGps ? 14 : 8);
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
         // Mid glow.
-        ctx.strokeStyle = `${glow}${isGps ? 0.35 : 0.22})`;
+        ctx.strokeStyle = `${glow}${isHi ? 0.7 : isGps ? 0.35 : 0.22})`;
         ctx.lineWidth = roadWidthFor(r) + 3;
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
         // Bright core.
         ctx.strokeStyle = core;
-        ctx.lineWidth = Math.max(1.6, (isGps ? 2.6 : 2) * c.zoom);
+        ctx.lineWidth = Math.max(1.6, (isHi ? 3.2 : isGps ? 2.6 : 2) * c.zoom);
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
       }
+      ctx.globalAlpha = 1;
       // 3. Alleys as thin darker connectors.
       for (const r of layout.roads) {
         if (r.kind !== "alley") continue;
         const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        ctx.strokeStyle = "rgba(90,140,190,0.35)";
+        const isHi = highlightRoads?.has(r.id);
+        ctx.globalAlpha = dimmed(r.id) ? 0.15 : 1;
+        ctx.strokeStyle = isHi ? "rgba(255,224,102,0.85)" : "rgba(90,140,190,0.35)";
         ctx.lineWidth = Math.max(1, 1.4 * c.zoom);
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
       }
+      ctx.globalAlpha = 1;
 
       // 5. Traffic particles.
       const particleGain = Math.max(0.4, particleIntensity);
@@ -337,6 +343,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         const isSelected = selectedId === n.id;
         const isHover = hoveredId === n.id || hoverIdRef.current === n.id;
         const color = hubColorFor(n.node);
+        ctx.globalAlpha = dimmedNode(n.id) ? 0.2 : 1;
         const imgSrc = n.node.image || n.node.artwork;
         const img = imgSrc ? getImage(imgSrc, () => {}) : null;
 
