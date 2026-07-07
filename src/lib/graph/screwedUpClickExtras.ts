@@ -311,6 +311,7 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     duration: string;
     directions: string;
     weight: number;
+    days?: Array<{ label: string; distance: string; duration: string; directions: string }>;
   }> = [
     {
       to: "suc_landmark_screw_house",
@@ -378,10 +379,33 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     {
       to: "suc_landmark_smithville",
       distance: "155 mi",
-      duration: "2 days 4 hr (multi-day pilgrimage)",
+      duration: "3 days on foot (multi-day pilgrimage)",
       directions:
         "West on US-90 Alt through Rosenberg, Columbus and La Grange, then SH-71 south into Smithville — a documented multi-day Grey Tape pilgrimage, not a same-day walk.",
       weight: 0.6,
+      days: [
+        {
+          label: "Day 1 — Houston → Rosenberg",
+          distance: "34 mi",
+          duration: "≈ 11 hr walking",
+          directions:
+            "Leave Screwed Up Records & Tapes on Cullen Blvd, head west on Old Spanish Trail, then southwest on US-90 Alt through Stafford and Sugar Land. Overnight in Rosenberg.",
+        },
+        {
+          label: "Day 2 — Rosenberg → Columbus",
+          distance: "45 mi",
+          duration: "≈ 15 hr walking",
+          directions:
+            "Continue west on US-90 Alt through Beasley, Kendleton and Eagle Lake, crossing into Colorado County. Overnight in Columbus on the Colorado River.",
+        },
+        {
+          label: "Day 3 — Columbus → La Grange → Smithville",
+          distance: "76 mi",
+          duration: "≈ 25 hr walking (split across two overnights)",
+          directions:
+            "North on TX-71 through Weimar and La Grange, then west on TX-71 into Bastrop County. Arrive at DJ Screw's birthplace in downtown Smithville.",
+        },
+      ],
     },
   ];
   const SURT = "suc_landmark_screwed_up_records";
@@ -400,6 +424,7 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       walk_distance: w.distance,
       walk_duration: w.duration,
       walk_directions: w.directions,
+      ...(w.days ? { walk_days: w.days } : {}),
     } as (typeof links)[number];
     if (existing >= 0) links[existing] = { ...links[existing], ...linkPayload };
     else {
