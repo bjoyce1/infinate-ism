@@ -6,7 +6,6 @@ import { loadGraph, withCaptures } from "@/lib/graph/loadGraph";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
-import { TopBar } from "@/components/graph/TopBar";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
