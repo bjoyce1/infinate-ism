@@ -86,7 +86,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       (a, b) => (communitySizes.get(b) ?? 0) - (communitySizes.get(a) ?? 0),
     );
     const N = Math.max(commKeys.length, 1);
-    const ringR = 180 + Math.sqrt(N) * 90;
+    // Stretch everything far from mrcap1 so each hub owns its own real estate
+    // and its spawn children stay clustered with it.
+    const ringR = 520 + Math.sqrt(N) * 180;
     const commAnchor = new Map<number | string, { cx: number; cy: number; size: number }>();
     commKeys.forEach((k, i) => {
       const angle = (i / N) * Math.PI * 2;
@@ -105,6 +107,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     // First pass: place hubs + non-spawn nodes on their community ring.
     for (const raw of graph.nodes) {
       const n = raw as Pos;
+      // Pin the central hub at the origin — everything else radiates out.
+      if (n.id === HUB_ID) {
+        n.x = 0;
+        n.y = 0;
+        (n as Pos & { fx?: number; fy?: number }).fx = 0;
+        (n as Pos & { fx?: number; fy?: number }).fy = 0;
+        n.vx = 0;
+        n.vy = 0;
+        continue;
+      }
       if (parentOf.has(n.id)) continue; // spawn children handled below
       const a = commAnchor.get(n.community ?? "__none");
       if (!a) continue;
@@ -261,8 +273,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         (sizes.get(b) ?? 0) - (sizes.get(a) ?? 0),
       );
       const N = Math.max(keys.length, 1);
-      // Master ring radius scales with number of communities.
-      const ringR = 180 + Math.sqrt(N) * 90;
+      // Master ring radius scales with number of communities — pushed far
+      // out from mrcap1 so each hub's neighborhood is clearly separated.
+      const ringR = 520 + Math.sqrt(N) * 180;
       slots = new Map();
       keys.forEach((k, i) => {
         const size = sizes.get(k) ?? 1;
@@ -305,6 +318,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const speed = 0.28 * Math.max(alpha, 0.15);
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
+        // Keep the central hub pinned at the origin.
+        if (n.id === HUB_ID) {
+          (n as OrbitNode & { fx?: number; fy?: number }).fx = 0;
+          (n as OrbitNode & { fx?: number; fy?: number }).fy = 0;
+          n.x = 0;
+          n.y = 0;
+          n.vx = 0;
+          n.vy = 0;
+          continue;
+        }
         // 3a. Spawn children orbit their PARENT node instead of the community.
         const parentId = parentOf.get(n.id);
         if (parentId) {
