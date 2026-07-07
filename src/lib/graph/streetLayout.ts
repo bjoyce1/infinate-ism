@@ -62,27 +62,43 @@ export function buildStreetLayout(
 
   const hubOrder = hubs.map((h) => h.id);
 
-  // Ring geometry. Bigger radius when there are more hubs so the map breathes.
-  const N = Math.max(1, hubs.length);
-  const ringRadius = 900 + N * 26;
   const cellSize = 90;
   const districts: StreetLayout["districts"] = [];
 
-  hubs.forEach((h, i) => {
-    const angle = (i / N) * Math.PI * 2 - Math.PI / 2;
+  // Count each hub's private children (neighbors that aren't downtown and
+  // aren't themselves top-level hubs). Hubs with 10+ private children get
+  // exiled to an outer ring with more elbow room so their neighborhoods
+  // don't crowd everyone else.
+  const privateChildCount = new Map<string, number>();
+  const privateChildren = new Map<string, GraphNode[]>();
+  for (const h of hubs) {
+    const kids = Array.from(graph.neighbors.get(h.id) ?? [])
+      .filter((id) => id !== HUB_ID && !hubOrder.includes(id))
+      .map((id) => graph.byId.get(id))
+      .filter((n): n is GraphNode => Boolean(n))
+      .sort((a, b) => b.degree - a.degree);
+    privateChildren.set(h.id, kids);
+    privateChildCount.set(h.id, kids.length);
+  }
+
+  const BIG_THRESHOLD = 10;
+  const innerHubs = hubs.filter((h) => (privateChildCount.get(h.id) ?? 0) < BIG_THRESHOLD);
+  const outerHubs = hubs.filter((h) => (privateChildCount.get(h.id) ?? 0) >= BIG_THRESHOLD);
+
+  const innerN = Math.max(1, innerHubs.length);
+  const outerN = Math.max(1, outerHubs.length);
+  const innerRadius = 900 + innerN * 26;
+  // Push big hubs way out, and give them more angular spacing per hub.
+  const outerRadius = innerRadius + 1500 + outerN * 80;
+
+  const placeHub = (h: GraphNode, angle: number, ringRadius: number) => {
     // Snap hub center to the grid.
     const rx = Math.round((Math.cos(angle) * ringRadius) / cellSize) * cellSize;
     const ry = Math.round((Math.sin(angle) * ringRadius) / cellSize) * cellSize;
 
     nodes.set(h.id, { id: h.id, node: h, x: rx, y: ry, kind: "hub", hubId: h.id, size: 16 });
 
-    // Children of this hub = its neighbors that aren't the downtown hub and
-    // aren't themselves top-level hubs (so districts don't overlap).
-    const rawChildren = Array.from(graph.neighbors.get(h.id) ?? [])
-      .filter((id) => id !== HUB_ID && !hubOrder.includes(id))
-      .map((id) => graph.byId.get(id))
-      .filter((n): n is GraphNode => Boolean(n))
-      .sort((a, b) => b.degree - a.degree);
+    const rawChildren = privateChildren.get(h.id) ?? [];
 
     const count = rawChildren.length;
     // Square-ish grid; keep it compact so districts don't collide.
@@ -121,6 +137,16 @@ export function buildStreetLayout(
       radius: Math.max(blockW, blockH) * 0.55,
       color: hubColorFor(h),
     });
+  };
+
+  innerHubs.forEach((h, i) => {
+    const angle = (i / innerN) * Math.PI * 2 - Math.PI / 2;
+    placeHub(h, angle, innerRadius);
+  });
+  outerHubs.forEach((h, i) => {
+    // Offset outer ring by half a slot so it doesn't align with inner ring.
+    const angle = ((i + 0.5) / outerN) * Math.PI * 2 - Math.PI / 2;
+    placeHub(h, angle, outerRadius);
   });
 
   // Route each link as a multi-segment orthogonal polyline that zig-zags in
