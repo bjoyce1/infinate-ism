@@ -1,5 +1,7 @@
 import type { GraphNode, NormalizedGraph } from "./types";
 import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
+import screwedUpRecordsAsset from "@/assets/screwed-up-records-and-tapes.png.asset.json";
+
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
 // neighborhood on the street map. The street layout treats every direct
@@ -60,8 +62,20 @@ const LANDMARKS: Landmark[] = [
     weight: 3,
   },
   {
+    id: "suc_landmark_screwed_up_records",
+    label: "Screwed Up Records & Tapes",
+    file_type: "shop",
+    address: "8806 Cullen Blvd, Houston, TX",
+    description:
+      "The brick-and-mortar shop on Cullen Boulevard that kept DJ Screw's catalog, grey tapes and SUC releases in print after his passing — a pilgrimage spot for the Houston sound.",
+    tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
+    relation: "landmark",
+    weight: 1.8,
+  },
+  {
     id: "suc_landmark_south_park",
     label: "South Park",
+
     file_type: "district",
     address: "South Park, Houston, TX",
     description:
@@ -221,9 +235,13 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
+      ...(lm.id === "suc_landmark_screwed_up_records"
+        ? { image: screwedUpRecordsAsset.url, artwork: screwedUpRecordsAsset.url }
+        : {}),
     } as GraphNode;
     nodes.push(node);
     byId.set(lm.id, node);
+
     neighbors.set(lm.id, new Set([SUC_HUB]));
     neighbors.get(SUC_HUB)!.add(lm.id);
     links.push({ source: SUC_HUB, target: lm.id, relation: lm.relation, weight: lm.weight ?? 1.2 });
