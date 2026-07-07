@@ -72,6 +72,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["HQ", "Origin", "South Park", "Grey Tapes"],
     relation: "origin-site",
     weight: 3,
+    image: screwHouseImg,
+    gallery: [screwHouseImg, southParkImg],
   },
   {
     id: "suc_landmark_screwed_up_records",
@@ -83,6 +85,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
     relation: "landmark",
     weight: 1.8,
+    image: screwedUpRecordsAsset.url,
+    gallery: [screwedUpRecordsAsset.url, surtInteriorImg, screwTapeAsset.url],
   },
   {
     id: "suc_landmark_south_park",
@@ -95,6 +99,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Neighborhood", "Southside", "Houston"],
     relation: "home-turf",
     weight: 2,
+    image: southParkImg,
+    gallery: [southParkImg, macgregorImg],
   },
   {
     id: "suc_landmark_smithville",
@@ -106,6 +112,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Birthplace", "DJ Screw"],
     relation: "birthplace",
     weight: 1.5,
+    image: smithvilleImg,
+    gallery: [smithvilleImg],
   },
   {
     id: "suc_landmark_macgregor_park",
@@ -117,6 +125,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Park", "Southside", "Cyphers"],
     relation: "hangout",
     weight: 1.2,
+    image: macgregorImg,
+    gallery: [macgregorImg],
   },
   {
     id: "suc_landmark_almeda_mall",
@@ -128,6 +138,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Southside", "Landmark"],
     relation: "landmark",
     weight: 1,
+    image: almedaImg,
+    gallery: [almedaImg],
   },
   {
     id: "suc_landmark_timmy_chan",
@@ -139,6 +151,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Food", "Southside"],
     relation: "landmark",
     weight: 1,
+    image: timmyChanImg,
+    gallery: [timmyChanImg],
   },
   {
     id: "suc_landmark_wreckshop",
@@ -150,6 +164,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Label", "Studio", "SUC-affiliated"],
     relation: "affiliated-label",
     weight: 1.5,
+    image: wreckshopImg,
+    gallery: [wreckshopImg],
   },
   {
     id: "suc_landmark_kbxx",
@@ -162,6 +178,8 @@ const LANDMARKS: Landmark[] = [
     url: "https://theboxhouston.com",
     relation: "broadcast-partner",
     weight: 1.2,
+    image: kbxxImg,
+    gallery: [kbxxImg],
   },
   {
     id: "suc_landmark_astroworld",
@@ -173,6 +191,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Landmark", "Houston lore"],
     relation: "landmark",
     weight: 1,
+    image: astroworldImg,
+    gallery: [astroworldImg],
   },
 ];
 
