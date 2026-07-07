@@ -123,23 +123,77 @@ export function buildStreetLayout(
     });
   });
 
-  // Route every graph link as an orthogonal (Manhattan) polyline. The mid
-  // corner alternates so parallel roads don't stack on top of each other.
+  // Route each link as a multi-segment orthogonal polyline that zig-zags in
+  // 2–4 stairs so no two routes are identical and long trips look like real
+  // streets, not a single elbow. The staircase pattern is seeded from the
+  // link's endpoints so it's deterministic across renders.
+  const seeded = (s: string) => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return () => {
+      h = Math.imul(h ^ (h >>> 15), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return ((h >>> 0) % 10000) / 10000;
+    };
+  };
+
+  const routeStaircase = (
+    a: { x: number; y: number },
+    b: { x: number; y: number },
+    rand: () => number,
+  ) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dist = Math.hypot(dx, dy);
+    // Number of stairs scales with distance so long roads have more turns.
+    const stairs = Math.max(1, Math.min(4, Math.round(dist / 260) + (rand() < 0.5 ? 0 : 1)));
+    const pts: { x: number; y: number }[] = [{ x: a.x, y: a.y }];
+    let cx = a.x, cy = a.y;
+    // Choose which axis to step on first per stair for variety.
+    const startHoriz = rand() < 0.5;
+    for (let s = 0; s < stairs; s++) {
+      const remaining = stairs - s;
+      // Advance a fractional chunk of the remaining delta, jittered.
+      const jitter = 0.35 + rand() * 0.4;
+      const fx = (b.x - cx) * (1 / remaining) * jitter + (b.x - cx) * (1 / remaining) * (1 - jitter) * (remaining === 1 ? 1 : 0.6);
+      const fy = (b.y - cy) * (1 / remaining) * jitter + (b.y - cy) * (1 / remaining) * (1 - jitter) * (remaining === 1 ? 1 : 0.6);
+      const stepX = remaining === 1 ? b.x - cx : fx;
+      const stepY = remaining === 1 ? b.y - cy : fy;
+      if ((s % 2 === 0) === startHoriz) {
+        cx += stepX;
+        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
+        cy += stepY;
+        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
+      } else {
+        cy += stepY;
+        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
+        cx += stepX;
+        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
+      }
+    }
+    // Ensure the endpoint is exact.
+    const last = pts[pts.length - 1];
+    if (last.x !== b.x || last.y !== b.y) pts.push({ x: b.x, y: b.y });
+    // Collapse consecutive collinear duplicates.
+    const cleaned: { x: number; y: number }[] = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const p = pts[i];
+      const q = cleaned[cleaned.length - 1];
+      if (p.x === q.x && p.y === q.y) continue;
+      cleaned.push(p);
+    }
+    return cleaned;
+  };
+
   for (let i = 0; i < graph.links.length; i++) {
     const l = graph.links[i];
     const a = nodes.get(l.source);
     const b = nodes.get(l.target);
     if (!a || !b) continue;
 
-    const mid =
-      i % 2 === 0
-        ? { x: b.x, y: a.y }
-        : { x: a.x, y: b.y };
-    const points = [
-      { x: a.x, y: a.y },
-      mid,
-      { x: b.x, y: b.y },
-    ];
+    const rand = seeded(`${l.source}|${l.target}|${i}`);
+    const points = routeStaircase({ x: a.x, y: a.y }, { x: b.x, y: b.y }, rand);
     let length = 0;
     for (let p = 1; p < points.length; p++) {
       length += Math.hypot(points[p].x - points[p - 1].x, points[p].y - points[p - 1].y);
