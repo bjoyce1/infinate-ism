@@ -51,173 +51,50 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current?.d3ReheatSimulation();
   }, [orbitLayout]);
 
-  // --------------------------------------------------------------------------
-  // Solar-system layout.
-  //
-  //   Sun    = HUB_ID, pinned at origin.
-  //   Planet = every "main" node (is_hub || image). Each gets its own concentric
-  //            orbit around the sun, ordered by degree (busiest = closest in).
-  //   Moon   = every non-main node. Assigned to the planet it is most strongly
-  //            connected to (spawn parent > highest-degree main neighbor >
-  //            largest main node in its community). Orbits that planet.
-  //
-  // Both the initial placement below AND the running orbital force use the same
-  // `planetOf` / `planetRadius` maps so nodes never fight each other for a slot.
-  // --------------------------------------------------------------------------
-
-  type SolarPlan = {
-    planetOf: Map<string, string>;      // node id -> planet id (its "sun" for orbit)
-    moonsOf: Map<string, string[]>;     // planet id -> [moon ids]
-    planetRadius: Map<string, number>;  // planet id -> orbit radius around sun
-    planetPhase: Map<string, number>;   // planet id -> initial angular phase
-  };
-
-  const hashUnit = (s: string) => {
-    let h = 2166136261;
-    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-    return (h >>> 0) / 0xffffffff;
-  };
-
-  const solarPlan = useMemo<SolarPlan>(() => {
-    const planetOf = new Map<string, string>();
-    const moonsOf = new Map<string, string[]>();
-    const planetRadius = new Map<string, number>();
-    const planetPhase = new Map<string, number>();
-
-    const isMain = (n: GraphNode) => Boolean(n.is_hub || n.image);
-    // Spawn-parent map — a spawn relation is a strong "moon of" signal.
-    const spawnParent = new Map<string, string>();
-    for (const l of graph.links) {
-      if (l.relation !== "spawn") continue;
-      const s = typeof l.source === "string" ? l.source : (l.source as { id: string }).id;
-      const t = typeof l.target === "string" ? l.target : (l.target as { id: string }).id;
-      const sn = graph.byId.get(s);
-      const tn = graph.byId.get(t);
-      if (!sn || !tn) continue;
-      const sMain = isMain(sn);
-      const tMain = isMain(tn);
-      const parent = sMain && !tMain ? s : !sMain && tMain ? t : s;
-      const child = parent === s ? t : s;
-      if (parent === child) continue;
-      if (!spawnParent.has(child)) spawnParent.set(child, parent);
-    }
-
-    // Planets = every main node except the sun, ordered by degree desc so the
-    // biggest bodies sit on the inner (shorter) rings.
-    const planets = graph.nodes
-      .filter((n) => n.id !== HUB_ID && isMain(n))
-      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
-
-    // Concentric rings — spaced so even the largest planet's moon halo doesn't
-    // reach the next ring in. Ring index alternates high/low angular phase so
-    // adjacent rings don't stack their planets on the same radial line.
-    planets.forEach((p, i) => {
-      const ring = 380 + i * 150;
-      const golden = Math.PI * (3 - Math.sqrt(5)); // golden-angle spiral
-      const phase = (i * golden) % (Math.PI * 2);
-      planetRadius.set(p.id, ring);
-      planetPhase.set(p.id, phase);
-      moonsOf.set(p.id, []);
-    });
-
-    // Fallback planet — the largest planet overall; catches homeless moons.
-    const fallbackPlanet = planets[0]?.id ?? HUB_ID;
-
-    // Assign every non-main node to a planet.
-    // Preference order:
-    //   1. Its spawn parent (if one exists and is a main node).
-    //   2. The highest-degree main neighbor.
-    //   3. Largest main node in the same community.
-    //   4. fallbackPlanet.
-    const mainByCommunity = new Map<number | string, string>();
-    for (const p of planets) {
-      const key = p.community ?? "__none";
-      if (!mainByCommunity.has(key)) mainByCommunity.set(key, p.id);
-    }
-
-    for (const n of graph.nodes) {
-      if (n.id === HUB_ID) continue;
-      if (isMain(n)) continue;
-
-      let planet: string | undefined;
-      const sp = spawnParent.get(n.id);
-      if (sp && planetRadius.has(sp)) planet = sp;
-
-      if (!planet) {
-        let best: { id: string; deg: number } | null = null;
-        for (const nb of graph.neighbors.get(n.id) ?? []) {
-          if (!planetRadius.has(nb)) continue;
-          const nbNode = graph.byId.get(nb);
-          if (!nbNode) continue;
-          const deg = nbNode.degree ?? 0;
-          if (!best || deg > best.deg) best = { id: nb, deg };
-        }
-        if (best) planet = best.id;
-      }
-
-      if (!planet) planet = mainByCommunity.get(n.community ?? "__none");
-      if (!planet) planet = fallbackPlanet;
-
-      planetOf.set(n.id, planet);
-      (moonsOf.get(planet) ?? moonsOf.set(planet, []).get(planet)!).push(n.id);
-    }
-
-    return { planetOf, moonsOf, planetRadius, planetPhase };
-  }, [graph]);
-
-  // Pre-compute initial positions so the solar system is visible immediately
-  // instead of settling in over a few seconds of physics.
+  // Organic force-directed layout, Obsidian-style. No orbits, no fixed rings —
+  // d3-force does the work. We just give it good starting positions (spread on
+  // a ring, seeded by community) so it settles into readable clusters instead
+  // of a chaotic hairball.
   useEffect(() => {
     if (!orbitLayout) return;
-    type Pos = GraphNode & {
-      x?: number;
-      y?: number;
-      vx?: number;
-      vy?: number;
-      fx?: number;
-      fy?: number;
+    type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
+
+    // Seed positions: nodes in the same community sit near each other on a
+    // wide circle. The hub goes at origin (soft-pinned, not hard-pinned, so
+    // it can breathe with its cluster).
+    const commKeys: (number | string)[] = [];
+    const commIndex = new Map<number | string, number>();
+    for (const n of graph.nodes) {
+      const k = n.community ?? "__none";
+      if (!commIndex.has(k)) { commIndex.set(k, commKeys.length); commKeys.push(k); }
+    }
+    const N = Math.max(commKeys.length, 1);
+    const R = 260 + Math.sqrt(graph.nodes.length) * 22;
+    const hash = (s: string) => {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+      return (h >>> 0) / 0xffffffff;
     };
-    const { planetOf, moonsOf, planetRadius, planetPhase } = solarPlan;
 
     for (const raw of graph.nodes) {
       const n = raw as Pos;
+      n.fx = undefined; n.fy = undefined;
       if (n.id === HUB_ID) {
-        n.x = 0; n.y = 0; n.fx = 0; n.fy = 0; n.vx = 0; n.vy = 0;
+        n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
         continue;
       }
-      // Clear any leftover pin from a previous layout so planets can drift.
-      n.fx = undefined; n.fy = undefined;
-
-      const r = planetRadius.get(n.id);
-      if (r != null) {
-        // This IS a planet — sit it on its own ring.
-        const angle = planetPhase.get(n.id) ?? 0;
-        n.x = Math.cos(angle) * r;
-        n.y = Math.sin(angle) * r;
-        n.vx = 0; n.vy = 0;
-      }
+      const idx = commIndex.get(n.community ?? "__none") ?? 0;
+      const baseAngle = (idx / N) * Math.PI * 2;
+      const jitter = (hash(n.id) - 0.5) * 0.6;
+      const angle = baseAngle + jitter;
+      const rr = R * (0.5 + hash(n.id + "|r") * 0.6);
+      n.x = Math.cos(angle) * rr;
+      n.y = Math.sin(angle) * rr;
+      n.vx = 0; n.vy = 0;
     }
-
-    // Moons — evenly spaced around their planet.
-    for (const [planetId, moons] of moonsOf) {
-      const planet = graph.byId.get(planetId) as Pos | undefined;
-      if (!planet || planet.x == null || planet.y == null) continue;
-      const count = Math.max(moons.length, 1);
-      const moonR = 22 + Math.sqrt(count) * 8;
-      moons.forEach((mid, i) => {
-        const m = graph.byId.get(mid) as Pos | undefined;
-        if (!m) return;
-        const angle = (i / count) * Math.PI * 2 + hashUnit(planetId) * Math.PI * 2;
-        m.x = planet.x! + Math.cos(angle) * moonR;
-        m.y = planet.y! + Math.sin(angle) * moonR;
-        m.vx = 0; m.vy = 0;
-        m.fx = undefined; m.fy = undefined;
-      });
-    }
-
     fgRef.current?.d3ReheatSimulation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, orbitLayout, solarPlan]);
+  }, [graph, orbitLayout]);
+
 
   // Refs so the force closure always reads the latest values without re-registering.
   const spawnRadiusRef = useRef(spawnOrbitRadius);
@@ -291,69 +168,38 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Solar-system orbital force. Planets ride their own dedicated ring around
-  // the sun (Keplerian: outer rings move slower). Moons ride a tight ring
-  // around their assigned planet. Uses the same solarPlan as the initial
-  // layout so no node ever fights another for a slot.
+  // Cluster-clustering force: pull every node gently toward the live centroid
+  // of its own community. That's it. No orbits, no rings, no per-node hacks —
+  // d3's default link, charge, collide, and center forces do the actual layout,
+  // producing the Obsidian-style organic cluster look.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
-    type OrbitNode = GraphNode & {
-      x?: number;
-      y?: number;
-      vx?: number;
-      vy?: number;
-      fx?: number;
-      fy?: number;
-    };
-    const { planetOf, moonsOf, planetRadius } = solarPlan;
-    let nodes: OrbitNode[] = [];
-    let byIdSim = new Map<string, OrbitNode>();
+    type ClusterNode = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
+    let nodes: ClusterNode[] = [];
 
-    const force = (alpha: number) => {
-      if (!nodes.length) return;
-      if (!orbitLayoutRef.current) return;
-      const a = Math.max(alpha, 0.15);
+    const clusterForce = (alpha: number) => {
+      if (!nodes.length || !orbitLayoutRef.current) return;
+      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        if (n.id === HUB_ID) {
-          n.fx = 0; n.fy = 0; n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
-          continue;
-        }
-        const ringR = planetRadius.get(n.id);
-        if (ringR != null) {
-          const dx = n.x;
-          const dy = n.y;
-          const r = Math.hypot(dx, dy) || 1;
-          const speed = (0.9 / Math.sqrt(ringR / 380)) * a * 0.18;
-          n.vx = (n.vx ?? 0) + (-dy / r) * speed;
-          n.vy = (n.vy ?? 0) + (dx / r) * speed;
-          const pull = (ringR - r) * 0.05;
-          n.vx += (dx / r) * pull;
-          n.vy += (dy / r) * pull;
-          continue;
-        }
-        const planetId = planetOf.get(n.id);
-        if (!planetId) continue;
-        const p = byIdSim.get(planetId);
-        if (!p || p.x == null || p.y == null) continue;
-        const siblings = moonsOf.get(planetId)?.length ?? 1;
-        const targetR = (14 + Math.sqrt(siblings) * 3.5) * spawnRadiusRef.current;
-        const dx = n.x - p.x;
-        const dy = n.y - p.y;
-        const r = Math.hypot(dx, dy) || 1;
-        const s = 0.4 * a * spawnSpeedRef.current;
-        n.vx = (n.vx ?? 0) + (-dy / r) * s;
-        n.vy = (n.vy ?? 0) + (dx / r) * s;
-        const pull = (targetR - r) * 0.05;
-        n.vx += (dx / r) * pull;
-        n.vy += (dy / r) * pull;
+        const k = n.community ?? "__none";
+        const c = centers.get(k) ?? { cx: 0, cy: 0, n: 0 };
+        c.cx += n.x; c.cy += n.y; c.n += 1;
+        centers.set(k, c);
+      }
+      for (const c of centers.values()) { c.cx /= c.n; c.cy /= c.n; }
+      const pull = 0.12 * alpha;
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        if (n.id === HUB_ID) continue;
+        const c = centers.get(n.community ?? "__none");
+        if (!c) continue;
+        n.vx = (n.vx ?? 0) + (c.cx - n.x) * pull;
+        n.vy = (n.vy ?? 0) + (c.cy - n.y) * pull;
       }
     };
-    (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
-      nodes = n;
-      byIdSim = new Map(n.map((x) => [x.id, x]));
-    };
-    fgRef.current.d3Force("orbital", force);
+    (clusterForce as unknown as { initialize: (n: ClusterNode[]) => void }).initialize = (n) => { nodes = n; };
+    fgRef.current.d3Force("orbital", clusterForce);
     // Uniform repulsion so nothing clumps into a blob.
     fgRef.current.d3Force(
       "charge",
@@ -387,7 +233,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
     }
     fgRef.current.d3ReheatSimulation();
-  }, [ForceGraph, graph, solarPlan]);
+  }, [ForceGraph, graph]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
