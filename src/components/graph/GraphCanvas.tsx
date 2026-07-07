@@ -585,9 +585,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           nodeCanvasObject={nodeCanvasObject}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
+            const isHub = Boolean(node.is_hub || node.image);
+            const base = isHub
+              ? Math.max(14, Math.min(28, 10 + Math.sqrt(node.degree) * 1.2))
+              : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(node.degree)));
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+            ctx.arc(node.x, node.y, Math.max(base, 8), 0, Math.PI * 2);
             ctx.fill();
           }}
           linkColor={linkColor}
