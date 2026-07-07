@@ -267,9 +267,8 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
-      ...(lm.id === "suc_landmark_screwed_up_records"
-        ? { image: screwedUpRecordsAsset.url, artwork: screwedUpRecordsAsset.url }
-        : {}),
+      ...(lm.image ? { image: lm.image, artwork: lm.image } : {}),
+      ...(lm.gallery && lm.gallery.length ? { gallery: lm.gallery } : {}),
     } as GraphNode;
     nodes.push(node);
     byId.set(lm.id, node);
@@ -303,6 +302,82 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   crossLink("suc_landmark_screw_house", "suc_legacy_chopped_screwed", "birthplace-of", 2);
   crossLink("suc_landmark_south_park", "suc_landmark_screw_house", "contains", 1.5);
   crossLink("suc_landmark_south_park", "site_spc_houston", "houston-scene", 1);
+
+  // Walkable routes from Screwed Up Records & Tapes (8806 Cullen Blvd) to
+  // nearby SUC landmarks. Distances/durations are documented walking estimates.
+  const walkRoutes: Array<{
+    to: string;
+    distance: string;
+    duration: string;
+    directions: string;
+    weight: number;
+  }> = [
+    {
+      to: "suc_landmark_screw_house",
+      distance: "1.4 mi",
+      duration: "28 min",
+      directions:
+        "North on Cullen Blvd, right on Reed Rd, left on Scott St, right on Greenstone St to 7717.",
+      weight: 2,
+    },
+    {
+      to: "suc_landmark_south_park",
+      distance: "0.2 mi",
+      duration: "5 min",
+      directions: "Step outside — the shop sits on the north edge of the South Park district.",
+      weight: 2.2,
+    },
+    {
+      to: "suc_landmark_macgregor_park",
+      distance: "2.6 mi",
+      duration: "52 min",
+      directions:
+        "North on Cullen Blvd past MLK Blvd, left on N MacGregor Way to Calhoun Rd park entrance.",
+      weight: 1.4,
+    },
+    {
+      to: "suc_landmark_almeda_mall",
+      distance: "4.9 mi",
+      duration: "1 hr 40 min",
+      directions:
+        "South on Cullen Blvd, east on Airport Blvd, south on I-45 Gulf Fwy frontage to Almeda Mall.",
+      weight: 1,
+    },
+    {
+      to: "suc_landmark_timmy_chan",
+      distance: "1.1 mi",
+      duration: "22 min",
+      directions:
+        "South on Cullen Blvd to the nearest Southside Timmy Chan's on the corner strip.",
+      weight: 1.3,
+    },
+  ];
+  const SURT = "suc_landmark_screwed_up_records";
+  for (const w of walkRoutes) {
+    if (!byId.has(SURT) || !byId.has(w.to)) continue;
+    const existing = links.findIndex(
+      (l) =>
+        (l.source === SURT && l.target === w.to) ||
+        (l.source === w.to && l.target === SURT),
+    );
+    const linkPayload = {
+      source: SURT,
+      target: w.to,
+      relation: `walk · ${w.duration} (${w.distance})`,
+      weight: w.weight,
+      walk_distance: w.distance,
+      walk_duration: w.duration,
+      walk_directions: w.directions,
+    } as (typeof links)[number];
+    if (existing >= 0) links[existing] = { ...links[existing], ...linkPayload };
+    else {
+      links.push(linkPayload);
+      if (!neighbors.has(SURT)) neighbors.set(SURT, new Set());
+      if (!neighbors.has(w.to)) neighbors.set(w.to, new Set());
+      neighbors.get(SURT)!.add(w.to);
+      neighbors.get(w.to)!.add(SURT);
+    }
+  }
 
   // Sync final nodes array with byId's degree updates.
   const finalNodes = nodes.map((n) => byId.get(n.id) ?? n);
