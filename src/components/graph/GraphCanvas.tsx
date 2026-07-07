@@ -291,8 +291,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Orbital motion — inject a custom tangential force around each community's
-  // centroid, and keep the simulation permanently warm so orbits never freeze.
+  // Solar-system orbital force. Planets ride their own dedicated ring around
+  // the sun (Keplerian: outer rings move slower). Moons ride a tight ring
+  // around their assigned planet. Uses the same solarPlan as the initial
+  // layout so no node ever fights another for a slot.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
     type OrbitNode = GraphNode & {
@@ -300,141 +302,49 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       y?: number;
       vx?: number;
       vy?: number;
+      fx?: number;
+      fy?: number;
     };
-    // Build a parent map for spawn children so they orbit their originating
-    // main node instead of drifting around the community centroid.
-    const parentOf = new Map<string, string>();
-    const childrenOf = new Map<string, string[]>();
-    for (const l of graph.links) {
-      if (l.relation !== "spawn") continue;
-      const s = typeof l.source === "string" ? l.source : (l.source as { id: string }).id;
-      const t = typeof l.target === "string" ? l.target : (l.target as { id: string }).id;
-      // parent = the "main" endpoint (hub/image); child = the other.
-      const sn = graph.byId.get(s);
-      const tn = graph.byId.get(t);
-      if (!sn || !tn) continue;
-      const sMain = Boolean(sn.is_hub || sn.image);
-      const tMain = Boolean(tn.is_hub || tn.image);
-      const parent = sMain && !tMain ? s : !sMain && tMain ? t : s;
-      const child = parent === s ? t : s;
-      if (parent === child) continue;
-      if (!parentOf.has(child)) parentOf.set(child, parent);
-      if (!childrenOf.has(parent)) childrenOf.set(parent, []);
-      childrenOf.get(parent)!.push(child);
-    }
+    const { planetOf, moonsOf, planetRadius } = solarPlan;
     let nodes: OrbitNode[] = [];
     let byIdSim = new Map<string, OrbitNode>();
-    // Assign each community an evenly-spaced angular slot on a master ring
-    // centered at the origin. This keeps clusters from piling into each other
-    // and gives the whole graph a uniform, organized layout.
-    let slots = new Map<number | string, { angle: number; targetR: number; size: number }>();
-    const recomputeSlots = () => {
-      const sizes = new Map<number | string, number>();
-      for (const n of nodes) {
-        const key = n.community ?? "__none";
-        sizes.set(key, (sizes.get(key) ?? 0) + 1);
-      }
-      const keys = Array.from(sizes.keys()).sort((a, b) =>
-        (sizes.get(b) ?? 0) - (sizes.get(a) ?? 0),
-      );
-      const N = Math.max(keys.length, 1);
-      // Master ring radius scales with number of communities — pushed far
-      // out from mrcap1 so each hub's neighborhood is clearly separated.
-      const ringR = 520 + Math.sqrt(N) * 180;
-      slots = new Map();
-      keys.forEach((k, i) => {
-        const size = sizes.get(k) ?? 1;
-        slots.set(k, {
-          angle: (i / N) * Math.PI * 2,
-          targetR: ringR,
-          size,
-        });
-      });
-    };
+
     const force = (alpha: number) => {
       if (!nodes.length) return;
-      if (!orbitLayoutRef.current) return; // free-drift mode: default forces only
-      if (slots.size === 0) recomputeSlots();
-      // 1. Compute live centroids per community.
-      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
+      if (!orbitLayoutRef.current) return;
+      const a = Math.max(alpha, 0.15);
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        const key = n.community ?? "__none";
-        const c = centers.get(key) ?? { cx: 0, cy: 0, n: 0 };
-        c.cx += n.x;
-        c.cy += n.y;
-        c.n += 1;
-        centers.set(key, c);
-      }
-      for (const c of centers.values()) {
-        c.cx /= c.n;
-        c.cy /= c.n;
-      }
-      // 2. Anchor each centroid toward its slot on the master ring.
-      const anchorPull = 0.04 * Math.max(alpha, 0.2);
-      const anchors = new Map<number | string, { ax: number; ay: number }>();
-      for (const [key, slot] of slots) {
-        const ax = Math.cos(slot.angle) * slot.targetR;
-        const ay = Math.sin(slot.angle) * slot.targetR;
-        anchors.set(key, { ax, ay });
-      }
-      // 3. Per-node: gentle tangential orbit + strong radial spring toward
-      //    a uniform per-cluster orbit radius, plus a pull toward the slot.
-      const speed = 0.28 * Math.max(alpha, 0.15);
-      for (const n of nodes) {
-        if (n.x == null || n.y == null) continue;
-        // Keep the central hub pinned at the origin.
         if (n.id === HUB_ID) {
-          (n as OrbitNode & { fx?: number; fy?: number }).fx = 0;
-          (n as OrbitNode & { fx?: number; fy?: number }).fy = 0;
-          n.x = 0;
-          n.y = 0;
-          n.vx = 0;
-          n.vy = 0;
+          n.fx = 0; n.fy = 0; n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
           continue;
         }
-        // 3a. Spawn children orbit their PARENT node instead of the community.
-        const parentId = parentOf.get(n.id);
-        if (parentId) {
-          const p = byIdSim.get(parentId);
-          if (p && p.x != null && p.y != null) {
-            const siblings = childrenOf.get(parentId)?.length ?? 1;
-            // Tight orbit around the parent — radius grows with sibling count.
-            const targetR = (14 + Math.sqrt(siblings) * 3.5) * spawnRadiusRef.current;
-            const dx = n.x - p.x;
-            const dy = n.y - p.y;
-            const r = Math.hypot(dx, dy) || 1;
-            // Tangential orbit (counter-clockwise), slightly faster than cluster orbit.
-            const s = 0.4 * Math.max(alpha, 0.15) * spawnSpeedRef.current;
-            n.vx = (n.vx ?? 0) + (-dy / r) * s;
-            n.vy = (n.vy ?? 0) + (dx / r) * s;
-            // Strong radial spring to keep it on the ring around the parent.
-            const pull = (targetR - r) * 0.05;
-            n.vx += (dx / r) * pull;
-            n.vy += (dy / r) * pull;
-            continue;
-          }
+        const ringR = planetRadius.get(n.id);
+        if (ringR != null) {
+          const dx = n.x;
+          const dy = n.y;
+          const r = Math.hypot(dx, dy) || 1;
+          const speed = (0.9 / Math.sqrt(ringR / 380)) * a * 0.18;
+          n.vx = (n.vx ?? 0) + (-dy / r) * speed;
+          n.vy = (n.vy ?? 0) + (dx / r) * speed;
+          const pull = (ringR - r) * 0.05;
+          n.vx += (dx / r) * pull;
+          n.vy += (dy / r) * pull;
+          continue;
         }
-        const key = n.community ?? "__none";
-        const c = centers.get(key);
-        const a = anchors.get(key);
-        const slot = slots.get(key);
-        if (!c || !a || !slot) continue;
-        // Pull the whole cluster toward its anchor slot.
-        n.vx = (n.vx ?? 0) + (a.ax - c.cx) * anchorPull;
-        n.vy = (n.vy ?? 0) + (a.ay - c.cy) * anchorPull;
-        if (n.is_hub) continue;
-        // Uniform per-cluster orbit radius — scales with cluster size, not
-        // per-node degree, so every satellite sits on a clean ring.
-        const targetR = 22 + Math.sqrt(slot.size) * 8;
-        const dx = n.x - c.cx;
-        const dy = n.y - c.cy;
+        const planetId = planetOf.get(n.id);
+        if (!planetId) continue;
+        const p = byIdSim.get(planetId);
+        if (!p || p.x == null || p.y == null) continue;
+        const siblings = moonsOf.get(planetId)?.length ?? 1;
+        const targetR = (14 + Math.sqrt(siblings) * 3.5) * spawnRadiusRef.current;
+        const dx = n.x - p.x;
+        const dy = n.y - p.y;
         const r = Math.hypot(dx, dy) || 1;
-        // Tangential (counter-clockwise) — calm, uniform speed.
-        n.vx += (-dy / r) * speed;
-        n.vy += (dx / r) * speed;
-        // Strong radial spring toward the target ring.
-        const pull = (targetR - r) * 0.02;
+        const s = 0.4 * a * spawnSpeedRef.current;
+        n.vx = (n.vx ?? 0) + (-dy / r) * s;
+        n.vy = (n.vy ?? 0) + (dx / r) * s;
+        const pull = (targetR - r) * 0.05;
         n.vx += (dx / r) * pull;
         n.vy += (dy / r) * pull;
       }
@@ -442,8 +352,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     (force as unknown as { initialize: (n: OrbitNode[]) => void }).initialize = (n) => {
       nodes = n;
       byIdSim = new Map(n.map((x) => [x.id, x]));
-      slots = new Map();
-      recomputeSlots();
     };
     fgRef.current.d3Force("orbital", force);
     // Uniform repulsion so nothing clumps into a blob.
@@ -479,7 +387,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
     }
     fgRef.current.d3ReheatSimulation();
-  }, [ForceGraph, graph]);
+  }, [ForceGraph, graph, solarPlan]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
