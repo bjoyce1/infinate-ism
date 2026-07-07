@@ -11,6 +11,25 @@ function hubColorFor(n: GraphNode): string {
   return n.color || CATEGORY_COLORS[n.category] || "#3DED97";
 }
 
+// Shared cache of loaded <img> elements keyed by src URL. Kept module-scoped
+// so switching view modes doesn't re-download every asset.
+const imageCache = new Map<string, HTMLImageElement | "loading" | "error">();
+function getImage(src: string, onReady: () => void): HTMLImageElement | null {
+  const cached = imageCache.get(src);
+  if (cached === "loading" || cached === "error") return null;
+  if (cached) return cached;
+  imageCache.set(src, "loading");
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    imageCache.set(src, img);
+    onReady();
+  };
+  img.onerror = () => imageCache.set(src, "error");
+  img.src = src;
+  return null;
+}
+
 // Sample a point along a polyline at parametric t in [0,1].
 function samplePolyline(points: { x: number; y: number }[], length: number, t: number) {
   const target = t * length;
