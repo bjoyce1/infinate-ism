@@ -179,8 +179,11 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       c.y += (c.ty - c.y) * Math.min(1, dt * 6);
       c.zoom += (c.tzoom - c.zoom) * Math.min(1, dt * 6);
 
-      // Background — dark charcoal with subtle radial vignette.
-      ctx.fillStyle = "#0b0d10";
+      // Background — deep navy with subtle radial vignette (matches reference map).
+      const bg = ctx.createRadialGradient(size.w / 2, size.h / 2, 0, size.w / 2, size.h / 2, Math.max(size.w, size.h) * 0.7);
+      bg.addColorStop(0, "#0f1f38");
+      bg.addColorStop(1, "#050a17");
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, size.w, size.h);
 
       // Grid graticule (world-space, culled to viewport).
@@ -189,7 +192,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       const viewMaxX = c.x + size.w / 2 / c.zoom;
       const viewMinY = c.y - size.h / 2 / c.zoom;
       const viewMaxY = c.y + size.h / 2 / c.zoom;
-      ctx.strokeStyle = "rgba(255,255,255,0.03)";
+      ctx.strokeStyle = "rgba(120,170,220,0.05)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       const startX = Math.floor(viewMinX / step) * step;
@@ -229,48 +232,47 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
 
       const cornerRadius = Math.max(4, 10 * c.zoom);
 
-      // 1. Road casing (darker outline).
+      // 1. Faint base street lattice under everything (like the reference map's
+      // background street grid).  Drawn as thin cyan lines with low alpha.
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
       for (const r of layout.roads) {
         const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        ctx.strokeStyle = "#1c2028";
-        ctx.lineWidth = roadWidthFor(r) + 3;
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-      }
-      // 2. Road surface (lighter).
-      for (const r of layout.roads) {
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        ctx.strokeStyle = r.kind === "highway" ? "#3a4152" : r.kind === "street" ? "#2f343f" : "#252932";
-        ctx.lineWidth = roadWidthFor(r);
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-      }
-      // 3. Highway centerline (dashed).
-      ctx.setLineDash([6, 8]);
-      for (const r of layout.roads) {
-        if (r.kind !== "highway") continue;
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        ctx.strokeStyle = "rgba(230, 220, 140, 0.35)";
+        ctx.strokeStyle = "rgba(120,190,240,0.09)";
         ctx.lineWidth = 1;
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
       }
-      ctx.setLineDash([]);
-
-      // 4. GPS route glow — bright green route from mrcap1 out to every hub.
+      // 2. Bright glowing cyan routes for highways + streets (the "lit" arteries).
       const pulse = 0.6 + 0.4 * Math.sin(now / 500);
-      for (const r of gpsRoads) {
+      for (const r of layout.roads) {
+        if (r.kind === "alley") continue;
+        const isGps = r.from === HUB_ID || r.to === HUB_ID;
         const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        // Glow underlay.
-        ctx.strokeStyle = `rgba(61, 237, 151, ${0.15 * pulse})`;
-        ctx.lineWidth = roadWidthFor(r) + 10;
+        const core = isGps ? "#7df9ff" : "#22c8ff";
+        const glow = isGps ? "rgba(125,249,255," : "rgba(34,200,255,";
+        // Outer glow.
+        ctx.strokeStyle = `${glow}${(isGps ? 0.22 : 0.14) * pulse})`;
+        ctx.lineWidth = roadWidthFor(r) + (isGps ? 14 : 8);
+        traceRoad(ctx, pts, cornerRadius);
+        ctx.stroke();
+        // Mid glow.
+        ctx.strokeStyle = `${glow}${isGps ? 0.35 : 0.22})`;
+        ctx.lineWidth = roadWidthFor(r) + 3;
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
         // Bright core.
-        ctx.strokeStyle = "#3DED97";
-        ctx.lineWidth = Math.max(1.5, 2 * c.zoom);
+        ctx.strokeStyle = core;
+        ctx.lineWidth = Math.max(1.6, (isGps ? 2.6 : 2) * c.zoom);
+        traceRoad(ctx, pts, cornerRadius);
+        ctx.stroke();
+      }
+      // 3. Alleys as thin darker connectors.
+      for (const r of layout.roads) {
+        if (r.kind !== "alley") continue;
+        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
+        ctx.strokeStyle = "rgba(90,140,190,0.35)";
+        ctx.lineWidth = Math.max(1, 1.4 * c.zoom);
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
       }
@@ -287,7 +289,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
           const p = samplePolyline(r.points, r.length, arr[i]);
           const s = worldToScreen(p.x, p.y);
           const isGps = r.from === HUB_ID || r.to === HUB_ID;
-          ctx.fillStyle = isGps ? "#a8ffd6" : "#ffd66a";
+          ctx.fillStyle = isGps ? "#ffffff" : "#ffd66a";
           ctx.beginPath();
           ctx.arc(s.x, s.y, isGps ? 2.4 : 1.8, 0, Math.PI * 2);
           ctx.fill();
