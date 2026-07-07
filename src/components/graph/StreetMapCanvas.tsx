@@ -11,6 +11,25 @@ function hubColorFor(n: GraphNode): string {
   return n.color || CATEGORY_COLORS[n.category] || "#3DED97";
 }
 
+// Shared cache of loaded <img> elements keyed by src URL. Kept module-scoped
+// so switching view modes doesn't re-download every asset.
+const imageCache = new Map<string, HTMLImageElement | "loading" | "error">();
+function getImage(src: string, onReady: () => void): HTMLImageElement | null {
+  const cached = imageCache.get(src);
+  if (cached === "loading" || cached === "error") return null;
+  if (cached) return cached;
+  imageCache.set(src, "loading");
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    imageCache.set(src, img);
+    onReady();
+  };
+  img.onerror = () => imageCache.set(src, "error");
+  img.src = src;
+  return null;
+}
+
 // Sample a point along a polyline at parametric t in [0,1].
 function samplePolyline(points: { x: number; y: number }[], length: number, t: number) {
   const target = t * length;
@@ -302,18 +321,54 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         const isSelected = selectedId === n.id;
         const isHover = hoveredId === n.id || hoverIdRef.current === n.id;
         const color = hubColorFor(n.node);
+        const imgSrc = n.node.image || n.node.artwork;
+        const img = imgSrc ? getImage(imgSrc, () => {}) : null;
+
+        // Helper: draw a circular image clipped to a disc of radius r.
+        const drawAvatar = (cx: number, cy: number, r: number, ringColor: string) => {
+          if (!img) return false;
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.clip();
+          // cover-fit the image into the circle.
+          const iw = img.naturalWidth || img.width;
+          const ih = img.naturalHeight || img.height;
+          const scale = Math.max((2 * r) / iw, (2 * r) / ih);
+          const dw = iw * scale;
+          const dh = ih * scale;
+          ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
+          ctx.restore();
+          // Ring around the avatar for the map-pin look.
+          ctx.strokeStyle = ringColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.strokeStyle = `${ringColor}55`;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+          ctx.stroke();
+          return true;
+        };
+
         if (n.kind === "downtown") {
-          // Downtown = big star pin.
-          const r = 14 + (isHover ? 3 : 0);
-          ctx.fillStyle = "rgba(61,237,151,0.15)";
+          const r = 18 + (isHover ? 3 : 0);
+          // Downtown halo (always visible even with image).
+          ctx.fillStyle = "rgba(61,237,151,0.18)";
           ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2); ctx.fill();
+          if (drawAvatar(p.x, p.y, r, "#3DED97")) return;
+          // Downtown = big star pin.
+          const rStar = 14 + (isHover ? 3 : 0);
           ctx.fillStyle = "#3DED97";
           ctx.strokeStyle = "#0b0d10";
           ctx.lineWidth = 2;
           ctx.beginPath();
           for (let i = 0; i < 10; i++) {
             const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-            const rad = i % 2 === 0 ? r : r * 0.45;
+            const rad = i % 2 === 0 ? rStar : rStar * 0.45;
             const px = p.x + Math.cos(a) * rad;
             const py = p.y + Math.sin(a) * rad;
             if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
@@ -322,23 +377,28 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
           ctx.fill();
           ctx.stroke();
         } else if (n.kind === "hub") {
+          const rOuter = 14 + (isSelected ? 3 : 0);
+          if (drawAvatar(p.x, p.y, rOuter, color)) return;
           // Hub HQ = GPS destination pin: outer ring + inner dot in hub color.
-          const rOuter = 11 + (isSelected ? 3 : 0);
+          const rPin = 11 + (isSelected ? 3 : 0);
           ctx.strokeStyle = color;
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, rOuter, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, rPin, 0, Math.PI * 2);
           ctx.stroke();
           ctx.strokeStyle = `${color}55`;
           ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, rOuter + 4, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, rPin + 4, 0, Math.PI * 2);
           ctx.stroke();
           ctx.fillStyle = color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
           ctx.fill();
         } else {
+          // Building — if it has an image, show a small avatar; otherwise a chip.
+          const r = 8 + (isHover ? 2 : 0) + (isSelected ? 2 : 0);
+          if (drawAvatar(p.x, p.y, r, color)) return;
           // Building.
           const s = 6 + (isHover ? 2 : 0) + (isSelected ? 3 : 0);
           ctx.fillStyle = color;
