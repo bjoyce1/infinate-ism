@@ -433,6 +433,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
           ctx.stroke();
         }
       });
+      ctx.globalAlpha = 1;
 
       // 7. Labels (zoom-gated, no overlap check for perf — just prioritize).
       if (showLabels) {
