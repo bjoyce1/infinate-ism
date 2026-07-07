@@ -6,6 +6,7 @@ import { loadGraph, withCaptures } from "@/lib/graph/loadGraph";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
+import { StreetMapCanvas } from "@/components/graph/StreetMapCanvas";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
@@ -19,7 +20,7 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 
 const searchSchema = z.object({
-  view: fallback(z.enum(["2d", "3d"]), "2d").default("2d"),
+  view: fallback(z.enum(["2d", "3d", "street"]), "2d").default("2d"),
   node: fallback(z.string(), "").default(""),
   focus: fallback(z.coerce.boolean(), false).default(false),
 });
@@ -48,7 +49,7 @@ function Index() {
   const viewMode = useGraphStore((s) => s.viewMode);
   const selectedId = useGraphStore((s) => s.selectedId);
   const focusMode = useGraphStore((s) => s.focusMode);
-  const toggleViewMode = useGraphStore((s) => s.toggleViewMode);
+  const setViewMode = useGraphStore((s) => s.setViewMode);
   const select = useGraphStore((s) => s.select);
   const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const search = Route.useSearch();
@@ -106,7 +107,7 @@ function Index() {
   // Hydrate store from URL once graph is loaded.
   useEffect(() => {
     if (!graph) return;
-    if (search.view !== viewMode) toggleViewMode();
+    if (search.view !== viewMode) setViewMode(search.view);
     if (search.node && graph.byId.has(search.node) && search.node !== selectedId) {
       select(search.node);
     }
@@ -154,8 +155,10 @@ function Index() {
       <h1 className="sr-only">Mnemosyne — Explore Your Second Brain</h1>
       <LeftSidebar graph={graph} />
       <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
-        {viewMode === "2d" ? <GraphCanvas graph={graph} /> : <GraphCanvas3D graph={graph} />}
-        {viewMode === "2d" ? <TopBar graph={graph} /> : <InfiniteIsmHud graph={graph} />}
+        {viewMode === "2d" && <GraphCanvas graph={graph} />}
+        {viewMode === "3d" && <GraphCanvas3D graph={graph} />}
+        {viewMode === "street" && <StreetMapCanvas graph={graph} />}
+        {viewMode === "3d" ? <InfiniteIsmHud graph={graph} /> : <TopBar graph={graph} />}
         <HubHoverCard graph={graph} />
       </main>
       <RightPanel graph={graph} />
