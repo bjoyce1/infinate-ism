@@ -62,8 +62,20 @@ const LANDMARKS: Landmark[] = [
     weight: 3,
   },
   {
+    id: "suc_landmark_screwed_up_records",
+    label: "Screwed Up Records & Tapes",
+    file_type: "shop",
+    address: "8806 Cullen Blvd, Houston, TX",
+    description:
+      "The brick-and-mortar shop on Cullen Boulevard that kept DJ Screw's catalog, grey tapes and SUC releases in print after his passing — a pilgrimage spot for the Houston sound.",
+    tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
+    relation: "landmark",
+    weight: 1.8,
+  },
+  {
     id: "suc_landmark_south_park",
     label: "South Park",
+
     file_type: "district",
     address: "South Park, Houston, TX",
     description:
