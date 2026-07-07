@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Anyone can read capism events" ON public.capism_events;
+CREATE POLICY "Admins can read capism events" ON public.capism_events FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
