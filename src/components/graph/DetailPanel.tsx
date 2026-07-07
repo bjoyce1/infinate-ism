@@ -2,6 +2,13 @@ import type { NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { trackLinkClick } from "@/lib/analytics/trackClick";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
   const selectedId = useGraphStore((s) => s.selectedId);
@@ -48,7 +55,16 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     "_origin",
     "community",
     "norm_label",
+    "image",
+    "artwork",
+    "gallery",
   ]);
+  const galleryRaw = (node as Record<string, unknown>).gallery;
+  const gallery: string[] = Array.isArray(galleryRaw)
+    ? galleryRaw.filter((v): v is string => typeof v === "string")
+    : [];
+  const showCarousel = gallery.length > 1;
+  const showSingleImage = !showCarousel && Boolean(node.image);
   const extraEntries = Object.entries(node as Record<string, unknown>).filter(
     ([k, v]) => !knownKeys.has(k) && v !== undefined && v !== null && v !== "",
   );
@@ -146,7 +162,32 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
             Open ↗ <span className="text-muted-text normal-case tracking-normal truncate max-w-[220px]">{primaryUrl}</span>
           </a>
         )}
-        {node.image && (
+        {showCarousel && (
+          <div className="mb-6 mt-4 relative">
+            <Carousel opts={{ loop: true }} className="w-full">
+              <CarouselContent>
+                {gallery.map((src, i) => (
+                  <CarouselItem key={`${src}-${i}`}>
+                    <div className="rounded-lg overflow-hidden border border-obsidian-border bg-black/40">
+                      <img
+                        src={src}
+                        alt={`${node.label} — image ${i + 1} of ${gallery.length}`}
+                        className="w-full h-auto object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+            <div className="mt-2 text-[10px] font-mono uppercase tracking-widest text-muted-text text-center">
+              Gallery · {gallery.length} photos
+            </div>
+          </div>
+        )}
+        {showSingleImage && (
           <div className="mb-6 mt-4 rounded-lg overflow-hidden border border-obsidian-border bg-black/40">
             <img
               src={node.image}
@@ -217,6 +258,7 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                 const dir = l.source === node.id ? "→" : "←";
                 const other = graph.byId.get(otherId);
                 if (!other) return null;
+                const walkDirections = (l as unknown as Record<string, unknown>).walk_directions;
                 return (
                   <button
                     key={`${otherId}-${i}`}
@@ -238,6 +280,11 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                       <div className="mt-1 text-[10px] font-mono text-muted-text">
                         {l.relation ?? "link"}
                         {l.weight != null ? ` · w${l.weight}` : ""}
+                      </div>
+                    )}
+                    {typeof walkDirections === "string" && walkDirections && (
+                      <div className="mt-1 text-[10px] text-white/60 leading-relaxed normal-case">
+                        🚶 {walkDirections}
                       </div>
                     )}
                   </button>

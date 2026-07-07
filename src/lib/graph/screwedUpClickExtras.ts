@@ -1,6 +1,16 @@
 import type { GraphNode, NormalizedGraph } from "./types";
 import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
 import screwedUpRecordsAsset from "@/assets/screwed-up-records-and-tapes.png.asset.json";
+import screwHouseImg from "@/assets/suc-screw-house.jpg";
+import southParkImg from "@/assets/suc-south-park.jpg";
+import smithvilleImg from "@/assets/suc-smithville.jpg";
+import macgregorImg from "@/assets/suc-macgregor-park.jpg";
+import almedaImg from "@/assets/suc-almeda-mall.jpg";
+import timmyChanImg from "@/assets/suc-timmy-chan.jpg";
+import wreckshopImg from "@/assets/suc-wreckshop.jpg";
+import kbxxImg from "@/assets/suc-kbxx.jpg";
+import astroworldImg from "@/assets/suc-astroworld.jpg";
+import surtInteriorImg from "@/assets/suc-surt-interior.jpg";
 
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
@@ -44,6 +54,8 @@ type Landmark = {
   url?: string;
   relation: string;
   weight?: number;
+  image?: string;
+  gallery?: string[];
 };
 
 // Real Houston places tied to the Screwed Up Click origin story. Each becomes
@@ -60,6 +72,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["HQ", "Origin", "South Park", "Grey Tapes"],
     relation: "origin-site",
     weight: 3,
+    image: screwHouseImg,
+    gallery: [screwHouseImg, southParkImg],
   },
   {
     id: "suc_landmark_screwed_up_records",
@@ -71,6 +85,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
     relation: "landmark",
     weight: 1.8,
+    image: screwedUpRecordsAsset.url,
+    gallery: [screwedUpRecordsAsset.url, surtInteriorImg, screwTapeAsset.url],
   },
   {
     id: "suc_landmark_south_park",
@@ -83,6 +99,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Neighborhood", "Southside", "Houston"],
     relation: "home-turf",
     weight: 2,
+    image: southParkImg,
+    gallery: [southParkImg, macgregorImg],
   },
   {
     id: "suc_landmark_smithville",
@@ -94,6 +112,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Birthplace", "DJ Screw"],
     relation: "birthplace",
     weight: 1.5,
+    image: smithvilleImg,
+    gallery: [smithvilleImg],
   },
   {
     id: "suc_landmark_macgregor_park",
@@ -105,6 +125,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Park", "Southside", "Cyphers"],
     relation: "hangout",
     weight: 1.2,
+    image: macgregorImg,
+    gallery: [macgregorImg],
   },
   {
     id: "suc_landmark_almeda_mall",
@@ -116,6 +138,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Southside", "Landmark"],
     relation: "landmark",
     weight: 1,
+    image: almedaImg,
+    gallery: [almedaImg],
   },
   {
     id: "suc_landmark_timmy_chan",
@@ -127,6 +151,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Food", "Southside"],
     relation: "landmark",
     weight: 1,
+    image: timmyChanImg,
+    gallery: [timmyChanImg],
   },
   {
     id: "suc_landmark_wreckshop",
@@ -138,6 +164,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Label", "Studio", "SUC-affiliated"],
     relation: "affiliated-label",
     weight: 1.5,
+    image: wreckshopImg,
+    gallery: [wreckshopImg],
   },
   {
     id: "suc_landmark_kbxx",
@@ -150,6 +178,8 @@ const LANDMARKS: Landmark[] = [
     url: "https://theboxhouston.com",
     relation: "broadcast-partner",
     weight: 1.2,
+    image: kbxxImg,
+    gallery: [kbxxImg],
   },
   {
     id: "suc_landmark_astroworld",
@@ -161,6 +191,8 @@ const LANDMARKS: Landmark[] = [
     tags: ["Landmark", "Houston lore"],
     relation: "landmark",
     weight: 1,
+    image: astroworldImg,
+    gallery: [astroworldImg],
   },
 ];
 
@@ -235,9 +267,8 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
-      ...(lm.id === "suc_landmark_screwed_up_records"
-        ? { image: screwedUpRecordsAsset.url, artwork: screwedUpRecordsAsset.url }
-        : {}),
+      ...(lm.image ? { image: lm.image, artwork: lm.image } : {}),
+      ...(lm.gallery && lm.gallery.length ? { gallery: lm.gallery } : {}),
     } as GraphNode;
     nodes.push(node);
     byId.set(lm.id, node);
@@ -271,6 +302,82 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   crossLink("suc_landmark_screw_house", "suc_legacy_chopped_screwed", "birthplace-of", 2);
   crossLink("suc_landmark_south_park", "suc_landmark_screw_house", "contains", 1.5);
   crossLink("suc_landmark_south_park", "site_spc_houston", "houston-scene", 1);
+
+  // Walkable routes from Screwed Up Records & Tapes (8806 Cullen Blvd) to
+  // nearby SUC landmarks. Distances/durations are documented walking estimates.
+  const walkRoutes: Array<{
+    to: string;
+    distance: string;
+    duration: string;
+    directions: string;
+    weight: number;
+  }> = [
+    {
+      to: "suc_landmark_screw_house",
+      distance: "1.4 mi",
+      duration: "28 min",
+      directions:
+        "North on Cullen Blvd, right on Reed Rd, left on Scott St, right on Greenstone St to 7717.",
+      weight: 2,
+    },
+    {
+      to: "suc_landmark_south_park",
+      distance: "0.2 mi",
+      duration: "5 min",
+      directions: "Step outside — the shop sits on the north edge of the South Park district.",
+      weight: 2.2,
+    },
+    {
+      to: "suc_landmark_macgregor_park",
+      distance: "2.6 mi",
+      duration: "52 min",
+      directions:
+        "North on Cullen Blvd past MLK Blvd, left on N MacGregor Way to Calhoun Rd park entrance.",
+      weight: 1.4,
+    },
+    {
+      to: "suc_landmark_almeda_mall",
+      distance: "4.9 mi",
+      duration: "1 hr 40 min",
+      directions:
+        "South on Cullen Blvd, east on Airport Blvd, south on I-45 Gulf Fwy frontage to Almeda Mall.",
+      weight: 1,
+    },
+    {
+      to: "suc_landmark_timmy_chan",
+      distance: "1.1 mi",
+      duration: "22 min",
+      directions:
+        "South on Cullen Blvd to the nearest Southside Timmy Chan's on the corner strip.",
+      weight: 1.3,
+    },
+  ];
+  const SURT = "suc_landmark_screwed_up_records";
+  for (const w of walkRoutes) {
+    if (!byId.has(SURT) || !byId.has(w.to)) continue;
+    const existing = links.findIndex(
+      (l) =>
+        (l.source === SURT && l.target === w.to) ||
+        (l.source === w.to && l.target === SURT),
+    );
+    const linkPayload = {
+      source: SURT,
+      target: w.to,
+      relation: `walk · ${w.duration} (${w.distance})`,
+      weight: w.weight,
+      walk_distance: w.distance,
+      walk_duration: w.duration,
+      walk_directions: w.directions,
+    } as (typeof links)[number];
+    if (existing >= 0) links[existing] = { ...links[existing], ...linkPayload };
+    else {
+      links.push(linkPayload);
+      if (!neighbors.has(SURT)) neighbors.set(SURT, new Set());
+      if (!neighbors.has(w.to)) neighbors.set(w.to, new Set());
+      neighbors.get(SURT)!.add(w.to);
+      neighbors.get(w.to)!.add(SURT);
+    }
+  }
 
   // Sync final nodes array with byId's degree updates.
   const finalNodes = nodes.map((n) => byId.get(n.id) ?? n);
