@@ -235,9 +235,13 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
+      ...(lm.id === "suc_landmark_screwed_up_records"
+        ? { image: screwedUpRecordsAsset.url, artwork: screwedUpRecordsAsset.url }
+        : {}),
     } as GraphNode;
     nodes.push(node);
     byId.set(lm.id, node);
+
     neighbors.set(lm.id, new Set([SUC_HUB]));
     neighbors.get(SUC_HUB)!.add(lm.id);
     links.push({ source: SUC_HUB, target: lm.id, relation: lm.relation, weight: lm.weight ?? 1.2 });
