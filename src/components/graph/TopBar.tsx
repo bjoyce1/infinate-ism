@@ -113,7 +113,7 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
           <span className="hidden sm:inline">◎ RE-CENTER · MRCAP1</span>
         </button>
         <div className="pointer-events-auto inline-flex rounded-lg border border-obsidian-border bg-obsidian-surface overflow-hidden">
-          {(["2d", "3d", "street"] as const).map((v) => (
+          {(["2d", "3d"] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -123,9 +123,9 @@ export function TopBar({ graph }: { graph?: NormalizedGraph }) {
                   ? "bg-neon-primary text-obsidian-bg"
                   : "hover:bg-white/5"
               }`}
-              title={v === "street" ? "CAPISM Street View — city map layout" : `${v.toUpperCase()} view`}
+              title={`${v.toUpperCase()} view`}
             >
-              {v === "street" ? "STREET VIEW" : v === "2d" ? "2D" : "3D"}
+              {v === "2d" ? "2D" : "3D"}
             </button>
           ))}
         </div>
