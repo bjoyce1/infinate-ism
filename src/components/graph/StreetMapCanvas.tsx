@@ -418,14 +418,18 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
 
   const hitTest = (sx: number, sy: number): string | null => {
     const w = screenToWorld(sx, sy);
-    let best: { id: string; d: number } | null = null;
+    let bestId: string | null = null;
+    let bestDist = Infinity;
     layout.nodes.forEach((n) => {
       const r = n.kind === "downtown" ? 18 : n.kind === "hub" ? 14 : 8;
       const dr = r / camRef.current.zoom;
       const d = Math.hypot(n.x - w.x, n.y - w.y);
-      if (d <= dr && (!best || d < best.d)) best = { id: n.id, d };
+      if (d <= dr && d < bestDist) {
+        bestDist = d;
+        bestId = n.id;
+      }
     });
-    return best ? best.id : null;
+    return bestId;
   };
 
   return (
