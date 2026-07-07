@@ -1,6 +1,16 @@
 import type { GraphNode, NormalizedGraph } from "./types";
 import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
 import screwedUpRecordsAsset from "@/assets/screwed-up-records-and-tapes.png.asset.json";
+import screwHouseImg from "@/assets/suc-screw-house.jpg";
+import southParkImg from "@/assets/suc-south-park.jpg";
+import smithvilleImg from "@/assets/suc-smithville.jpg";
+import macgregorImg from "@/assets/suc-macgregor-park.jpg";
+import almedaImg from "@/assets/suc-almeda-mall.jpg";
+import timmyChanImg from "@/assets/suc-timmy-chan.jpg";
+import wreckshopImg from "@/assets/suc-wreckshop.jpg";
+import kbxxImg from "@/assets/suc-kbxx.jpg";
+import astroworldImg from "@/assets/suc-astroworld.jpg";
+import surtInteriorImg from "@/assets/suc-surt-interior.jpg";
 
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
@@ -44,6 +54,8 @@ type Landmark = {
   url?: string;
   relation: string;
   weight?: number;
+  image?: string;
+  gallery?: string[];
 };
 
 // Real Houston places tied to the Screwed Up Click origin story. Each becomes
