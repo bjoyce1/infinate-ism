@@ -1,4 +1,4 @@
-import type { NormalizedGraph } from "./types";
+import type { GraphNode, NormalizedGraph } from "./types";
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
 // neighborhood on the street map. The street layout treats every direct
@@ -11,6 +11,8 @@ import type { NormalizedGraph } from "./types";
 
 const HUB_ID = "site_mrcap1_com";
 const SUC_HUB = "suc_hub";
+const SUC_COMMUNITY = 208;
+const SUC_COLOR = "#8A2BE2";
 
 // Extra profile fields layered onto the SUC HQ node so the DetailPanel shows
 // a proper "neighborhood profile" — short bio + founding context — the moment
@@ -29,6 +31,124 @@ const SUC_PROFILE = {
     "Direct lineage into Swishahouse, South Park Coalition affiliations, and the entire modern Houston sound (Paul Wall, Slim Thug, Bun B collaborations, Drake's slowed reissues).",
 };
 
+type Landmark = {
+  id: string;
+  label: string;
+  file_type: "venue" | "landmark" | "studio" | "shop" | "radio" | "district";
+  address?: string;
+  description: string;
+  tags: string[];
+  url?: string;
+  relation: string;
+  weight?: number;
+};
+
+// Real Houston places tied to the Screwed Up Click origin story. Each becomes
+// a "building" inside the SUC neighborhood — the street layout renders every
+// non-hub neighbor of `suc_hub` as a lot on that block.
+const LANDMARKS: Landmark[] = [
+  {
+    id: "suc_landmark_screw_house",
+    label: "The Screw House",
+    file_type: "landmark",
+    address: "7717 Greenstone St, South Park, Houston, TX",
+    description:
+      "DJ Screw's home studio on Greenstone Street — the birthplace of chopped & screwed. Fans lined up around the block for freshly dubbed Grey Tapes; every foundational SUC freestyle was cut here.",
+    tags: ["HQ", "Origin", "South Park", "Grey Tapes"],
+    relation: "origin-site",
+    weight: 3,
+  },
+  {
+    id: "suc_landmark_south_park",
+    label: "South Park",
+    file_type: "district",
+    address: "South Park, Houston, TX",
+    description:
+      "Southside Houston neighborhood that raised DJ Screw and the earliest SUC members. The Screw House sat inside its blocks; the culture radiated outward from here.",
+    tags: ["Neighborhood", "Southside", "Houston"],
+    relation: "home-turf",
+    weight: 2,
+  },
+  {
+    id: "suc_landmark_smithville",
+    label: "Smithville, TX",
+    file_type: "landmark",
+    address: "Smithville, Bastrop County, TX",
+    description:
+      "Robert Earl Davis Jr. — DJ Screw — was born here on July 20, 1971 before the family moved to Houston. The pilgrimage point for the origin of the sound.",
+    tags: ["Birthplace", "DJ Screw"],
+    relation: "birthplace",
+    weight: 1.5,
+  },
+  {
+    id: "suc_landmark_macgregor_park",
+    label: "MacGregor Park",
+    file_type: "landmark",
+    address: "5225 Calhoun Rd, Houston, TX",
+    description:
+      "Southside Houston park where SUC members, SPC and the wider Third Ward scene hung out and cyphered. A recurring shout-out on Grey Tape freestyles.",
+    tags: ["Park", "Southside", "Cyphers"],
+    relation: "hangout",
+    weight: 1.2,
+  },
+  {
+    id: "suc_landmark_almeda_mall",
+    label: "Almeda Mall",
+    file_type: "landmark",
+    address: "12200 Gulf Fwy, Houston, TX",
+    description:
+      "Southside shopping hub name-checked across SUC verses — a landmark of the everyday Houston that the Grey Tapes documented.",
+    tags: ["Southside", "Landmark"],
+    relation: "landmark",
+    weight: 1,
+  },
+  {
+    id: "suc_landmark_timmy_chan",
+    label: "Timmy Chan's",
+    file_type: "venue",
+    address: "Multiple Southside locations, Houston, TX",
+    description:
+      "Houston fried-rice-and-wings institution immortalised in SUC and SPC lyrics — post-session food of choice.",
+    tags: ["Food", "Southside"],
+    relation: "landmark",
+    weight: 1,
+  },
+  {
+    id: "suc_landmark_wreckshop",
+    label: "Wreckshop Records",
+    file_type: "studio",
+    address: "Houston, TX",
+    description:
+      "D-Reck's label and studio that put out early Big Moe, Botany Boyz and E.S.G. records — a critical outlet for SUC affiliates after Screw's passing.",
+    tags: ["Label", "Studio", "SUC-affiliated"],
+    relation: "affiliated-label",
+    weight: 1.5,
+  },
+  {
+    id: "suc_landmark_kbxx",
+    label: "97.9 The Box (KBXX)",
+    file_type: "radio",
+    address: "24 Greenway Plaza, Houston, TX",
+    description:
+      "Houston's hip-hop and R&B FM home. Broke SUC and Swishahouse records into daytime rotation and kept the Southside sound on the dial.",
+    tags: ["Radio", "Houston"],
+    url: "https://theboxhouston.com",
+    relation: "broadcast-partner",
+    weight: 1.2,
+  },
+  {
+    id: "suc_landmark_astroworld",
+    label: "AstroWorld",
+    file_type: "landmark",
+    address: "9001 Kirby Dr, Houston, TX (1968–2005)",
+    description:
+      "The demolished Houston amusement park referenced across generations of local rap — from SUC-era shout-outs to Travis Scott's tribute album.",
+    tags: ["Landmark", "Houston lore"],
+    relation: "landmark",
+    weight: 1,
+  },
+];
+
 export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   if (!base.byId.has(HUB_ID) || !base.byId.has(SUC_HUB)) return base;
 
@@ -40,13 +160,17 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       (l.source === SUC_HUB && l.target === HUB_ID),
   );
 
+  const nodes = base.nodes.slice();
   const links = base.links.slice();
+  const byId = new Map(base.byId);
+  const neighbors = new Map<string, Set<string>>();
+  for (const [k, v] of base.neighbors) neighbors.set(k, new Set(v));
+  const categoryCounts = { ...base.categoryCounts };
+
   if (!alreadyLinked) {
     links.push({ source: HUB_ID, target: SUC_HUB, relation: "neighborhood", weight: 2 });
   }
 
-  const neighbors = new Map<string, Set<string>>();
-  for (const [k, v] of base.neighbors) neighbors.set(k, new Set(v));
   if (!neighbors.has(HUB_ID)) neighbors.set(HUB_ID, new Set());
   if (!neighbors.has(SUC_HUB)) neighbors.set(SUC_HUB, new Set());
   if (!alreadyLinked) {
@@ -54,7 +178,6 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     neighbors.get(SUC_HUB)!.add(HUB_ID);
   }
 
-  const byId = new Map(base.byId);
   const downtown = byId.get(HUB_ID)!;
   const suc = byId.get(SUC_HUB)!;
   const degreeBump = alreadyLinked ? 0 : 1;
@@ -66,13 +189,66 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     is_hub: true,
   });
 
-  const nodes = base.nodes.map((n) =>
-    n.id === HUB_ID
-      ? { ...n, degree: (n.degree ?? 0) + degreeBump }
-      : n.id === SUC_HUB
-        ? { ...n, ...SUC_PROFILE, degree: (n.degree ?? 0) + degreeBump, is_hub: true }
-        : n,
-  );
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    if (n.id === HUB_ID) nodes[i] = { ...n, degree: (n.degree ?? 0) + degreeBump };
+    else if (n.id === SUC_HUB)
+      nodes[i] = { ...n, ...SUC_PROFILE, degree: (n.degree ?? 0) + degreeBump, is_hub: true };
+  }
 
-  return { ...base, nodes, links, byId, neighbors };
+  // Add landmark nodes + wire them to the SUC HQ (skip if already merged).
+  for (const lm of LANDMARKS) {
+    if (byId.has(lm.id)) continue;
+    const node: GraphNode = {
+      id: lm.id,
+      label: lm.label,
+      category: "other",
+      degree: 1,
+      color: SUC_COLOR,
+      weight: lm.weight ?? 1,
+      community: SUC_COMMUNITY,
+      file_type: lm.file_type,
+      url: lm.url,
+      _origin: "extras:suc-landmarks",
+      ...(lm.address ? { address: lm.address } : {}),
+      description: lm.description,
+      tags: lm.tags,
+      role: "landmark",
+    } as GraphNode;
+    nodes.push(node);
+    byId.set(lm.id, node);
+    neighbors.set(lm.id, new Set([SUC_HUB]));
+    neighbors.get(SUC_HUB)!.add(lm.id);
+    links.push({ source: SUC_HUB, target: lm.id, relation: lm.relation, weight: lm.weight ?? 1.2 });
+    categoryCounts.other = (categoryCounts.other ?? 0) + 1;
+
+    // Bump SUC HQ degree for each new landmark.
+    const cur = byId.get(SUC_HUB)!;
+    byId.set(SUC_HUB, { ...cur, degree: (cur.degree ?? 0) + 1 });
+  }
+
+  // Extra cross-connections into existing SUC ecosystem nodes.
+  const crossLink = (source: string, target: string, relation: string, weight = 1) => {
+    if (!byId.has(source) || !byId.has(target)) return;
+    const exists = links.some(
+      (l) =>
+        (l.source === source && l.target === target) ||
+        (l.source === target && l.target === source),
+    );
+    if (exists) return;
+    links.push({ source, target, relation, weight });
+    neighbors.get(source)!.add(target);
+    if (!neighbors.has(target)) neighbors.set(target, new Set());
+    neighbors.get(target)!.add(source);
+  };
+  // Screw House is the physical origin of the Grey Tapes and Chopped & Screwed.
+  crossLink("suc_landmark_screw_house", "suc_legacy_surt", "legacy-continues-at", 1.5);
+  crossLink("suc_landmark_screw_house", "suc_legacy_chopped_screwed", "birthplace-of", 2);
+  crossLink("suc_landmark_south_park", "suc_landmark_screw_house", "contains", 1.5);
+  crossLink("suc_landmark_south_park", "site_spc_houston", "houston-scene", 1);
+
+  // Sync final nodes array with byId's degree updates.
+  const finalNodes = nodes.map((n) => byId.get(n.id) ?? n);
+
+  return { nodes: finalNodes, links, byId, neighbors, categoryCounts, communities: base.communities };
 }
