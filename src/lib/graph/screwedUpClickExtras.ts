@@ -1,5 +1,7 @@
 import type { GraphNode, NormalizedGraph } from "./types";
 import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
+import screwedUpRecordsAsset from "@/assets/screwed-up-records-and-tapes.png.asset.json";
+
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
 // neighborhood on the street map. The street layout treats every direct
