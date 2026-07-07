@@ -351,6 +351,38 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
         "South on Cullen Blvd to the nearest Southside Timmy Chan's on the corner strip.",
       weight: 1.3,
     },
+    {
+      to: "suc_landmark_wreckshop",
+      distance: "3.2 mi",
+      duration: "1 hr 5 min",
+      directions:
+        "North on Cullen Blvd, west on Old Spanish Trail, north on Almeda Rd to the Wreckshop storefront.",
+      weight: 1.2,
+    },
+    {
+      to: "suc_landmark_kbxx",
+      distance: "6.4 mi",
+      duration: "2 hr 10 min",
+      directions:
+        "North on Cullen Blvd, west on Bissonnet St, north on Kirby Dr to Greenway Plaza (24 Greenway Plaza).",
+      weight: 0.9,
+    },
+    {
+      to: "suc_landmark_astroworld",
+      distance: "5.1 mi",
+      duration: "1 hr 45 min",
+      directions:
+        "North on Cullen Blvd, west on Old Spanish Trail, south on Fannin St, west on Loop 610 frontage to the former AstroWorld site at 9001 Kirby Dr.",
+      weight: 0.9,
+    },
+    {
+      to: "suc_landmark_smithville",
+      distance: "155 mi",
+      duration: "2 days 4 hr (multi-day pilgrimage)",
+      directions:
+        "West on US-90 Alt through Rosenberg, Columbus and La Grange, then SH-71 south into Smithville — a documented multi-day Grey Tape pilgrimage, not a same-day walk.",
+      weight: 0.6,
+    },
   ];
   const SURT = "suc_landmark_screwed_up_records";
   for (const w of walkRoutes) {
