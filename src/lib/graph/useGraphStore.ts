@@ -25,6 +25,8 @@ type State = {
   childHaloRadius: number;
   ringCount: number;
   setRingCount: (v: number) => void;
+  parentAttract: number;
+  setParentAttract: (v: number) => void;
   showOrbitArcs: boolean;
   showSunGlow: boolean;
   layoutSeed: number;
@@ -115,6 +117,7 @@ export const useGraphStore = create<State>()(
   sunArcSpread: 1,
   childHaloRadius: 1,
   ringCount: 6,
+  parentAttract: 1,
   showOrbitArcs: true,
   showSunGlow: true,
       layoutSeed: 1337,
@@ -165,6 +168,7 @@ export const useGraphStore = create<State>()(
   setSunArcSpread: (v) => set({ sunArcSpread: v }),
   setChildHaloRadius: (v) => set({ childHaloRadius: v }),
   setRingCount: (v) => set({ ringCount: Math.max(1, Math.min(20, Math.round(v))) }),
+  setParentAttract: (v) => set({ parentAttract: Math.max(0, Math.min(5, v)) }),
   setShowOrbitArcs: (v) => set({ showOrbitArcs: v }),
   setShowSunGlow: (v) => set({ showSunGlow: v }),
   resetForceParams: () =>
@@ -177,6 +181,7 @@ export const useGraphStore = create<State>()(
       sunArcSpread: 1,
       childHaloRadius: 1,
       ringCount: 6,
+      parentAttract: 1,
       showOrbitArcs: true,
       showSunGlow: true,
     }),

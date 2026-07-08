@@ -73,6 +73,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
   const ringCount = useGraphStore((s) => s.ringCount);
   const setRingCount = useGraphStore((s) => s.setRingCount);
+  const parentAttract = useGraphStore((s) => s.parentAttract);
+  const setParentAttract = useGraphStore((s) => s.setParentAttract);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
   const setShowOrbitArcs = useGraphStore((s) => s.setShowOrbitArcs);
   const showSunGlow = useGraphStore((s) => s.showSunGlow);
@@ -507,6 +509,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 { label: "Ring count", value: ringCount, set: setRingCount, min: 1, max: 12, step: 1, suffix: "" },
                 { label: "Sun arc spread", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05, suffix: "×" },
                 { label: "Child halo", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05, suffix: "×" },
+                { label: "Parent-attract strength", value: parentAttract, set: setParentAttract, min: 0, max: 3, step: 0.05, suffix: "×" },
               ].map((s) => (
                 <label key={s.label} className="block">
                   <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
