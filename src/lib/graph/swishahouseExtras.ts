@@ -1,4 +1,5 @@
 import type { GraphNode, NormalizedGraph } from "./types";
+import swishaLogo from "@/assets/swishahouse-logo.webp.asset.json";
 import { CATEGORY_COLORS } from "./loadGraph";
 
 // Swishahouse neighborhood — Michael "5000" Watts + OG Ron C (Houston, 1993).
@@ -76,6 +77,7 @@ export function withSwishahouse(base: NormalizedGraph): NormalizedGraph {
     community: SWISHA_COMMUNITY,
     file_type: "hub",
     url: "https://en.wikipedia.org/wiki/Swishahouse",
+    image: swishaLogo.url,
     _origin: "extras:swishahouse",
   } as GraphNode);
 
