@@ -98,7 +98,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
       .slice()
       .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
-    const ringCount = Math.max(1, Math.min(mains.length, ringCountRef.current));
+    const ringCount = Math.max(1, Math.min(mains.length, userRingCount));
     const perRing = Math.ceil(mains.length / ringCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
     for (let i = 0; i < mains.length; i++) {
