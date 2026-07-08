@@ -5,6 +5,7 @@ import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { buildStreetLayout, type StreetLayout, type StreetRoad } from "@/lib/graph/streetLayout";
 import { CopyDirectionsButton, buildDirectionsText } from "./CopyDirectionsButton";
+import { RouteMap } from "./RouteMap";
 
 const HUB_ID = "site_mrcap1_com";
 
@@ -727,6 +728,17 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
               {activeRoadInfo.walk.directions}
             </p>
           )}
+          <div className="mt-3">
+            <RouteMap
+              from={activeRoadFrom?.label ?? activeRoadInfo.from}
+              to={activeRoadTo?.label ?? activeRoadInfo.to}
+              directions={activeRoadInfo.walk.directions}
+              distance={activeRoadInfo.walk.distance}
+              duration={activeRoadInfo.walk.duration}
+              days={activeRoadInfo.walk.days}
+              height={140}
+            />
+          </div>
           {activeRoadInfo.walk.days && activeRoadInfo.walk.days.length > 0 && (
             <ol className="mt-3 space-y-2 border-t border-white/10 pt-2 max-h-48 overflow-y-auto pr-1">
               {activeRoadInfo.walk.days.map((d, i) => (

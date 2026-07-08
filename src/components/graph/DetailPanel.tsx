@@ -3,6 +3,7 @@ import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { trackLinkClick } from "@/lib/analytics/trackClick";
 import { CopyDirectionsButton, buildDirectionsText } from "./CopyDirectionsButton";
+import { RouteMap } from "./RouteMap";
 import {
   Carousel,
   CarouselContent,
@@ -378,6 +379,21 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                           </li>
                         ))}
                       </ol>
+                    )}
+                    {hasWalk && (
+                      <div
+                        className="mt-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RouteMap
+                          from={node.label}
+                          to={other.label}
+                          directions={typeof walkDirections === "string" ? walkDirections : undefined}
+                          distance={walkDistance}
+                          duration={walkDuration}
+                          days={walkDays}
+                        />
+                      </div>
                     )}
                     {hasWalk && (
                       <div className="mt-2 flex justify-end">
