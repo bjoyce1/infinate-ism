@@ -164,8 +164,9 @@ export const useGraphStore = create<State>()(
   setRingSpacing: (v) => set({ ringSpacing: v }),
   setSunArcSpread: (v) => set({ sunArcSpread: v }),
   setChildHaloRadius: (v) => set({ childHaloRadius: v }),
-      setShowOrbitArcs: (v) => set({ showOrbitArcs: v }),
-      setShowSunGlow: (v) => set({ showSunGlow: v }),
+  setRingCount: (v) => set({ ringCount: Math.max(1, Math.min(20, Math.round(v))) }),
+  setShowOrbitArcs: (v) => set({ showOrbitArcs: v }),
+  setShowSunGlow: (v) => set({ showSunGlow: v }),
       resetForceParams: () =>
     set({
       linkStrength: 1,
