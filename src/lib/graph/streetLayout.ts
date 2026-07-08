@@ -17,6 +17,12 @@ export type StreetRoad = {
   points: { x: number; y: number }[]; // polyline (orthogonal)
   length: number;
   kind: "highway" | "street" | "alley";
+  walk?: {
+    distance?: string;
+    duration?: string;
+    directions?: string;
+    days?: Array<{ label?: string; distance?: string; duration?: string; directions?: string }>;
+  };
 };
 
 export type StreetLayout = {
