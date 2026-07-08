@@ -98,7 +98,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
       .slice()
       .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
-    const ringCount = Math.max(3, Math.ceil(Math.sqrt(Math.max(mains.length, 1))));
+    const ringCount = Math.max(1, Math.min(mains.length, ringCountRef.current));
     const perRing = Math.ceil(mains.length / ringCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
     for (let i = 0; i < mains.length; i++) {
@@ -134,7 +134,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       if (best) parentOf.set(n.id, best);
     }
     return { ringOf, parentOf, ringCount, arc };
-  }, [graph, sunArcSpread]);
+  }, [graph, sunArcSpread, ringCount]);
   const solarPlanRef = useRef(solarPlan);
   useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const orbitLayoutRef = useRef(orbitLayout);
