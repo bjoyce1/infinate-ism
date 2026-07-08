@@ -65,6 +65,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setCollideRadius = useGraphStore((s) => s.setCollideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
   const setCentroidPull = useGraphStore((s) => s.setCentroidPull);
+  const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const setRingSpacing = useGraphStore((s) => s.setRingSpacing);
+  const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
+  const setSunArcSpread = useGraphStore((s) => s.setSunArcSpread);
+  const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
+  const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
   const resetForceParams = useGraphStore((s) => s.resetForceParams);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const setLayoutSeed = useGraphStore((s) => s.setLayoutSeed);
