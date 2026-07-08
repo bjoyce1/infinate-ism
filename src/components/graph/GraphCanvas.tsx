@@ -47,6 +47,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const chargeStrength = useGraphStore((s) => s.chargeStrength);
   const collideRadius = useGraphStore((s) => s.collideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
+  const layoutSeed = useGraphStore((s) => s.layoutSeed);
+  const layoutResetToken = useGraphStore((s) => s.layoutResetToken);
   // Refs so the injected forces read live values without needing to re-register
   // (re-registering resets particle motion and jitters the layout).
   const linkStrengthRef = useRef(linkStrength);
@@ -87,9 +89,11 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
     const N = Math.max(commKeys.length, 1);
     const R = 260 + Math.sqrt(graph.nodes.length) * 22;
+    const seedStr = String(layoutSeed);
     const hash = (s: string) => {
-      let h = 2166136261;
+      let h = 2166136261 ^ (layoutSeed | 0);
       for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+      for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
       return (h >>> 0) / 0xffffffff;
     };
 
@@ -110,7 +114,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       n.vx = 0; n.vy = 0;
     }
     fgRef.current?.d3ReheatSimulation();
-  }, [graph, orbitLayout]);
+  }, [graph, orbitLayout, layoutSeed, layoutResetToken]);
 
 
   // Refs so the force closure always reads the latest values without re-registering.

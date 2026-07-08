@@ -20,6 +20,8 @@ type State = {
   chargeStrength: number;
   collideRadius: number;
   centroidPull: number;
+  layoutSeed: number;
+  layoutResetToken: number;
   showLabels: boolean;
   labelSize: number;
   labelDensity: number;
@@ -53,6 +55,8 @@ type State = {
   setCollideRadius: (v: number) => void;
   setCentroidPull: (v: number) => void;
   resetForceParams: () => void;
+  setLayoutSeed: (v: number) => void;
+  resetLayout: () => void;
   setShowLabels: (v: boolean) => void;
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
@@ -95,6 +99,8 @@ export const useGraphStore = create<State>()(
   chargeStrength: 1,
   collideRadius: 1,
   centroidPull: 1,
+  layoutSeed: 1337,
+  layoutResetToken: 0,
   showLabels: true,
   labelSize: 1,
   labelDensity: 1,
@@ -139,6 +145,8 @@ export const useGraphStore = create<State>()(
   setCentroidPull: (v) => set({ centroidPull: v }),
   resetForceParams: () =>
     set({ linkStrength: 1, chargeStrength: 1, collideRadius: 1, centroidPull: 1 }),
+  setLayoutSeed: (v) => set({ layoutSeed: Math.floor(v) || 1 }),
+  resetLayout: () => set((s) => ({ layoutResetToken: s.layoutResetToken + 1 })),
   setShowLabels: (v) => set({ showLabels: v }),
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
@@ -177,6 +185,7 @@ export const useGraphStore = create<State>()(
         rightPanelOpen: s.rightPanelOpen,
         leftPanelWidth: s.leftPanelWidth,
         rightPanelWidth: s.rightPanelWidth,
+        layoutSeed: s.layoutSeed,
       }),
       skipHydration: typeof window === "undefined",
     },
