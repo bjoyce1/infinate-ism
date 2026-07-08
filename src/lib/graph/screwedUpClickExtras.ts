@@ -292,9 +292,13 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
+      ...(lm.phone ? { phone: lm.phone } : {}),
+      ...(lm.hours ? { hours: lm.hours } : {}),
+      ...(lm.email ? { email: lm.email } : {}),
       ...(lm.image ? { image: lm.image, artwork: lm.image } : {}),
       ...(lm.gallery && lm.gallery.length ? { gallery: lm.gallery } : {}),
     } as GraphNode;
+
     nodes.push(node);
     byId.set(lm.id, node);
 
