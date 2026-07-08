@@ -25,6 +25,7 @@ import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedAreasRouteImport } from './routes/_authenticated/areas'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -111,6 +112,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAreasRoute = AuthenticatedAreasRouteImport.update({
   id: '/areas',
   path: '/areas',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/areas': typeof AuthenticatedAreasRoute
+  '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/areas': typeof AuthenticatedAreasRoute
+  '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/areas': typeof AuthenticatedAreasRoute
+  '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/areas'
+    | '/clients'
     | '/dashboard'
     | '/inbox'
     | '/projects'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/areas'
+    | '/clients'
     | '/dashboard'
     | '/inbox'
     | '/projects'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/areas'
+    | '/_authenticated/clients'
     | '/_authenticated/dashboard'
     | '/_authenticated/inbox'
     | '/_authenticated/projects'
@@ -419,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/clients': {
+      id: '/_authenticated/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AuthenticatedClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/areas': {
       id: '/_authenticated/areas'
       path: '/areas'
@@ -479,6 +498,7 @@ const AuthenticatedProjectsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAreasRoute: typeof AuthenticatedAreasRoute
+  AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRouteWithChildren
@@ -486,6 +506,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAreasRoute: AuthenticatedAreasRoute,
+  AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRouteWithChildren,
