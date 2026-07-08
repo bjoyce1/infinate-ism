@@ -98,18 +98,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => {
     if (!orbitLayout) return;
     type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
-
-    // Seed positions: nodes in the same community sit near each other on a
-    // wide circle. The hub goes at origin (soft-pinned, not hard-pinned, so
-    // it can breathe with its cluster).
-    const commKeys: (number | string)[] = [];
-    const commIndex = new Map<number | string, number>();
-    for (const n of graph.nodes) {
-      const k = n.community ?? "__none";
-      if (!commIndex.has(k)) { commIndex.set(k, commKeys.length); commKeys.push(k); }
-    }
-    const N = Math.max(commKeys.length, 1);
-    const R = 260 + Math.sqrt(graph.nodes.length) * 22;
+    // Seed positions using the solar plan: hub near "bottom-left", planets on
+    // rings arcing up-and-right, children in a small halo around their parent.
     const seedStr = String(layoutSeed);
     const hash = (s: string) => {
       let h = 2166136261 ^ (layoutSeed | 0);
@@ -117,25 +107,47 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
       return (h >>> 0) / 0xffffffff;
     };
+    const plan = solarPlan;
+    const halo = 60 * childHaloRadius;
+    const spacing = RING_GAP * ringSpacing;
 
     for (const raw of graph.nodes) {
       const n = raw as Pos;
       n.fx = undefined; n.fy = undefined;
       if (n.id === HUB_ID) {
-        n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
+        n.x = -HUB_OFFSET; n.y = HUB_OFFSET; n.vx = 0; n.vy = 0;
         continue;
       }
-      const idx = commIndex.get(n.community ?? "__none") ?? 0;
-      const baseAngle = (idx / N) * Math.PI * 2;
-      const jitter = (hash(n.id) - 0.5) * 0.6;
-      const angle = baseAngle + jitter;
-      const rr = R * (0.5 + hash(n.id + "|r") * 0.6);
-      n.x = Math.cos(angle) * rr;
-      n.y = Math.sin(angle) * rr;
+      const ring = plan.ringOf.get(n.id);
+      if (ring) {
+        const rr = RING_BASE + ring.ring * spacing;
+        const jitter = (hash(n.id) - 0.5) * 0.08;
+        const a = ring.angle + jitter;
+        n.x = Math.cos(a) * rr;
+        n.y = Math.sin(a) * rr;
+      } else {
+        const parent = plan.parentOf.get(n.id);
+        const p = parent ? plan.ringOf.get(parent) : null;
+        if (p) {
+          const rr = RING_BASE + p.ring * spacing;
+          const px = Math.cos(p.angle) * rr;
+          const py = Math.sin(p.angle) * rr;
+          const localA = hash(n.id + "|a") * Math.PI * 2;
+          const localR = halo * (0.4 + hash(n.id + "|r") * 0.8);
+          n.x = px + Math.cos(localA) * localR;
+          n.y = py + Math.sin(localA) * localR;
+        } else {
+          // Untethered nodes: park near the hub in a loose cloud.
+          const a = hash(n.id) * Math.PI * 2;
+          const rr = 80 + hash(n.id + "|r") * 120;
+          n.x = -HUB_OFFSET + Math.cos(a) * rr;
+          n.y = HUB_OFFSET + Math.sin(a) * rr;
+        }
+      }
       n.vx = 0; n.vy = 0;
     }
     fgRef.current?.d3ReheatSimulation();
-  }, [graph, orbitLayout, layoutSeed, layoutResetToken]);
+  }, [graph, orbitLayout, layoutSeed, layoutResetToken, solarPlan, ringSpacing, childHaloRadius]);
 
 
   // Refs so the force closure always reads the latest values without re-registering.
