@@ -62,6 +62,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const ringSpacing = useGraphStore((s) => s.ringSpacing);
   const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
+  const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
+  const showSunGlow = useGraphStore((s) => s.showSunGlow);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const layoutResetToken = useGraphStore((s) => s.layoutResetToken);
   // Refs so the injected forces read live values without needing to re-register
@@ -570,21 +572,25 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const arc = plan.arc;
             ctx.save();
             ctx.lineWidth = 0.6 / globalScale;
-            for (let r = 0; r < plan.ringCount; r++) {
-              const rr = RING_BASE + r * spacing;
-              ctx.strokeStyle = `rgba(180,200,255,${0.08 + (r % 2 === 0 ? 0.02 : 0)})`;
-              ctx.beginPath();
-              ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
-              ctx.stroke();
+            if (showOrbitArcs) {
+              for (let r = 0; r < plan.ringCount; r++) {
+                const rr = RING_BASE + r * spacing;
+                ctx.strokeStyle = `rgba(180,200,255,${0.08 + (r % 2 === 0 ? 0.02 : 0)})`;
+                ctx.beginPath();
+                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
+                ctx.stroke();
+              }
             }
-            // Sun glow
-            const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 90);
-            grad.addColorStop(0, "rgba(255,170,60,0.35)");
-            grad.addColorStop(1, "rgba(255,170,60,0)");
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(-HUB_OFFSET, HUB_OFFSET, 90, 0, Math.PI * 2);
-            ctx.fill();
+            if (showSunGlow) {
+              // Sun glow
+              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 90);
+              grad.addColorStop(0, "rgba(255,170,60,0.35)");
+              grad.addColorStop(1, "rgba(255,170,60,0)");
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 90, 0, Math.PI * 2);
+              ctx.fill();
+            }
             ctx.restore();
           }}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
