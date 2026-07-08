@@ -9,11 +9,14 @@ export type RawNode = {
   norm_label?: string;
   image?: string;
   artwork?: string;
+  alt?: string;
+  caption?: string;
   is_hub?: boolean;
   weight?: number;
   color?: string;
   url?: string;
 };
+
 
 export type RawLink = {
   source: string;
