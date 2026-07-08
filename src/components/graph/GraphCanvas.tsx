@@ -161,49 +161,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   }, [spawnOrbitRadius, spawnOrbitSpeed]);
 
   const setNodeImageFn = useServerFn(setNodeImage);
-
-  // Build the solar-system plan: rank main nodes by degree, spread them across
-  // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
-  // node is attached to its most-connected main-node neighbor.
-  const solarPlan = useMemo<SolarPlan>(() => {
-    const arc = (Math.PI / 2) * sunArcSpread; // upper-right quadrant, scaled
-    const mains = graph.nodes
-      .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
-      .slice()
-      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
-    const ringCount = Math.max(3, Math.ceil(Math.sqrt(Math.max(mains.length, 1))));
-    const perRing = Math.ceil(mains.length / ringCount);
-    const ringOf = new Map<string, { ring: number; angle: number }>();
-    for (let i = 0; i < mains.length; i++) {
-      const ring = Math.floor(i / perRing);
-      const idxInRing = i % perRing;
-      const countInRing = Math.min(perRing, mains.length - ring * perRing);
-      const spacing = arc / Math.max(countInRing, 1);
-      // Angles: 0 = east, negative = north. Map planets into the upper-right arc.
-      const angle = -arc + spacing * (idxInRing + 0.5);
-      ringOf.set(mains[i].id, { ring, angle });
-    }
-    // Parent map: for every non-main node, pick its highest-degree main neighbor.
-    const mainIds = new Set(mains.map((m) => m.id));
-    const parentOf = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.id === HUB_ID) continue;
-      if (mainIds.has(n.id)) continue;
-      const nbrs = graph.neighbors.get(n.id);
-      if (!nbrs) continue;
-      let best: string | null = null;
-      let bestDeg = -1;
-      for (const nb of nbrs) {
-        if (!mainIds.has(nb)) continue;
-        const d = graph.byId.get(nb)?.degree ?? 0;
-        if (d > bestDeg) { bestDeg = d; best = nb; }
-      }
-      if (best) parentOf.set(n.id, best);
-    }
-    return { ringOf, parentOf, ringCount, arc };
-  }, [graph, sunArcSpread]);
-  const solarPlanRef = useRef(solarPlan);
-  useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
     y: number;
