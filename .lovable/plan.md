@@ -1,28 +1,47 @@
-Collect every image asset referenced in this project and package them into a single downloadable ZIP under `/mnt/documents/` so you can grab them all at once.
+## Solar System Layout for the 2D Graph
 
-## What I'll include
+Rework the 2D graph so it reads like the reference solar-system diagram: the mrcap1.com hub is the "Sun" in the lower-left, main (image/hub) nodes sit on labeled concentric orbit rings arcing outward, and their spawn children cluster near their parent planet.
 
-Every `src/assets/*.asset.json` pointer that has an image content-type (png, jpg, jpeg, webp, svg, gif). From the current tree, that's the ~25 files visible in context, including:
+### Visual model
 
-- `swishahouse-logo.webp`
-- `paul-wall.png` / `paul-wall.jpg`
-- `dj-screw.png`, `dj-screw-tape.png`
-- `lil-keke.png` / `lil-keke.jpg`
-- `k-rino.png`, `klondike-kat.png`, `point-blank.png`
-- `spc-logo.png`, `spc-favicon.png`, `spc-betn-on-me-remix.png`
-- `screwed-up-click-logo.png`, `screwed-up-records-and-tapes.png`
-- `713mixhouse-logo.png`, `absoulutelycaptivating-logo.png`, `ac-og.jpg`
-- `dabsheets-logo.png`, `maasa-logo.png`, `mortuary-media-logo.png`
-- `mrcap1-coin.png`, `yates-logo.png`
-- `today-was-a-great-day.jpg`, `today-was-a-great-day-single.png`
+```text
+                                             . Pluto-ring
+                                     .  Neptune-ring
+                       . Uranus-ring
+              . Saturn-ring (with satellites clustered around it)
+       . Jupiter-ring
+   . Earth/Mars/Venus/Mercury inner rings
+[SUN]  ← mrcap1.com hub, anchored lower-left
+```
 
-Plus any additional image assets in `src/assets/` or `public/` I find during the scan (favicons, og images, etc.).
+- Hub soft-pinned near the lower-left corner of the viewport (Sun position).
+- Every "main" node (`is_hub || image`) is assigned to an orbit ring by degree/importance rank; ring radius grows with rank.
+- Each planet is placed at an angle in the upper-right arc (roughly 0°–90°, i.e. up and to the right of the Sun), spaced evenly so labels don't collide.
+- Faint concentric orbit arcs are drawn behind the nodes for the solar-system look.
+- Spawn children of each planet cluster in a tight local swarm around that planet (small radial jitter), keeping their existing edges.
+- A subtle asteroid-belt band of star dots between two chosen rings for flavor (purely decorative canvas draw).
 
-## How
+### Forces
 
-1. Enumerate all `.asset.json` files in `src/assets/` and any images in `public/`.
-2. Download each asset from its CDN `url` into a temp dir, preserving `original_filename`.
-3. Zip them into `/mnt/documents/infinite-ism-images.zip`.
-4. Present the ZIP as a downloadable artifact.
+- Replace the current centroid-clustering force with a **ring force** that pulls each main node toward its assigned `(ringRadius, angle)` polar target.
+- Child (non-main) nodes get a **parent-attraction force** pulling them toward their primary parent planet, plus mild jitter so they form a halo instead of a dot.
+- Keep existing link/charge/collide forces but reduce link strength between main nodes on different rings so rings stay legible.
+- Respect the existing `orbitLayout` toggle (off → current free-drift layout untouched) and the `layoutSeed` (deterministic angle/jitter).
 
-No app code changes — this is a one-off export.
+### Controls
+
+Add to the Left Sidebar under Force Layout:
+- **Ring spacing** slider (multiplier on ring radius).
+- **Sun angle spread** slider (arc width used for planet placement, default 90°).
+- **Child halo radius** slider (how tightly spawns hug their planet).
+
+### Files to change
+
+- `src/lib/graph/useGraphStore.ts` — add `ringSpacing`, `sunArcSpread`, `childHaloRadius` state + setters, include in `resetForceParams`.
+- `src/components/graph/GraphCanvas.tsx` — new seeding pass (assign ring + angle per main node, place children around parent), new `ringForce` + `parentAttractForce` replacing `clusterForce`, decorative orbit-arc + asteroid-belt draw via `onRenderFramePre`.
+- `src/components/graph/LeftSidebar.tsx` — three new sliders in the Force Layout group.
+
+### Out of scope
+
+- 3D view and Street View are untouched.
+- No node data changes; only layout + rendering rules.
