@@ -16,6 +16,10 @@ type State = {
   spawnOrbitRadius: number;
   spawnOrbitSpeed: number;
   orbitLayout: boolean;
+  linkStrength: number;
+  chargeStrength: number;
+  collideRadius: number;
+  centroidPull: number;
   showLabels: boolean;
   labelSize: number;
   labelDensity: number;
@@ -44,6 +48,11 @@ type State = {
   setSpawnOrbitSpeed: (v: number) => void;
   toggleOrbitLayout: () => void;
   setOrbitLayout: (v: boolean) => void;
+  setLinkStrength: (v: number) => void;
+  setChargeStrength: (v: number) => void;
+  setCollideRadius: (v: number) => void;
+  setCentroidPull: (v: number) => void;
+  resetForceParams: () => void;
   setShowLabels: (v: boolean) => void;
   setLabelSize: (v: number) => void;
   setLabelDensity: (v: number) => void;
@@ -82,6 +91,10 @@ export const useGraphStore = create<State>()(
   spawnOrbitRadius: 1,
   spawnOrbitSpeed: 1,
   orbitLayout: true,
+  linkStrength: 1,
+  chargeStrength: 1,
+  collideRadius: 1,
+  centroidPull: 1,
   showLabels: true,
   labelSize: 1,
   labelDensity: 1,
@@ -120,6 +133,12 @@ export const useGraphStore = create<State>()(
   setSpawnOrbitSpeed: (v) => set({ spawnOrbitSpeed: v }),
   toggleOrbitLayout: () => set((s) => ({ orbitLayout: !s.orbitLayout })),
   setOrbitLayout: (v) => set({ orbitLayout: v }),
+  setLinkStrength: (v) => set({ linkStrength: v }),
+  setChargeStrength: (v) => set({ chargeStrength: v }),
+  setCollideRadius: (v) => set({ collideRadius: v }),
+  setCentroidPull: (v) => set({ centroidPull: v }),
+  resetForceParams: () =>
+    set({ linkStrength: 1, chargeStrength: 1, collideRadius: 1, centroidPull: 1 }),
   setShowLabels: (v) => set({ showLabels: v }),
   setLabelSize: (v) => set({ labelSize: v }),
   setLabelDensity: (v) => set({ labelDensity: v }),
