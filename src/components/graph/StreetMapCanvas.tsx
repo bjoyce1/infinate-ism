@@ -62,6 +62,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
+  const [selectedRoadId, setSelectedRoadId] = useState<string | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const hoveredId = useGraphStore((s) => s.hoveredId);
@@ -110,6 +111,10 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const camRef = useRef({ x: 0, y: 0, zoom: 0.35, tx: 0, ty: 0, tzoom: 0.35 });
   const draggingRef = useRef<{ x: number; y: number } | null>(null);
   const hoverIdRef = useRef<string | null>(null);
+  const selectedRoadRef = useRef<string | null>(null);
+  useEffect(() => {
+    selectedRoadRef.current = selectedRoadId;
+  }, [selectedRoadId]);
 
   // Fit to layout bounds when layout changes.
   const fitToBounds = () => {
@@ -210,6 +215,15 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
             highlightNodes.add(r.from === selectedId ? r.to : r.from);
           }
         }
+      }
+      // A clicked road adds itself + its endpoints to the highlight set.
+      const activeRoad = selectedRoadId ? layout.roads.find((r) => r.id === selectedRoadId) : null;
+      if (activeRoad) {
+        if (!highlightRoads) highlightRoads = new Set();
+        if (!highlightNodes) highlightNodes = new Set();
+        highlightRoads.add(activeRoad.id);
+        highlightNodes.add(activeRoad.from);
+        highlightNodes.add(activeRoad.to);
       }
       const dimmed = (id: string) => highlightRoads !== null && !highlightRoads.has(id);
       const dimmedNode = (id: string) => highlightNodes !== null && !highlightNodes.has(id);
@@ -315,6 +329,32 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         ctx.lineWidth = Math.max(1, 1.4 * c.zoom);
         traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // 3b. Walking routes — dashed amber footpaths overlaid on the map.
+      // Marching-ants animation makes the direction of travel obvious.
+      const dashOffset = -(now / 40) % 24;
+      for (const r of layout.roads) {
+        if (!r.walk) continue;
+        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
+        const isActive = selectedRoadId === r.id;
+        ctx.globalAlpha = dimmed(r.id) ? 0.2 : 1;
+        // Soft glow underlay.
+        ctx.setLineDash([]);
+        ctx.strokeStyle = isActive ? "rgba(255,204,77,0.35)" : "rgba(255,204,77,0.15)";
+        ctx.lineWidth = (isActive ? 14 : 8) + Math.max(2, 2 * c.zoom);
+        traceRoad(ctx, pts, cornerRadius);
+        ctx.stroke();
+        // Dashed footpath.
+        ctx.setLineDash([10, 8]);
+        ctx.lineDashOffset = dashOffset;
+        ctx.strokeStyle = isActive ? "#ffde7a" : "#ffcc4d";
+        ctx.lineWidth = Math.max(2, (isActive ? 3.2 : 2.2) * c.zoom);
+        traceRoad(ctx, pts, cornerRadius);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.lineDashOffset = 0;
       }
       ctx.globalAlpha = 1;
 
@@ -484,6 +524,21 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         }
       }
 
+      // 8b. Selected walking route: end-cap pins pulsing on both endpoints.
+      if (activeRoad) {
+        const a = layout.nodes.get(activeRoad.from);
+        const b = layout.nodes.get(activeRoad.to);
+        for (const end of [a, b]) {
+          if (!end) continue;
+          const p = worldToScreen(end.x, end.y);
+          ctx.strokeStyle = "#ffde7a";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 14 + Math.sin(now / 240) * 3, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
       // Intensity: link intensity applied to overall overlay dimming when < 1.
       if (linkIntensity < 1) {
         ctx.fillStyle = `rgba(11,13,16,${(1 - linkIntensity) * 0.4})`;
@@ -494,7 +549,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     };
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [layout, size.w, size.h, selectedId, hoveredId, showLabels, labelSize, particleIntensity, linkIntensity]);
+  }, [layout, size.w, size.h, selectedId, hoveredId, selectedRoadId, showLabels, labelSize, particleIntensity, linkIntensity]);
 
   // Interactions.
   const screenToWorld = (sx: number, sy: number) => {
@@ -521,6 +576,37 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     return bestId;
   };
 
+  // Distance from a world-point to a road's polyline (world units).
+  const roadHitTest = (sx: number, sy: number): string | null => {
+    const w = screenToWorld(sx, sy);
+    const tol = 12 / camRef.current.zoom; // ~12px click tolerance
+    let bestId: string | null = null;
+    let bestDist = Infinity;
+    for (const r of layout.roads) {
+      if (!r.walk) continue; // only walkable routes are clickable
+      const pts = r.points;
+      for (let i = 1; i < pts.length; i++) {
+        const ax = pts[i - 1].x, ay = pts[i - 1].y;
+        const bx = pts[i].x, by = pts[i].y;
+        const dx = bx - ax, dy = by - ay;
+        const len2 = dx * dx + dy * dy || 1;
+        let t = ((w.x - ax) * dx + (w.y - ay) * dy) / len2;
+        t = Math.max(0, Math.min(1, t));
+        const px = ax + dx * t, py = ay + dy * t;
+        const d = Math.hypot(w.x - px, w.y - py);
+        if (d <= tol && d < bestDist) {
+          bestDist = d;
+          bestId = r.id;
+        }
+      }
+    }
+    return bestId;
+  };
+
+  const activeRoadInfo = selectedRoadId ? layout.roads.find((r) => r.id === selectedRoadId) : null;
+  const activeRoadFrom = activeRoadInfo ? layout.nodes.get(activeRoadInfo.from)?.node : null;
+  const activeRoadTo = activeRoadInfo ? layout.nodes.get(activeRoadInfo.to)?.node : null;
+
   return (
     <div
       ref={wrapRef}
@@ -537,13 +623,23 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         if (moved < 4) {
           const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
           const id = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-          select(id);
           if (id) {
+            select(id);
+            setSelectedRoadId(null);
             const n = layout.nodes.get(id);
             if (n) {
               camRef.current.tx = n.x;
               camRef.current.ty = n.y;
               camRef.current.tzoom = Math.max(camRef.current.tzoom, 0.9);
+            }
+          } else {
+            // No node hit — try a walking-route polyline hit.
+            const rid = roadHitTest(e.clientX - rect.left, e.clientY - rect.top);
+            if (rid) {
+              setSelectedRoadId(rid);
+            } else {
+              setSelectedRoadId(null);
+              select(null);
             }
           }
         }
@@ -587,6 +683,55 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-obsidian-surface/70 backdrop-blur border border-neon-primary/30 rounded-full px-4 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neon-primary">
         CAPISM · STREET VIEW
       </div>
+      {activeRoadInfo?.walk && (
+        <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md bg-obsidian-surface/95 backdrop-blur border border-[#ffcc4d]/40 rounded-xl p-4 shadow-2xl pointer-events-auto">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-[#ffcc4d] mb-1">
+                🚶 Walking route
+              </div>
+              <div className="text-sm font-semibold text-white truncate">
+                {activeRoadFrom?.label ?? activeRoadInfo.from}
+                <span className="text-white/40 mx-1.5">→</span>
+                {activeRoadTo?.label ?? activeRoadInfo.to}
+              </div>
+              {(activeRoadInfo.walk.distance || activeRoadInfo.walk.duration) && (
+                <div className="mt-1 text-[11px] font-mono text-white/60">
+                  {activeRoadInfo.walk.distance ?? "—"} · {activeRoadInfo.walk.duration ?? "—"}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedRoadId(null)}
+              className="text-white/50 hover:text-white text-lg leading-none px-1"
+              aria-label="Close route preview"
+            >
+              ×
+            </button>
+          </div>
+          {activeRoadInfo.walk.directions && (
+            <p className="mt-2 text-xs text-white/80 leading-relaxed">
+              {activeRoadInfo.walk.directions}
+            </p>
+          )}
+          {activeRoadInfo.walk.days && activeRoadInfo.walk.days.length > 0 && (
+            <ol className="mt-3 space-y-2 border-t border-white/10 pt-2 max-h-48 overflow-y-auto pr-1">
+              {activeRoadInfo.walk.days.map((d, i) => (
+                <li key={i} className="text-[11px] text-white/75 leading-relaxed">
+                  <div className="font-mono uppercase tracking-wider text-[#ffcc4d]">
+                    {d.label ?? `Day ${i + 1}`}
+                  </div>
+                  <div className="text-white/50 font-mono">
+                    {d.distance ?? "—"} · {d.duration ?? "—"}
+                  </div>
+                  {d.directions && <div className="mt-0.5">{d.directions}</div>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
     </div>
   );
 }
