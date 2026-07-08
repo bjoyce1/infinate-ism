@@ -57,6 +57,15 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setSpawnOrbitRadius = useGraphStore((s) => s.setSpawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
   const setSpawnOrbitSpeed = useGraphStore((s) => s.setSpawnOrbitSpeed);
+  const linkStrength = useGraphStore((s) => s.linkStrength);
+  const setLinkStrength = useGraphStore((s) => s.setLinkStrength);
+  const chargeStrength = useGraphStore((s) => s.chargeStrength);
+  const setChargeStrength = useGraphStore((s) => s.setChargeStrength);
+  const collideRadius = useGraphStore((s) => s.collideRadius);
+  const setCollideRadius = useGraphStore((s) => s.setCollideRadius);
+  const centroidPull = useGraphStore((s) => s.centroidPull);
+  const setCentroidPull = useGraphStore((s) => s.setCentroidPull);
+  const resetForceParams = useGraphStore((s) => s.resetForceParams);
   const viewMode = useGraphStore((s) => s.viewMode);
   const showLabels = useGraphStore((s) => s.showLabels);
   const setShowLabels = useGraphStore((s) => s.setShowLabels);
