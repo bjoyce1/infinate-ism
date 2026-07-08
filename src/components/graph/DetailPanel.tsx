@@ -2,6 +2,7 @@ import type { NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { trackLinkClick } from "@/lib/analytics/trackClick";
+import { CopyDirectionsButton, buildDirectionsText } from "./CopyDirectionsButton";
 import {
   Carousel,
   CarouselContent,
