@@ -60,7 +60,11 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     "gallery",
     "alt",
     "caption",
+    "phone",
+    "hours",
+    "email",
   ]);
+
 
   const galleryRaw = (node as Record<string, unknown>).gallery;
   const gallery: string[] = Array.isArray(galleryRaw)
