@@ -85,15 +85,20 @@ const LANDMARKS: Landmark[] = [
     id: "suc_landmark_screwed_up_records",
     label: "Screwed Up Records & Tapes",
     file_type: "shop",
-    address: "8806 Cullen Blvd, Houston, TX",
+    address: "3538 W Fuqua St, Houston, TX 77045",
     description:
-      "The brick-and-mortar shop on Cullen Boulevard that kept DJ Screw's catalog, grey tapes and SUC releases in print after his passing — a pilgrimage spot for the Houston sound.",
-    tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
+      "The brick-and-mortar shop that keeps DJ Screw's catalog, grey tapes and SUC releases in print — a pilgrimage spot for the Houston sound. Originally opened on Cullen Boulevard; now operates on West Fuqua Street.",
+    tags: ["Shop", "SUC", "DJ Screw", "Grey Tapes"],
     relation: "landmark",
     weight: 1.8,
+    url: "https://screweduprecords.com",
+    phone: "(713) 434-2888",
+    hours: "Mon–Sun · 2:00 PM – 9:00 PM",
+    email: "info@screweduprecords.com",
     image: screwedUpRecordsAsset.url,
     gallery: [screwedUpRecordsAsset.url, surtInteriorImg, screwTapeAsset.url],
   },
+
   {
     id: "suc_landmark_south_park",
     label: "South Park",
