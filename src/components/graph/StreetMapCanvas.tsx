@@ -4,6 +4,7 @@ import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { buildStreetLayout, type StreetLayout, type StreetRoad } from "@/lib/graph/streetLayout";
+import { CopyDirectionsButton, buildDirectionsText } from "./CopyDirectionsButton";
 
 const HUB_ID = "site_mrcap1_com";
 
@@ -701,14 +702,25 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => setSelectedRoadId(null)}
-              className="text-white/50 hover:text-white text-lg leading-none px-1"
-              aria-label="Close route preview"
-            >
-              ×
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <CopyDirectionsButton
+                text={buildDirectionsText(
+                  `${activeRoadFrom?.label ?? activeRoadInfo.from} → ${activeRoadTo?.label ?? activeRoadInfo.to}`,
+                  activeRoadInfo.walk.distance,
+                  activeRoadInfo.walk.duration,
+                  activeRoadInfo.walk.directions,
+                  activeRoadInfo.walk.days,
+                )}
+              />
+              <button
+                type="button"
+                onClick={() => setSelectedRoadId(null)}
+                className="text-white/50 hover:text-white text-lg leading-none px-1"
+                aria-label="Close route preview"
+              >
+                ×
+              </button>
+            </div>
           </div>
           {activeRoadInfo.walk.directions && (
             <p className="mt-2 text-xs text-white/80 leading-relaxed">
