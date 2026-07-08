@@ -289,7 +289,7 @@ export const upsertNote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({
     id: uuid.optional(),
     title: z.string().min(1).max(300),
-    content: z.string().max(20000).optional().nullable(),
+    content: z.string().max(20000).optional(),
     project_id: uuid.optional().nullable(),
     area_id: uuid.optional().nullable(),
     tags: z.array(z.string()).default([]),
