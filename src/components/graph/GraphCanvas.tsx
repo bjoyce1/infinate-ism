@@ -263,10 +263,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Cluster-clustering force: pull every node gently toward the live centroid
-  // of its own community. That's it. No orbits, no rings, no per-node hacks —
-  // d3's default link, charge, collide, and center forces do the actual layout,
-  // producing the Obsidian-style organic cluster look.
+  // Solar-system force: pull main nodes toward their (ring, angle) polar
+  // target, and pull each child node toward its parent planet within a small
+  // halo. Hub is soft-pinned at the "Sun" position.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
     type ClusterNode = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
@@ -274,23 +273,44 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
 
     const clusterForce = (alpha: number) => {
       if (!nodes.length || !orbitLayoutRef.current) return;
-      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
-      for (const n of nodes) {
-        if (n.x == null || n.y == null) continue;
-        const k = n.community ?? "__none";
-        const c = centers.get(k) ?? { cx: 0, cy: 0, n: 0 };
-        c.cx += n.x; c.cy += n.y; c.n += 1;
-        centers.set(k, c);
+      const plan = solarPlanRef.current;
+      const spacing = RING_GAP * ringSpacingRef.current;
+      const halo = 60 * childHaloRadiusRef.current;
+      const ringPull = 0.18 * alpha * centroidPullRef.current;
+      const childPull = 0.10 * alpha * centroidPullRef.current;
+      const sunPull = 0.25 * alpha;
+      // Precompute planet positions for children.
+      const planetPos = new Map<string, { x: number; y: number }>();
+      for (const [id, r] of plan.ringOf) {
+        const rr = RING_BASE + r.ring * spacing;
+        planetPos.set(id, { x: Math.cos(r.angle) * rr, y: Math.sin(r.angle) * rr });
       }
-      for (const c of centers.values()) { c.cx /= c.n; c.cy /= c.n; }
-      const pull = 0.12 * alpha * centroidPullRef.current;
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        if (n.id === HUB_ID) continue;
-        const c = centers.get(n.community ?? "__none");
-        if (!c) continue;
-        n.vx = (n.vx ?? 0) + (c.cx - n.x) * pull;
-        n.vy = (n.vy ?? 0) + (c.cy - n.y) * pull;
+        if (n.id === HUB_ID) {
+          n.vx = (n.vx ?? 0) + (-HUB_OFFSET - n.x) * sunPull;
+          n.vy = (n.vy ?? 0) + (HUB_OFFSET - n.y) * sunPull;
+          continue;
+        }
+        const ring = plan.ringOf.get(n.id);
+        if (ring) {
+          const rr = RING_BASE + ring.ring * spacing;
+          const tx = Math.cos(ring.angle) * rr;
+          const ty = Math.sin(ring.angle) * rr;
+          n.vx = (n.vx ?? 0) + (tx - n.x) * ringPull;
+          n.vy = (n.vy ?? 0) + (ty - n.y) * ringPull;
+          continue;
+        }
+        const parentId = plan.parentOf.get(n.id);
+        const p = parentId ? planetPos.get(parentId) : undefined;
+        if (p) {
+          // Pull child into a halo around parent (keep some slack via halo dist).
+          const dx = p.x - n.x; const dy = p.y - n.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const overshoot = Math.max(0, d - halo);
+          n.vx = (n.vx ?? 0) + (dx / d) * overshoot * childPull;
+          n.vy = (n.vy ?? 0) + (dy / d) * overshoot * childPull;
+        }
       }
     };
     (clusterForce as unknown as { initialize: (n: ClusterNode[]) => void }).initialize = (n) => { nodes = n; };
