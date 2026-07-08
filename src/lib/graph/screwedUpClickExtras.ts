@@ -54,11 +54,15 @@ type Landmark = {
   description: string;
   tags: string[];
   url?: string;
+  phone?: string;
+  hours?: string;
+  email?: string;
   relation: string;
   weight?: number;
   image?: string;
   gallery?: string[];
 };
+
 
 // Real Houston places tied to the Screwed Up Click origin story. Each becomes
 // a "building" inside the SUC neighborhood — the street layout renders every
@@ -81,15 +85,20 @@ const LANDMARKS: Landmark[] = [
     id: "suc_landmark_screwed_up_records",
     label: "Screwed Up Records & Tapes",
     file_type: "shop",
-    address: "8806 Cullen Blvd, Houston, TX",
+    address: "3538 W Fuqua St, Houston, TX 77045",
     description:
-      "The brick-and-mortar shop on Cullen Boulevard that kept DJ Screw's catalog, grey tapes and SUC releases in print after his passing — a pilgrimage spot for the Houston sound.",
-    tags: ["Shop", "Cullen Blvd", "SUC", "DJ Screw"],
+      "The brick-and-mortar shop that keeps DJ Screw's catalog, grey tapes and SUC releases in print — a pilgrimage spot for the Houston sound. Originally opened on Cullen Boulevard; now operates on West Fuqua Street.",
+    tags: ["Shop", "SUC", "DJ Screw", "Grey Tapes"],
     relation: "landmark",
     weight: 1.8,
+    url: "https://screweduprecords.com",
+    phone: "(713) 434-2888",
+    hours: "Mon–Sun · 2:00 PM – 9:00 PM",
+    email: "info@screweduprecords.com",
     image: screwedUpRecordsAsset.url,
     gallery: [screwedUpRecordsAsset.url, surtInteriorImg, screwTapeAsset.url],
   },
+
   {
     id: "suc_landmark_south_park",
     label: "South Park",
@@ -283,9 +292,13 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
       description: lm.description,
       tags: lm.tags,
       role: "landmark",
+      ...(lm.phone ? { phone: lm.phone } : {}),
+      ...(lm.hours ? { hours: lm.hours } : {}),
+      ...(lm.email ? { email: lm.email } : {}),
       ...(lm.image ? { image: lm.image, artwork: lm.image } : {}),
       ...(lm.gallery && lm.gallery.length ? { gallery: lm.gallery } : {}),
     } as GraphNode;
+
     nodes.push(node);
     byId.set(lm.id, node);
 
@@ -319,8 +332,10 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   crossLink("suc_landmark_south_park", "suc_landmark_screw_house", "contains", 1.5);
   crossLink("suc_landmark_south_park", "site_spc_houston", "houston-scene", 1);
 
-  // Walkable routes from Screwed Up Records & Tapes (8806 Cullen Blvd) to
-  // nearby SUC landmarks. Distances/durations are documented walking estimates.
+  // Walkable routes from the original Screwed Up Records & Tapes location on
+  // Cullen Blvd to nearby SUC landmarks. Distances/durations are documented
+  // walking estimates from the historic shop address.
+
   const walkRoutes: Array<{
     to: string;
     distance: string;

@@ -11,11 +11,15 @@ export type RawNode = {
   artwork?: string;
   alt?: string;
   caption?: string;
+  phone?: string;
+  hours?: string;
+  email?: string;
   is_hub?: boolean;
   weight?: number;
   color?: string;
   url?: string;
 };
+
 
 
 export type RawLink = {

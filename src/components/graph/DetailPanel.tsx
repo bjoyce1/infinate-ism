@@ -60,7 +60,11 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     "gallery",
     "alt",
     "caption",
+    "phone",
+    "hours",
+    "email",
   ]);
+
 
   const galleryRaw = (node as Record<string, unknown>).gallery;
   const gallery: string[] = Array.isArray(galleryRaw)
@@ -227,7 +231,50 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
         )}
 
         <div className="space-y-6">
+          {(node.phone || node.hours || node.email) && (
+            <section>
+              <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
+                Contact & Hours
+              </h4>
+              <div className="space-y-2">
+                {node.phone && (
+                  <div className="grid grid-cols-[110px_1fr] gap-3 items-start py-1.5 border-b border-white/5">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-text pt-0.5">Phone</div>
+                    <a
+                      href={`tel:${node.phone.replace(/\D/g, "")}`}
+                      className="text-xs font-mono text-neon-primary break-all hover:underline"
+                      onClick={() => track(`tel:${node.phone!.replace(/\D/g, "")}`)}
+                      onAuxClick={() => track(`tel:${node.phone!.replace(/\D/g, "")}`)}
+                    >
+                      {node.phone}
+                    </a>
+                  </div>
+                )}
+                {node.email && (
+                  <div className="grid grid-cols-[110px_1fr] gap-3 items-start py-1.5 border-b border-white/5">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-text pt-0.5">Email</div>
+                    <a
+                      href={`mailto:${node.email}`}
+                      className="text-xs font-mono text-neon-primary break-all hover:underline"
+                      onClick={() => track(`mailto:${node.email}`)}
+                      onAuxClick={() => track(`mailto:${node.email}`)}
+                    >
+                      {node.email}
+                    </a>
+                  </div>
+                )}
+                {node.hours && (
+                  <div className="grid grid-cols-[110px_1fr] gap-3 items-start py-1.5 border-b border-white/5">
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-text pt-0.5">Hours</div>
+                    <div className="text-xs text-white/80">{node.hours}</div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           <section>
+
             <h4 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-3">
               All Properties
             </h4>
