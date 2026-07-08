@@ -185,6 +185,7 @@ export const useGraphStore = create<State>()(
         rightPanelOpen: s.rightPanelOpen,
         leftPanelWidth: s.leftPanelWidth,
         rightPanelWidth: s.rightPanelWidth,
+        layoutSeed: s.layoutSeed,
       }),
       skipHydration: typeof window === "undefined",
     },
