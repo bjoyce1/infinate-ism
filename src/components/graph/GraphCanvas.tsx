@@ -63,6 +63,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const ringCount = useGraphStore((s) => s.ringCount);
   const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
+  const parentAttract = useGraphStore((s) => s.parentAttract);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
   const showSunGlow = useGraphStore((s) => s.showSunGlow);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
@@ -76,6 +77,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const ringSpacingRef = useRef(ringSpacing);
   const sunArcSpreadRef = useRef(sunArcSpread);
   const childHaloRadiusRef = useRef(childHaloRadius);
+  const parentAttractRef = useRef(parentAttract);
   useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
   useEffect(() => { chargeStrengthRef.current = chargeStrength; }, [chargeStrength]);
   useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
@@ -83,9 +85,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => { ringSpacingRef.current = ringSpacing; }, [ringSpacing]);
   useEffect(() => { sunArcSpreadRef.current = sunArcSpread; }, [sunArcSpread]);
   useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
+  useEffect(() => { parentAttractRef.current = parentAttract; }, [parentAttract]);
   useEffect(() => {
     fgRef.current?.d3ReheatSimulation();
-  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius]);
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius, parentAttract]);
 
   // Build the solar-system plan: rank main nodes by degree, spread them across
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
@@ -288,7 +291,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const spacing = RING_GAP * ringSpacingRef.current;
       const halo = 60 * childHaloRadiusRef.current;
       const ringPull = 0.18 * alpha * centroidPullRef.current;
-      const childPull = 0.10 * alpha * centroidPullRef.current;
+      const childPull = 0.10 * alpha * centroidPullRef.current * parentAttractRef.current;
       const sunPull = 0.25 * alpha;
       // Precompute planet positions for children.
       const planetPos = new Map<string, { x: number; y: number }>();
