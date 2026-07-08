@@ -555,6 +555,30 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           height={size.h}
           backgroundColor="rgba(0,0,0,0)"
           nodeCanvasObject={nodeCanvasObject}
+          onRenderFramePre={(ctx: CanvasRenderingContext2D, globalScale: number) => {
+            if (!orbitLayout) return;
+            const plan = solarPlan;
+            const spacing = RING_GAP * ringSpacing;
+            const arc = plan.arc;
+            ctx.save();
+            ctx.lineWidth = 0.6 / globalScale;
+            for (let r = 0; r < plan.ringCount; r++) {
+              const rr = RING_BASE + r * spacing;
+              ctx.strokeStyle = `rgba(180,200,255,${0.08 + (r % 2 === 0 ? 0.02 : 0)})`;
+              ctx.beginPath();
+              ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
+              ctx.stroke();
+            }
+            // Sun glow
+            const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 90);
+            grad.addColorStop(0, "rgba(255,170,60,0.35)");
+            grad.addColorStop(1, "rgba(255,170,60,0)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(-HUB_OFFSET, HUB_OFFSET, 90, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
             const isHub = Boolean(node.is_hub || node.image);
