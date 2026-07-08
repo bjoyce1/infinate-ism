@@ -71,6 +71,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setSunArcSpread = useGraphStore((s) => s.setSunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
+  const ringCount = useGraphStore((s) => s.ringCount);
+  const setRingCount = useGraphStore((s) => s.setRingCount);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
   const setShowOrbitArcs = useGraphStore((s) => s.setShowOrbitArcs);
   const showSunGlow = useGraphStore((s) => s.showSunGlow);
