@@ -57,6 +57,15 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setSpawnOrbitRadius = useGraphStore((s) => s.setSpawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
   const setSpawnOrbitSpeed = useGraphStore((s) => s.setSpawnOrbitSpeed);
+  const linkStrength = useGraphStore((s) => s.linkStrength);
+  const setLinkStrength = useGraphStore((s) => s.setLinkStrength);
+  const chargeStrength = useGraphStore((s) => s.chargeStrength);
+  const setChargeStrength = useGraphStore((s) => s.setChargeStrength);
+  const collideRadius = useGraphStore((s) => s.collideRadius);
+  const setCollideRadius = useGraphStore((s) => s.setCollideRadius);
+  const centroidPull = useGraphStore((s) => s.centroidPull);
+  const setCentroidPull = useGraphStore((s) => s.setCentroidPull);
+  const resetForceParams = useGraphStore((s) => s.resetForceParams);
   const viewMode = useGraphStore((s) => s.viewMode);
   const showLabels = useGraphStore((s) => s.showLabels);
   const setShowLabels = useGraphStore((s) => s.setShowLabels);
@@ -457,6 +466,45 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                   className="w-full accent-neon-primary cursor-pointer"
                 />
               </label>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text">
+                Force Layout
+              </h3>
+              <button
+                type="button"
+                onClick={resetForceParams}
+                className="text-[9px] font-mono uppercase tracking-widest text-muted-text hover:text-neon-primary transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
+            </div>
+            <div className="space-y-3">
+              {[
+                { label: "Link strength", value: linkStrength, set: setLinkStrength, min: 0, max: 3, step: 0.05 },
+                { label: "Charge", value: chargeStrength, set: setChargeStrength, min: 0, max: 3, step: 0.05 },
+                { label: "Collide radius", value: collideRadius, set: setCollideRadius, min: 0, max: 4, step: 0.1 },
+                { label: "Centroid pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05 },
+              ].map((s) => (
+                <label key={s.label} className="block">
+                  <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
+                    <span>{s.label}</span>
+                    <span>{s.value.toFixed(2)}×</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={s.min}
+                    max={s.max}
+                    step={s.step}
+                    value={s.value}
+                    onChange={(e) => s.set(Number(e.target.value))}
+                    className="w-full accent-neon-primary cursor-pointer"
+                  />
+                </label>
+              ))}
             </div>
           </div>
 

@@ -43,6 +43,23 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
   const orbitLayout = useGraphStore((s) => s.orbitLayout);
+  const linkStrength = useGraphStore((s) => s.linkStrength);
+  const chargeStrength = useGraphStore((s) => s.chargeStrength);
+  const collideRadius = useGraphStore((s) => s.collideRadius);
+  const centroidPull = useGraphStore((s) => s.centroidPull);
+  // Refs so the injected forces read live values without needing to re-register
+  // (re-registering resets particle motion and jitters the layout).
+  const linkStrengthRef = useRef(linkStrength);
+  const chargeStrengthRef = useRef(chargeStrength);
+  const collideRadiusRef = useRef(collideRadius);
+  const centroidPullRef = useRef(centroidPull);
+  useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
+  useEffect(() => { chargeStrengthRef.current = chargeStrength; }, [chargeStrength]);
+  useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
+  useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
+  useEffect(() => {
+    fgRef.current?.d3ReheatSimulation();
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull]);
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
@@ -188,7 +205,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         centers.set(k, c);
       }
       for (const c of centers.values()) { c.cx /= c.n; c.cy /= c.n; }
-      const pull = 0.12 * alpha;
+      const pull = 0.12 * alpha * centroidPullRef.current;
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
         if (n.id === HUB_ID) continue;
@@ -204,7 +221,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current.d3Force(
       "charge",
       forceManyBody<ClusterNode>()
-        .strength((n) => (n.is_hub || n.image ? -120 : -18))
+        .strength((n) => (n.is_hub || n.image ? -120 : -18) * chargeStrengthRef.current)
         .distanceMax(220),
     );
     // Prevent small satellite nodes from overlapping. Image / hub nodes are
@@ -213,7 +230,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .radius((n) => {
         const isHub = Boolean(n.is_hub || n.image);
         if (isHub) return 0;
-        return Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
+        const base = Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
+        return base * collideRadiusRef.current;
       })
       .strength(1)
       .iterations(3);
@@ -238,11 +256,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           return 36;
         })
         .strength((l) => {
+          const scale = linkStrengthRef.current;
           if (isMain(l.source) && isMain(l.target)) {
             const w = Math.max(1, l.weight ?? 1);
-            return Math.min(0.5, 0.02 * w);
+            return Math.min(0.5, 0.02 * w) * scale;
           }
-          return 0.55;
+          return 0.55 * scale;
         });
     }
     fgRef.current.d3ReheatSimulation();
