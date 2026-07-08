@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { forceCollide, forceManyBody, type ForceLink } from "d3-force";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
 import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
 import { filterGraph } from "@/lib/graph/filterGraph";
@@ -16,9 +17,6 @@ type ForceGraphHandle = {
 };
 
 const HUB_ID = "site_mrcap1_com";
-const SUN_RADIUS = 46;
-const ORBIT_R0 = 130;
-const ORBIT_STEP = 95;
 
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
@@ -47,61 +45,66 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const orbitLayout = useGraphStore((s) => s.orbitLayout);
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
-  // Solar-system layout. Each community becomes one orbit ring around the hub
-  // (sun). Nodes are pinned via fx/fy so the sim never drifts them.
-  const ringRadii = useRef<number[]>([]);
   useEffect(() => {
-    type Pos = GraphNode & {
-      x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number;
-    };
+    // Reheat + relax link distances when toggling so nodes spread out in free-drift
+    // mode and re-organize in orbit mode.
+    fgRef.current?.d3ReheatSimulation();
+  }, [orbitLayout]);
+
+  // Organic force-directed layout, Obsidian-style. No orbits, no fixed rings —
+  // d3-force does the work. We just give it good starting positions (spread on
+  // a ring, seeded by community) so it settles into readable clusters instead
+  // of a chaotic hairball.
+  useEffect(() => {
+    if (!orbitLayout) return;
+    type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
+
+    // Seed positions: nodes in the same community sit near each other on a
+    // wide circle. The hub goes at origin (soft-pinned, not hard-pinned, so
+    // it can breathe with its cluster).
+    const commKeys: (number | string)[] = [];
+    const commIndex = new Map<number | string, number>();
+    for (const n of graph.nodes) {
+      const k = n.community ?? "__none";
+      if (!commIndex.has(k)) { commIndex.set(k, commKeys.length); commKeys.push(k); }
+    }
+    const N = Math.max(commKeys.length, 1);
+    const R = 260 + Math.sqrt(graph.nodes.length) * 22;
     const hash = (s: string) => {
       let h = 2166136261;
       for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
       return (h >>> 0) / 0xffffffff;
     };
 
-    // Group non-hub nodes by community (fallback: category).
-    const groups = new Map<string, Pos[]>();
     for (const raw of graph.nodes) {
       const n = raw as Pos;
-      if (n.id === HUB_ID) continue;
-      const key = String(n.community ?? n.category ?? "__none");
-      let arr = groups.get(key);
-      if (!arr) { arr = []; groups.set(key, arr); }
-      arr.push(n);
+      n.fx = undefined; n.fy = undefined;
+      if (n.id === HUB_ID) {
+        n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
+        continue;
+      }
+      const idx = commIndex.get(n.community ?? "__none") ?? 0;
+      const baseAngle = (idx / N) * Math.PI * 2;
+      const jitter = (hash(n.id) - 0.5) * 0.6;
+      const angle = baseAngle + jitter;
+      const rr = R * (0.5 + hash(n.id + "|r") * 0.6);
+      n.x = Math.cos(angle) * rr;
+      n.y = Math.sin(angle) * rr;
+      n.vx = 0; n.vy = 0;
     }
-
-    // Order rings: biggest community closest to the sun (short list),
-    // huge groups get outer rings so they have room to spread.
-    const ordered = [...groups.entries()].sort((a, b) => a[1].length - b[1].length);
-
-    const radii: number[] = [];
-    ordered.forEach(([, nodes], ringIdx) => {
-      const R = ORBIT_R0 + ringIdx * ORBIT_STEP;
-      radii.push(R);
-      const count = nodes.length;
-      nodes.forEach((n, i) => {
-        const jitter = (hash(n.id) - 0.5) * (Math.PI / Math.max(count, 12));
-        const angle = (i / count) * Math.PI * 2 + jitter + ringIdx * 0.15;
-        const x = Math.cos(angle) * R;
-        const y = Math.sin(angle) * R;
-        n.x = x; n.y = y; n.fx = x; n.fy = y; n.vx = 0; n.vy = 0;
-      });
-    });
-    ringRadii.current = radii;
-
-    // Pin the hub at origin.
-    const hub = graph.nodes.find((n) => n.id === HUB_ID) as Pos | undefined;
-    if (hub) { hub.x = 0; hub.y = 0; hub.fx = 0; hub.fy = 0; hub.vx = 0; hub.vy = 0; }
-
     fgRef.current?.d3ReheatSimulation();
-  }, [graph]);
+  }, [graph, orbitLayout]);
+
 
   // Refs so the force closure always reads the latest values without re-registering.
   const spawnRadiusRef = useRef(spawnOrbitRadius);
   const spawnSpeedRef = useRef(spawnOrbitSpeed);
   useEffect(() => { spawnRadiusRef.current = spawnOrbitRadius; }, [spawnOrbitRadius]);
   useEffect(() => { spawnSpeedRef.current = spawnOrbitSpeed; }, [spawnOrbitSpeed]);
+  // Keep the sim warm when knobs move so changes are visible immediately.
+  useEffect(() => {
+    fgRef.current?.d3ReheatSimulation();
+  }, [spawnOrbitRadius, spawnOrbitSpeed]);
 
   const setNodeImageFn = useServerFn(setNodeImage);
   const [ctxMenu, setCtxMenu] = useState<{
@@ -165,15 +168,71 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Kill every d3 force — the layout is authoritative via fx/fy.
+  // Cluster-clustering force: pull every node gently toward the live centroid
+  // of its own community. That's it. No orbits, no rings, no per-node hacks —
+  // d3's default link, charge, collide, and center forces do the actual layout,
+  // producing the Obsidian-style organic cluster look.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
-    const fg = fgRef.current;
-    fg.d3Force("link", null);
-    fg.d3Force("charge", null);
-    fg.d3Force("center", null);
-    fg.d3Force("collide", null);
-    fg.d3Force("orbital", null);
+    type ClusterNode = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
+    let nodes: ClusterNode[] = [];
+
+    const clusterForce = (alpha: number) => {
+      if (!nodes.length || !orbitLayoutRef.current) return;
+      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        const k = n.community ?? "__none";
+        const c = centers.get(k) ?? { cx: 0, cy: 0, n: 0 };
+        c.cx += n.x; c.cy += n.y; c.n += 1;
+        centers.set(k, c);
+      }
+      for (const c of centers.values()) { c.cx /= c.n; c.cy /= c.n; }
+      const pull = 0.12 * alpha;
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        if (n.id === HUB_ID) continue;
+        const c = centers.get(n.community ?? "__none");
+        if (!c) continue;
+        n.vx = (n.vx ?? 0) + (c.cx - n.x) * pull;
+        n.vy = (n.vy ?? 0) + (c.cy - n.y) * pull;
+      }
+    };
+    (clusterForce as unknown as { initialize: (n: ClusterNode[]) => void }).initialize = (n) => { nodes = n; };
+    fgRef.current.d3Force("orbital", clusterForce);
+    // Uniform repulsion so nothing clumps into a blob.
+    fgRef.current.d3Force(
+      "charge",
+      forceManyBody<ClusterNode>()
+        .strength((n) => (n.is_hub || n.image ? -120 : -18))
+        .distanceMax(220),
+    );
+    // Prevent small satellite nodes from overlapping. Image / hub nodes are
+    // allowed to overlap freely so main-node art can stack visually.
+    const collide = forceCollide<ClusterNode>()
+      .radius((n) => {
+        const isHub = Boolean(n.is_hub || n.image);
+        if (isHub) return 0;
+        return Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
+      })
+      .strength(1)
+      .iterations(3);
+    fgRef.current.d3Force("collide", collide);
+    // Loosen links between main (hub / image) nodes so highly-connected
+    // hubs don't pull each other into a tight ball, but keep them loosely grouped.
+    type LinkEndpoint = string | ClusterNode;
+    type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
+    const isMain = (n: LinkEndpoint) =>
+      typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
+    const linkForce = (fgRef.current.d3Force("link") as unknown) as
+      | (ForceLink<ClusterNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
+      | null;
+    if (linkForce) {
+      linkForce
+        .distance((l) => (isMain(l.source) && isMain(l.target) ? 200 : 36))
+        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
+    }
+    fgRef.current.d3ReheatSimulation();
   }, [ForceGraph, graph]);
   useEffect(() => {
     if (!pulseNodeId) return;
@@ -260,23 +319,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     globalScale: number,
   ) => {
     if (node.x == null || node.y == null) return;
-    // The sun — hub gets a special radial-gradient render, not the normal disc.
-    if (node.id === HUB_ID) {
-      const r = SUN_RADIUS;
-      const grad = ctx.createRadialGradient(node.x, node.y, r * 0.1, node.x, node.y, r);
-      grad.addColorStop(0, "#FFF3B0");
-      grad.addColorStop(0.35, "#FDBA47");
-      grad.addColorStop(0.85, "#F97316");
-      grad.addColorStop(1, "rgba(249,115,22,0)");
-      ctx.shadowColor = "#FDBA47";
-      ctx.shadowBlur = 60;
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      return;
-    }
     const isHub = Boolean(node.is_hub || node.image);
     const base = isHub
       ? Math.max(14, Math.min(28, 10 + Math.sqrt(node.degree) * 1.2))
@@ -341,21 +383,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     return "rgba(255,255,255,0.08)";
   };
 
-  // Draw orbit rings under everything else, once per frame.
-  const renderRings = (ctx: CanvasRenderingContext2D) => {
-    const radii = ringRadii.current;
-    if (!radii.length) return;
-    ctx.save();
-    ctx.lineWidth = 0.6;
-    for (const R of radii) {
-      ctx.beginPath();
-      ctx.arc(0, 0, R, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(180,200,255,0.18)";
-      ctx.stroke();
-    }
-    ctx.restore();
-  };
-
   return (
     <div
       ref={wrapRef}
@@ -397,7 +424,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           width={size.w}
           height={size.h}
           backgroundColor="rgba(0,0,0,0)"
-          onRenderFramePre={renderRings}
           nodeCanvasObject={nodeCanvasObject}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
@@ -437,10 +463,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const t = typeof link.target === "string" ? link.target : link.target.id;
             return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
           }}
-          cooldownTicks={0}
-          d3AlphaDecay={1}
-          d3AlphaMin={1}
-          d3VelocityDecay={1}
+          cooldownTicks={Infinity}
+          d3AlphaDecay={0}
+          d3AlphaMin={0}
+          d3VelocityDecay={0.65}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
@@ -457,7 +483,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
               image: node.image ?? null,
             });
           }}
-          enableNodeDrag={false}
+          enableNodeDrag={true}
         />
       )}
       {!ForceGraph && (
