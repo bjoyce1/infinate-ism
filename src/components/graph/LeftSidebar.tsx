@@ -66,6 +66,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const centroidPull = useGraphStore((s) => s.centroidPull);
   const setCentroidPull = useGraphStore((s) => s.setCentroidPull);
   const resetForceParams = useGraphStore((s) => s.resetForceParams);
+  const layoutSeed = useGraphStore((s) => s.layoutSeed);
+  const setLayoutSeed = useGraphStore((s) => s.setLayoutSeed);
+  const resetLayout = useGraphStore((s) => s.resetLayout);
   const viewMode = useGraphStore((s) => s.viewMode);
   const showLabels = useGraphStore((s) => s.showLabels);
   const setShowLabels = useGraphStore((s) => s.setShowLabels);
