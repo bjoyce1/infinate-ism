@@ -332,8 +332,10 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   crossLink("suc_landmark_south_park", "suc_landmark_screw_house", "contains", 1.5);
   crossLink("suc_landmark_south_park", "site_spc_houston", "houston-scene", 1);
 
-  // Walkable routes from Screwed Up Records & Tapes (8806 Cullen Blvd) to
-  // nearby SUC landmarks. Distances/durations are documented walking estimates.
+  // Walkable routes from the original Screwed Up Records & Tapes location on
+  // Cullen Blvd to nearby SUC landmarks. Distances/durations are documented
+  // walking estimates from the historic shop address.
+
   const walkRoutes: Array<{
     to: string;
     distance: string;
