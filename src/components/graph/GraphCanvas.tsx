@@ -104,6 +104,14 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const angle = -arc + spacing * (idxInRing + 0.5);
       ringOf.set(mains[i].id, { ring, angle });
     }
+    // Anchor Paul Wall next to Swishahouse on the same ring so they consistently
+    // start close without overlapping. Angular offset ≈ 90 world units at ring r.
+    const swisha = ringOf.get("site_swishahouse");
+    if (swisha && ringOf.has("artist_paul_wall")) {
+      const rr = RING_BASE + swisha.ring * RING_GAP;
+      const delta = Math.min(0.6, 90 / Math.max(rr, 1));
+      ringOf.set("artist_paul_wall", { ring: swisha.ring, angle: swisha.angle + delta });
+    }
     const mainIds = new Set(mains.map((m) => m.id));
     const parentOf = new Map<string, string>();
     for (const n of graph.nodes) {
