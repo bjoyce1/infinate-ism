@@ -47,6 +47,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const chargeStrength = useGraphStore((s) => s.chargeStrength);
   const collideRadius = useGraphStore((s) => s.collideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
+  const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
+  const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const layoutResetToken = useGraphStore((s) => s.layoutResetToken);
   // Refs so the injected forces read live values without needing to re-register
@@ -55,13 +58,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const chargeStrengthRef = useRef(chargeStrength);
   const collideRadiusRef = useRef(collideRadius);
   const centroidPullRef = useRef(centroidPull);
+  const ringSpacingRef = useRef(ringSpacing);
+  const sunArcSpreadRef = useRef(sunArcSpread);
+  const childHaloRadiusRef = useRef(childHaloRadius);
   useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
   useEffect(() => { chargeStrengthRef.current = chargeStrength; }, [chargeStrength]);
   useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
   useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
+  useEffect(() => { ringSpacingRef.current = ringSpacing; }, [ringSpacing]);
+  useEffect(() => { sunArcSpreadRef.current = sunArcSpread; }, [sunArcSpread]);
+  useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
   useEffect(() => {
     fgRef.current?.d3ReheatSimulation();
-  }, [linkStrength, chargeStrength, collideRadius, centroidPull]);
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, sunArcSpread, childHaloRadius]);
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
