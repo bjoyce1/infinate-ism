@@ -1,6 +1,7 @@
 import type { GraphNode, NormalizedGraph } from "./types";
 import screwTapeAsset from "@/assets/dj-screw-tape.png.asset.json";
 import screwedUpRecordsAsset from "@/assets/screwed-up-records-and-tapes.png.asset.json";
+import choppedAndScrewedImg from "@/assets/chopped-and-screwed.png.asset.json";
 import screwHouseImg from "@/assets/suc-screw-house.jpg";
 import southParkImg from "@/assets/suc-south-park.jpg";
 import smithvilleImg from "@/assets/suc-smithville.jpg";
@@ -11,6 +12,7 @@ import wreckshopImg from "@/assets/suc-wreckshop.jpg";
 import kbxxImg from "@/assets/suc-kbxx.jpg";
 import astroworldImg from "@/assets/suc-astroworld.jpg";
 import surtInteriorImg from "@/assets/suc-surt-interior.jpg";
+
 
 
 // Promote the existing Screwed Up Click (`suc_hub`) node to its own top-level
@@ -439,5 +441,15 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
   // Sync final nodes array with byId's degree updates.
   const finalNodes = nodes.map((n) => byId.get(n.id) ?? n);
 
+  // Pin the uploaded Chopped & Screwed photo to the technique node.
+  if (byId.has("suc_legacy_chopped_screwed")) {
+    const cs = byId.get("suc_legacy_chopped_screwed")!;
+    const withImage = { ...cs, image: choppedAndScrewedImg.url };
+    byId.set("suc_legacy_chopped_screwed", withImage);
+    const idx = finalNodes.findIndex((n) => n.id === "suc_legacy_chopped_screwed");
+    if (idx >= 0) finalNodes[idx] = withImage;
+  }
+
   return { nodes: finalNodes, links, byId, neighbors, categoryCounts, communities: base.communities };
+
 }
