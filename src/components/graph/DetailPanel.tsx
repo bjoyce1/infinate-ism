@@ -194,12 +194,18 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
           <div className="mb-6 mt-4 rounded-lg overflow-hidden border border-obsidian-border bg-black/40">
             <img
               src={node.image}
-              alt={`${node.label} artwork`}
+              alt={node.alt ?? `${node.label} artwork`}
               className="w-full h-auto object-contain"
               loading="lazy"
             />
+            {node.caption && (
+              <p className="px-3 py-2 text-[11px] leading-relaxed text-white/70 bg-black/60 border-t border-obsidian-border">
+                {node.caption}
+              </p>
+            )}
           </div>
         )}
+
         {node.source_file && (
           <p className="text-sm text-muted-text leading-relaxed mb-8 font-mono break-all">
             {sourceFileIsUrl ? (
