@@ -324,6 +324,14 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                       directions?: string;
                     }>)
                   : [];
+                const walkDistance = (l as unknown as Record<string, unknown>).walk_distance as
+                  | string
+                  | undefined;
+                const walkDuration = (l as unknown as Record<string, unknown>).walk_duration as
+                  | string
+                  | undefined;
+                const hasWalk =
+                  (typeof walkDirections === "string" && walkDirections) || walkDays.length > 0;
                 return (
                   <button
                     key={`${otherId}-${i}`}
@@ -369,6 +377,20 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
                           </li>
                         ))}
                       </ol>
+                    )}
+                    {hasWalk && (
+                      <div className="mt-2 flex justify-end">
+                        <CopyDirectionsButton
+                          asSpan
+                          text={buildDirectionsText(
+                            `${node.label} → ${other.label}`,
+                            walkDistance,
+                            walkDuration,
+                            typeof walkDirections === "string" ? walkDirections : undefined,
+                            walkDays,
+                          )}
+                        />
+                      </div>
                     )}
                   </button>
                 );
