@@ -509,6 +509,40 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </label>
               ))}
             </div>
+            <div className="mt-4 pt-3 border-t border-obsidian-border">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">
+                  Layout Seed
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setLayoutSeed(Math.floor(Math.random() * 1_000_000))}
+                    className="text-[9px] font-mono uppercase tracking-widest text-muted-text hover:text-neon-primary transition-colors cursor-pointer"
+                    title="Randomize seed"
+                  >
+                    Random
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetLayout}
+                    className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 border border-neon-primary/40 text-neon-primary hover:bg-neon-primary/10 rounded transition-colors cursor-pointer"
+                    title="Recompute layout from current seed"
+                  >
+                    Reset Layout
+                  </button>
+                </div>
+              </div>
+              <input
+                type="number"
+                value={layoutSeed}
+                onChange={(e) => setLayoutSeed(Number(e.target.value))}
+                className="w-full px-2 py-1 rounded border border-obsidian-border bg-white/5 text-xs font-mono text-white/90 focus:outline-none focus:border-neon-primary"
+              />
+              <p className="text-[9px] font-mono text-muted-text mt-1 leading-snug">
+                Same seed → same arrangement. Reset re-seeds node positions.
+              </p>
+            </div>
           </div>
 
           {viewMode === "3d" && (
