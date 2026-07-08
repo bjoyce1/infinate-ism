@@ -21,8 +21,8 @@ type State = {
   collideRadius: number;
   centroidPull: number;
   ringSpacing: number;
-  sunArcSpread: number;
-  childHaloRadius: number;
+  ringCount: number;
+  setRingCount: (v: number) => void;
   showOrbitArcs: boolean;
   showSunGlow: boolean;
   layoutSeed: number;
