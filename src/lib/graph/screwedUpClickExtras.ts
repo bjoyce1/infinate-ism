@@ -12,6 +12,22 @@ import wreckshopImg from "@/assets/suc-wreckshop.jpg";
 import kbxxImg from "@/assets/suc-kbxx.jpg";
 import astroworldImg from "@/assets/suc-astroworld.jpg";
 import surtInteriorImg from "@/assets/suc-surt-interior.jpg";
+import screwHouseNightImg from "@/assets/suc-screw-house-night.jpg";
+import southParkStreetImg from "@/assets/suc-south-park-street.jpg";
+import smithvilleDowntownImg from "@/assets/suc-smithville-downtown.jpg";
+import smithvilleSignImg from "@/assets/suc-smithville-sign.jpg";
+import macgregorCourtsImg from "@/assets/suc-macgregor-courts.jpg";
+import macgregorPavilionImg from "@/assets/suc-macgregor-pavilion.jpg";
+import almedaEntranceImg from "@/assets/suc-almeda-entrance.jpg";
+import almedaInteriorImg from "@/assets/suc-almeda-interior.jpg";
+import timmyChanNightImg from "@/assets/suc-timmy-chan-night.jpg";
+import timmyChanFoodImg from "@/assets/suc-timmy-chan-food.jpg";
+import wreckshopStudioImg from "@/assets/suc-wreckshop-studio.jpg";
+import wreckshopOfficeImg from "@/assets/suc-wreckshop-office.jpg";
+import kbxxTowerImg from "@/assets/suc-kbxx-tower.jpg";
+import kbxxBoothImg from "@/assets/suc-kbxx-booth.jpg";
+import astroworldCoasterImg from "@/assets/suc-astroworld-coaster.jpg";
+import astroworldLotImg from "@/assets/suc-astroworld-lot.jpg";
 
 
 
@@ -79,7 +95,7 @@ const LANDMARKS: Landmark[] = [
     relation: "origin-site",
     weight: 3,
     image: screwHouseImg,
-    gallery: [screwHouseImg, southParkImg],
+    gallery: [screwHouseImg, screwHouseNightImg, southParkImg],
   },
   {
     id: "suc_landmark_screwed_up_records",
@@ -111,7 +127,7 @@ const LANDMARKS: Landmark[] = [
     relation: "home-turf",
     weight: 2,
     image: southParkImg,
-    gallery: [southParkImg, macgregorImg],
+    gallery: [southParkImg, southParkStreetImg, macgregorImg],
   },
   {
     id: "suc_landmark_smithville",
@@ -124,7 +140,7 @@ const LANDMARKS: Landmark[] = [
     relation: "birthplace",
     weight: 1.5,
     image: smithvilleImg,
-    gallery: [smithvilleImg],
+    gallery: [smithvilleImg, smithvilleDowntownImg, smithvilleSignImg],
   },
   {
     id: "suc_landmark_macgregor_park",
@@ -137,7 +153,7 @@ const LANDMARKS: Landmark[] = [
     relation: "hangout",
     weight: 1.2,
     image: macgregorImg,
-    gallery: [macgregorImg],
+    gallery: [macgregorImg, macgregorCourtsImg, macgregorPavilionImg],
   },
   {
     id: "suc_landmark_almeda_mall",
@@ -150,7 +166,7 @@ const LANDMARKS: Landmark[] = [
     relation: "landmark",
     weight: 1,
     image: almedaImg,
-    gallery: [almedaImg],
+    gallery: [almedaImg, almedaEntranceImg, almedaInteriorImg],
   },
   {
     id: "suc_landmark_timmy_chan",
@@ -163,7 +179,7 @@ const LANDMARKS: Landmark[] = [
     relation: "landmark",
     weight: 1,
     image: timmyChanImg,
-    gallery: [timmyChanImg],
+    gallery: [timmyChanImg, timmyChanNightImg, timmyChanFoodImg],
   },
   {
     id: "suc_landmark_wreckshop",
@@ -176,7 +192,7 @@ const LANDMARKS: Landmark[] = [
     relation: "affiliated-label",
     weight: 1.5,
     image: wreckshopImg,
-    gallery: [wreckshopImg],
+    gallery: [wreckshopImg, wreckshopStudioImg, wreckshopOfficeImg],
   },
   {
     id: "suc_landmark_kbxx",
@@ -190,7 +206,7 @@ const LANDMARKS: Landmark[] = [
     relation: "broadcast-partner",
     weight: 1.2,
     image: kbxxImg,
-    gallery: [kbxxImg],
+    gallery: [kbxxImg, kbxxTowerImg, kbxxBoothImg],
   },
   {
     id: "suc_landmark_astroworld",
@@ -203,7 +219,7 @@ const LANDMARKS: Landmark[] = [
     relation: "landmark",
     weight: 1,
     image: astroworldImg,
-    gallery: [astroworldImg],
+    gallery: [astroworldImg, astroworldCoasterImg, astroworldLotImg],
   },
 ];
 
