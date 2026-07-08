@@ -6,7 +6,7 @@ export type StreetNode = {
   x: number;
   y: number;
   kind: "downtown" | "hub" | "building";
-  hubId: string; // which district it belongs to (downtown for the hub itself)
+  hubId: string; // id of the HQ node of this neighborhood
   size: number;
 };
 
@@ -35,8 +35,13 @@ export type StreetLayout = {
 
 const HUB_ID = "site_mrcap1_com";
 
-// Deterministic Manhattan grid layout: downtown at origin, hubs on a ring,
-// each hub's children on a small orthogonal grid inside its district.
+// Deterministic Manhattan grid layout, adapted from the standalone
+// build-map.mjs "Street View" builder. Downtown = mrcap1 pinned at origin.
+// Every community becomes a neighborhood block: HQ (most-connected member)
+// sits at the block's center cell, remaining members fill a grid around it.
+// Any non-HQ, non-site-hub node with degree ≥ 10 is exiled to its own
+// private satellite neighborhood orbiting the parent block, connected by
+// an arterial road. Neighborhoods ring-pack outward from downtown.
 export function buildStreetLayout(
   graph: NormalizedGraph,
   hubColorFor: (n: GraphNode) => string,
@@ -44,170 +49,381 @@ export function buildStreetLayout(
   const nodes = new Map<string, StreetNode>();
   const roads: StreetRoad[] = [];
 
-  const hub = graph.byId.get(HUB_ID);
-  if (!hub) {
+  const mainHub = graph.byId.get(HUB_ID);
+  if (!mainHub) {
     return { nodes, roads, bounds: { minX: 0, minY: 0, maxX: 0, maxY: 0 }, hubOrder: [], districts: [] };
   }
 
-  // Place downtown at origin.
-  nodes.set(hub.id, { id: hub.id, node: hub, x: 0, y: 0, kind: "downtown", hubId: hub.id, size: 22 });
+  // ---- constants (scaled ~5× from build-map.mjs for readable canvas units)
+  const GG = 230;        // arterial grid spacing
+  const CELL = 130;      // house cell size
+  const snapG = (v: number) => Math.round(v / GG) * GG;
+  const round1 = (v: number) => Math.round(v * 10) / 10;
 
-  // Collect hub neighborhoods = every direct neighbor of the central hub whose
-  // sub-graph forms a "district". Sort by degree (busiest → nearest ring index).
-  const centerNeighbors = Array.from(graph.neighbors.get(hub.id) ?? []);
-  const hubs = centerNeighbors
-    .map((id) => graph.byId.get(id))
-    .filter((n): n is GraphNode => Boolean(n))
-    .sort((a, b) => b.degree - a.degree);
+  // deterministic PRNG
+  const mulberry32 = (a: number) => () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 
-  const hubOrder = hubs.map((h) => h.id);
+  // ---- group nodes by community
+  type Sat = {
+    hqNode: GraphNode;
+    ids: string[];
+    label: string;
+    cols: number;
+    rows: number;
+    gw: number;
+    gh: number;
+    rb: number;
+    ox: number;
+    oy: number;
+    bx: number;
+    by: number;
+    count: number;
+  };
+  type Comm = {
+    cid: number;
+    members: GraphNode[];
+    order: GraphNode[];
+    hq: GraphNode;
+    layoutIds: string[];
+    sats: Sat[];
+    cols: number;
+    rows: number;
+    gw: number;
+    gh: number;
+    rb: number;
+    rbEff: number;
+    bx: number;
+    by: number;
+    count: number;
+  };
 
-  const cellSize = 90;
-  const districts: StreetLayout["districts"] = [];
-
-  // Count each hub's private children (neighbors that aren't downtown and
-  // aren't themselves top-level hubs). Hubs with 10+ private children get
-  // exiled to an outer ring with more elbow room so their neighborhoods
-  // don't crowd everyone else.
-  const privateChildCount = new Map<string, number>();
-  const privateChildren = new Map<string, GraphNode[]>();
-  for (const h of hubs) {
-    const kids = Array.from(graph.neighbors.get(h.id) ?? [])
-      .filter((id) => id !== HUB_ID && !hubOrder.includes(id))
-      .map((id) => graph.byId.get(id))
-      .filter((n): n is GraphNode => Boolean(n))
-      .sort((a, b) => b.degree - a.degree);
-    privateChildren.set(h.id, kids);
-    privateChildCount.set(h.id, kids.length);
+  const commMap = new Map<number, Comm>();
+  for (const n of graph.nodes) {
+    const cid = n.community ?? -1;
+    let c = commMap.get(cid);
+    if (!c) {
+      c = {
+        cid,
+        members: [],
+        order: [],
+        hq: n,
+        layoutIds: [],
+        sats: [],
+        cols: 1, rows: 1, gw: CELL, gh: CELL, rb: CELL, rbEff: CELL,
+        bx: 0, by: 0, count: 0,
+      };
+      commMap.set(cid, c);
+    }
+    c.members.push(n);
   }
 
-  const BIG_THRESHOLD = 10;
-  const innerHubs = hubs.filter((h) => (privateChildCount.get(h.id) ?? 0) < BIG_THRESHOLD);
-  const outerHubs = hubs.filter((h) => (privateChildCount.get(h.id) ?? 0) >= BIG_THRESHOLD);
+  const isSiteHub = (n: GraphNode) => Boolean(n.is_hub);
+  const commArr = Array.from(commMap.values());
 
-  const innerN = Math.max(1, innerHubs.length);
-  const outerN = Math.max(1, outerHubs.length);
-  const innerRadius = 900 + innerN * 26;
-  // Push big hubs way out, and give them more angular spacing per hub.
-  const outerRadius = innerRadius + 1500 + outerN * 80;
-
-  const placeHub = (h: GraphNode, angle: number, ringRadius: number) => {
-    // Snap hub center to the grid.
-    const rx = Math.round((Math.cos(angle) * ringRadius) / cellSize) * cellSize;
-    const ry = Math.round((Math.sin(angle) * ringRadius) / cellSize) * cellSize;
-
-    nodes.set(h.id, { id: h.id, node: h, x: rx, y: ry, kind: "hub", hubId: h.id, size: 16 });
-
-    const rawChildren = privateChildren.get(h.id) ?? [];
-
-    const count = rawChildren.length;
-    // Square-ish grid; keep it compact so districts don't collide.
-    const cols = Math.max(1, Math.ceil(Math.sqrt(count)));
-    const rows = Math.max(1, Math.ceil(count / cols));
-
-    // District orientation: rotate the grid axes so streets radiate away from
-    // downtown (grid "up" points outward from the hub back toward its center).
-    // We use axis-aligned blocks for a crisp street-map look, then translate
-    // so the hub sits at the district's inner edge (closest to downtown).
-    const blockW = (cols + 1) * cellSize;
-    const blockH = (rows + 1) * cellSize;
-
-    // Outward unit vector (from origin toward hub).
-    const len = Math.hypot(rx, ry) || 1;
-    const ux = rx / len;
-    const uy = ry / len;
-
-    // Grid origin sits one cell "further out" than the hub so the hub anchors
-    // the district's inner corner.
-    const gx0 = rx + ux * cellSize * 1.4 - blockW / 2;
-    const gy0 = ry + uy * cellSize * 1.4 - blockH / 2;
-
-    rawChildren.forEach((c, idx) => {
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      const cx = Math.round((gx0 + (col + 0.5) * cellSize) / 10) * 10;
-      const cy = Math.round((gy0 + (row + 0.5) * cellSize) / 10) * 10;
-      nodes.set(c.id, { id: c.id, node: c, x: cx, y: cy, kind: "building", hubId: h.id, size: 6 });
+  for (const c of commArr) {
+    c.order = [...c.members].sort((a, b) => {
+      const ha = isSiteHub(a) ? 1 : 0;
+      const hb = isSiteHub(b) ? 1 : 0;
+      if (hb !== ha) return hb - ha;
+      if (b.degree !== a.degree) return b.degree - a.degree;
+      return a.id < b.id ? -1 : 1;
     });
+    c.hq = c.order[0];
+  }
 
-    districts.push({
-      hubId: h.id,
-      cx: rx + ux * cellSize * 1.4,
-      cy: ry + uy * cellSize * 1.4,
-      radius: Math.max(blockW, blockH) * 0.55,
-      color: hubColorFor(h),
-    });
+  const downtownCid = mainHub.community ?? -1;
+  const downtownComm = commMap.get(downtownCid);
+  if (downtownComm) {
+    downtownComm.order = [mainHub, ...downtownComm.order.filter((m) => m.id !== mainHub.id)];
+    downtownComm.hq = mainHub;
+  }
+
+  // ---- carve out satellites: non-HQ, non-site-hub nodes with degree ≥ 10
+  const claimed = new Set<string>();
+  for (const c of commArr) {
+    const satNodes = c.order.filter(
+      (m) => m !== c.hq && !isSiteHub(m) && (m.degree || 0) >= 10,
+    );
+    const satIds = new Set(satNodes.map((s) => s.id));
+    for (const s of satNodes) {
+      const kids = Array.from(graph.neighbors.get(s.id) ?? [])
+        .filter(
+          (nid) =>
+            nid !== s.id &&
+            nid !== c.hq.id &&
+            !claimed.has(nid) &&
+            !satIds.has(nid) &&
+            !isSiteHub(graph.byId.get(nid)!) &&
+            (graph.byId.get(nid)?.community ?? -1) === c.cid,
+        )
+        .sort((a, b) => {
+          const da = graph.byId.get(a)?.degree ?? 0;
+          const db = graph.byId.get(b)?.degree ?? 0;
+          if (db !== da) return db - da;
+          return a < b ? -1 : 1;
+        });
+      claimed.add(s.id);
+      kids.forEach((k) => claimed.add(k));
+      c.sats.push({
+        hqNode: s,
+        ids: [s.id, ...kids],
+        label: s.label || s.id,
+        cols: 1, rows: 1, gw: CELL, gh: CELL, rb: CELL,
+        ox: 0, oy: 0, bx: 0, by: 0, count: 0,
+      });
+    }
+    c.layoutIds = c.order.filter((m) => !claimed.has(m.id)).map((m) => m.id);
+  }
+
+  const gridify = (b: { cols: number; rows: number; gw: number; gh: number; rb: number; count: number }, n: number) => {
+    b.count = n;
+    b.cols = Math.ceil(Math.sqrt(n * 1.15));
+    b.rows = Math.ceil(n / b.cols);
+    b.gw = b.cols * CELL;
+    b.gh = b.rows * CELL;
+    b.rb = Math.max(b.gw, b.gh) / 2 + CELL;
   };
 
-  innerHubs.forEach((h, i) => {
-    const angle = (i / innerN) * Math.PI * 2 - Math.PI / 2;
-    placeHub(h, angle, innerRadius);
-  });
-  outerHubs.forEach((h, i) => {
-    // Offset outer ring by half a slot so it doesn't align with inner ring.
-    const angle = ((i + 0.5) / outerN) * Math.PI * 2 - Math.PI / 2;
-    placeHub(h, angle, outerRadius);
-  });
+  // ---- orbit satellites around each parent block
+  for (const c of commArr) {
+    gridify(c, Math.max(1, c.layoutIds.length));
+    for (const s of c.sats) gridify(s, s.ids.length);
+    const rng = mulberry32(500 + c.cid);
+    const sats = [...c.sats].sort((a, b) => {
+      if (b.rb !== a.rb) return b.rb - a.rb;
+      return a.hqNode.id < b.hqNode.id ? -1 : 1;
+    });
+    let i = 0;
+    let baseR = c.rb;
+    let extent = c.rb;
+    while (i < sats.length) {
+      const maxRb = sats[i].rb;
+      const orbR = baseR + GG * 1.6 + maxRb;
+      const phase = rng() * Math.PI * 2;
+      const group: Sat[] = [];
+      let used = 0;
+      while (i + group.length < sats.length) {
+        const s = sats[i + group.length];
+        const w = 2 * Math.asin(Math.min(0.95, (s.rb + GG * 0.8) / orbR));
+        if (used + w > 2 * Math.PI && group.length > 0) break;
+        used += w;
+        group.push(s);
+      }
+      let acc = 0;
+      for (const s of group) {
+        const w = 2 * Math.asin(Math.min(0.95, (s.rb + GG * 0.8) / orbR));
+        const ang = phase + ((acc + w / 2) / Math.max(used, 1e-9)) * Math.min(used, 2 * Math.PI);
+        acc += w;
+        s.ox = Math.cos(ang) * orbR;
+        s.oy = Math.sin(ang) * orbR;
+      }
+      extent = orbR + maxRb;
+      baseR = extent;
+      i += group.length;
+    }
+    c.rbEff = extent + (c.sats.length ? GG : 0);
+  }
 
-  // Route each link as a multi-segment orthogonal polyline that zig-zags in
-  // 2–4 stairs so no two routes are identical and long trips look like real
-  // streets, not a single elbow. The staircase pattern is seeded from the
-  // link's endpoints so it's deterministic across renders.
-  const seeded = (s: string) => {
-    let h = 2166136261;
-    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-    return () => {
-      h = Math.imul(h ^ (h >>> 15), 2246822507);
-      h = Math.imul(h ^ (h >>> 13), 3266489909);
-      h ^= h >>> 16;
-      return ((h >>> 0) % 10000) / 10000;
-    };
-  };
+  // ---- ring-pack neighborhoods around downtown
+  if (downtownComm) {
+    downtownComm.bx = 0;
+    downtownComm.by = 0;
+  }
+  const rest = commArr
+    .filter((c) => c !== downtownComm)
+    .sort((a, b) => {
+      const ah = a.members.some(isSiteHub) ? 1 : 0;
+      const bh = b.members.some(isSiteHub) ? 1 : 0;
+      if (bh !== ah) return bh - ah;
+      return b.members.length - a.members.length;
+    });
 
-  const routeStaircase = (
-    a: { x: number; y: number },
-    b: { x: number; y: number },
-    rand: () => number,
-  ) => {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const dist = Math.hypot(dx, dy);
-    // Number of stairs scales with distance so long roads have more turns.
-    const stairs = Math.max(1, Math.min(4, Math.round(dist / 260) + (rand() < 0.5 ? 0 : 1)));
-    const pts: { x: number; y: number }[] = [{ x: a.x, y: a.y }];
-    let cx = a.x, cy = a.y;
-    // Choose which axis to step on first per stair for variety.
-    const startHoriz = rand() < 0.5;
-    for (let s = 0; s < stairs; s++) {
-      const remaining = stairs - s;
-      // Advance a fractional chunk of the remaining delta, jittered.
-      const jitter = 0.35 + rand() * 0.4;
-      const fx = (b.x - cx) * (1 / remaining) * jitter + (b.x - cx) * (1 / remaining) * (1 - jitter) * (remaining === 1 ? 1 : 0.6);
-      const fy = (b.y - cy) * (1 / remaining) * jitter + (b.y - cy) * (1 / remaining) * (1 - jitter) * (remaining === 1 ? 1 : 0.6);
-      const stepX = remaining === 1 ? b.x - cx : fx;
-      const stepY = remaining === 1 ? b.y - cy : fy;
-      if ((s % 2 === 0) === startHoriz) {
-        cx += stepX;
-        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
-        cy += stepY;
-        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
-      } else {
-        cy += stepY;
-        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
-        cx += stepX;
-        pts.push({ x: Math.round(cx / 10) * 10, y: Math.round(cy / 10) * 10 });
+  let R = (downtownComm?.rbEff ?? CELL) + GG * 4 + (rest[0]?.rbEff ?? 0);
+  let ri = 0;
+  let ringN = 0;
+  while (ri < rest.length) {
+    const rng = mulberry32(700 + ringN);
+    let used = 0;
+    const group: Comm[] = [];
+    let maxRb = 0;
+    while (ri + group.length < rest.length) {
+      const b = rest[ri + group.length];
+      const w = (2 * b.rbEff + GG * 2) / R;
+      if (used + w > 2 * Math.PI && group.length > 0) break;
+      used += w;
+      group.push(b);
+      maxRb = Math.max(maxRb, b.rbEff);
+    }
+    const total = group.reduce((s, b) => s + (2 * b.rbEff + GG * 2) / R, 0);
+    const phase = rng() * Math.PI * 2;
+    let acc = 0;
+    for (const b of group) {
+      const w = (2 * b.rbEff + GG * 2) / R;
+      const ang = phase + ((acc + w / 2) / total) * 2 * Math.PI;
+      acc += w;
+      b.bx = Math.cos(ang) * R;
+      b.by = Math.sin(ang) * R;
+    }
+    ri += group.length;
+    ringN++;
+    R += maxRb + GG * 4 + (rest[ri]?.rbEff ?? 0);
+  }
+
+  // ---- relax block overlaps (downtown pinned)
+  for (let iter = 0; iter < 24; iter++) {
+    for (let a = 0; a < commArr.length; a++) {
+      for (let b = a + 1; b < commArr.length; b++) {
+        const A = commArr[a];
+        const B = commArr[b];
+        const dx = B.bx - A.bx;
+        const dy = B.by - A.by;
+        const dist = Math.hypot(dx, dy) || 1e-3;
+        const min = A.rbEff + B.rbEff + GG;
+        if (dist < min) {
+          const overlap = min - dist;
+          const ux = dx / dist;
+          const uy = dy / dist;
+          const aFix = A === downtownComm;
+          const bFix = B === downtownComm;
+          if (aFix && bFix) continue;
+          const aMove = aFix ? 0 : bFix ? overlap : overlap / 2;
+          const bMove = bFix ? 0 : aFix ? overlap : overlap / 2;
+          A.bx -= ux * aMove;
+          A.by -= uy * aMove;
+          B.bx += ux * bMove;
+          B.by += uy * bMove;
+        }
       }
     }
-    // Ensure the endpoint is exact.
-    const last = pts[pts.length - 1];
-    if (last.x !== b.x || last.y !== b.y) pts.push({ x: b.x, y: b.y });
-    // Collapse consecutive collinear duplicates.
-    const cleaned: { x: number; y: number }[] = [pts[0]];
-    for (let i = 1; i < pts.length; i++) {
-      const p = pts[i];
-      const q = cleaned[cleaned.length - 1];
-      if (p.x === q.x && p.y === q.y) continue;
-      cleaned.push(p);
+  }
+  for (const c of commArr) for (const s of c.sats) {
+    s.bx = c.bx + s.ox;
+    s.by = c.by + s.oy;
+  }
+
+  // ---- assign house cells (HQ takes the centre cell)
+  const spos = new Map<string, [number, number]>();
+  const placeBlock = (
+    b: { bx: number; by: number; cols: number; rows: number; gw: number; gh: number },
+    ids: string[],
+    hqId: string,
+  ) => {
+    const cells: [number, number][] = [];
+    for (let r = 0; r < b.rows; r++) {
+      for (let col = 0; col < b.cols; col++) {
+        cells.push([
+          b.bx - b.gw / 2 + CELL / 2 + col * CELL,
+          b.by - b.gh / 2 + CELL / 2 + r * CELL,
+        ]);
+      }
+    }
+    let ci = 0;
+    let best = Infinity;
+    cells.forEach((p, idx) => {
+      const d = (p[0] - b.bx) ** 2 + (p[1] - b.by) ** 2;
+      if (d < best) { best = d; ci = idx; }
+    });
+    const ordered = [hqId, ...ids.filter((id) => id !== hqId)];
+    spos.set(ordered[0], cells[ci]);
+    let k = 0;
+    for (let j = 1; j < ordered.length; j++) {
+      if (k === ci) k++;
+      spos.set(ordered[j], cells[Math.min(k, cells.length - 1)]);
+      k++;
+    }
+  };
+  for (const c of commArr) {
+    placeBlock(c, c.layoutIds, c.hq.id);
+    for (const s of c.sats) placeBlock(s, s.ids, s.hqNode.id);
+  }
+  spos.set(mainHub.id, [0, 0]);
+
+  // ---- emit StreetNodes
+  const hqSet = new Set(commArr.map((c) => c.hq.id));
+  const satHqSet = new Set<string>();
+  for (const c of commArr) for (const s of c.sats) satHqSet.add(s.hqNode.id);
+
+  for (const n of graph.nodes) {
+    const p = spos.get(n.id);
+    if (!p) continue;
+    let kind: StreetNode["kind"] = "building";
+    let size = 6;
+    if (n.id === mainHub.id) {
+      kind = "downtown";
+      size = 22;
+    } else if (hqSet.has(n.id) || satHqSet.has(n.id) || isSiteHub(n)) {
+      kind = "hub";
+      size = 16;
+    }
+    // which neighborhood this node belongs to (for hubId back-reference)
+    const cid = n.community ?? -1;
+    const c = commMap.get(cid);
+    const hqId = c?.hq.id ?? n.id;
+    nodes.set(n.id, { id: n.id, node: n, x: round1(p[0]), y: round1(p[1]), kind, hubId: hqId, size });
+  }
+
+  // ---- districts (halos): one per community block + one per satellite
+  const districts: StreetLayout["districts"] = [];
+  const hubOrder: string[] = [];
+  for (const c of commArr) {
+    hubOrder.push(c.hq.id);
+    districts.push({
+      hubId: c.hq.id,
+      cx: c.bx,
+      cy: c.by,
+      radius: Math.max(c.gw, c.gh) * 0.7 + CELL,
+      color: hubColorFor(c.hq),
+    });
+    for (const s of c.sats) {
+      districts.push({
+        hubId: s.hqNode.id,
+        cx: s.bx,
+        cy: s.by,
+        radius: Math.max(s.gw, s.gh) * 0.7 + CELL,
+        color: hubColorFor(s.hqNode),
+      });
+    }
+  }
+
+  // ---- Manhattan router: single L/Z bend snapped to the arterial grid
+  const routePolyline = (
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+    seed: number,
+  ): { x: number; y: number }[] => {
+    const rand = mulberry32(seed >>> 0);
+    const dx = bx - ax;
+    const dy = by - ay;
+    if (Math.abs(dx) < GG * 0.5 || Math.abs(dy) < GG * 0.5) {
+      return [
+        { x: round1(ax), y: round1(ay) },
+        { x: round1(bx), y: round1(by) },
+      ];
+    }
+    const f = 0.28 + rand() * 0.44;
+    const pts: [number, number][] = [[ax, ay]];
+    if (rand() < 0.5) {
+      const mx = snapG(ax + dx * f);
+      pts.push([mx, ay], [mx, by], [bx, by]);
+    } else {
+      const my = snapG(ay + dy * f);
+      pts.push([ax, my], [bx, my], [bx, by]);
+    }
+    // collapse collinear duplicates
+    const cleaned: { x: number; y: number }[] = [];
+    for (const [x, y] of pts) {
+      const rx = round1(x);
+      const ry = round1(y);
+      const last = cleaned[cleaned.length - 1];
+      if (!last || last.x !== rx || last.y !== ry) cleaned.push({ x: rx, y: ry });
     }
     return cleaned;
   };
@@ -217,9 +433,7 @@ export function buildStreetLayout(
     const a = nodes.get(l.source);
     const b = nodes.get(l.target);
     if (!a || !b) continue;
-
-    const rand = seeded(`${l.source}|${l.target}|${i}`);
-    const points = routeStaircase({ x: a.x, y: a.y }, { x: b.x, y: b.y }, rand);
+    const points = routePolyline(a.x, a.y, b.x, b.y, i * 2 + 1);
     let length = 0;
     for (let p = 1; p < points.length; p++) {
       length += Math.hypot(points[p].x - points[p - 1].x, points[p].y - points[p - 1].y);
@@ -240,7 +454,52 @@ export function buildStreetLayout(
     });
   }
 
-  // Bounds
+  // ---- arterial roads from downtown → each community HQ (highway tier)
+  const dtNode = nodes.get(mainHub.id);
+  if (dtNode) {
+    for (const c of commArr) {
+      if (c === downtownComm) continue;
+      const hq = nodes.get(c.hq.id);
+      if (!hq) continue;
+      const pts = routePolyline(0, 0, hq.x, hq.y, 90000 + c.cid);
+      let length = 0;
+      for (let p = 1; p < pts.length; p++) {
+        length += Math.hypot(pts[p].x - pts[p - 1].x, pts[p].y - pts[p - 1].y);
+      }
+      roads.push({
+        id: `arterial__${mainHub.id}__${c.hq.id}`,
+        from: mainHub.id,
+        to: c.hq.id,
+        points: pts,
+        length,
+        kind: "highway",
+      });
+    }
+  }
+  // ---- satellite connector roads (parent HQ → satellite HQ)
+  let ai = 0;
+  for (const c of commArr) {
+    for (const s of c.sats) {
+      const parentHq = nodes.get(c.hq.id);
+      const satHq = nodes.get(s.hqNode.id);
+      if (!parentHq || !satHq) continue;
+      const pts = routePolyline(parentHq.x, parentHq.y, satHq.x, satHq.y, 95000 + ai++);
+      let length = 0;
+      for (let p = 1; p < pts.length; p++) {
+        length += Math.hypot(pts[p].x - pts[p - 1].x, pts[p].y - pts[p - 1].y);
+      }
+      roads.push({
+        id: `satlink__${c.hq.id}__${s.hqNode.id}`,
+        from: c.hq.id,
+        to: s.hqNode.id,
+        points: pts,
+        length,
+        kind: "street",
+      });
+    }
+  }
+
+  // ---- bounds
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   nodes.forEach((n) => {
     if (n.x < minX) minX = n.x;
@@ -248,7 +507,8 @@ export function buildStreetLayout(
     if (n.x > maxX) maxX = n.x;
     if (n.y > maxY) maxY = n.y;
   });
-  const pad = 200;
+  if (!isFinite(minX)) { minX = -CELL; minY = -CELL; maxX = CELL; maxY = CELL; }
+  const pad = GG * 2;
   return {
     nodes,
     roads,
