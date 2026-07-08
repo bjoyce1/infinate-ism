@@ -23,6 +23,8 @@ type State = {
   ringSpacing: number;
   sunArcSpread: number;
   childHaloRadius: number;
+  ringCount: number;
+  setRingCount: (v: number) => void;
   showOrbitArcs: boolean;
   showSunGlow: boolean;
   layoutSeed: number;
@@ -112,8 +114,9 @@ export const useGraphStore = create<State>()(
   ringSpacing: 1,
   sunArcSpread: 1,
   childHaloRadius: 1,
-      showOrbitArcs: true,
-      showSunGlow: true,
+  ringCount: 6,
+  showOrbitArcs: true,
+  showSunGlow: true,
       layoutSeed: 1337,
   layoutResetToken: 0,
   showLabels: true,
@@ -161,20 +164,22 @@ export const useGraphStore = create<State>()(
   setRingSpacing: (v) => set({ ringSpacing: v }),
   setSunArcSpread: (v) => set({ sunArcSpread: v }),
   setChildHaloRadius: (v) => set({ childHaloRadius: v }),
-      setShowOrbitArcs: (v) => set({ showOrbitArcs: v }),
-      setShowSunGlow: (v) => set({ showSunGlow: v }),
-      resetForceParams: () =>
+  setRingCount: (v) => set({ ringCount: Math.max(1, Math.min(20, Math.round(v))) }),
+  setShowOrbitArcs: (v) => set({ showOrbitArcs: v }),
+  setShowSunGlow: (v) => set({ showSunGlow: v }),
+  resetForceParams: () =>
     set({
       linkStrength: 1,
       chargeStrength: 1,
       collideRadius: 1,
       centroidPull: 1,
-        ringSpacing: 1,
-        sunArcSpread: 1,
-        childHaloRadius: 1,
-        showOrbitArcs: true,
-        showSunGlow: true,
-      }),
+      ringSpacing: 1,
+      sunArcSpread: 1,
+      childHaloRadius: 1,
+      ringCount: 6,
+      showOrbitArcs: true,
+      showSunGlow: true,
+    }),
   setLayoutSeed: (v) => set({ layoutSeed: Math.floor(v) || 1 }),
   resetLayout: () => set((s) => ({ layoutResetToken: s.layoutResetToken + 1 })),
   setShowLabels: (v) => set({ showLabels: v }),

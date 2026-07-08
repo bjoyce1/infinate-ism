@@ -71,6 +71,8 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setSunArcSpread = useGraphStore((s) => s.setSunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
+  const ringCount = useGraphStore((s) => s.ringCount);
+  const setRingCount = useGraphStore((s) => s.setRingCount);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
   const setShowOrbitArcs = useGraphStore((s) => s.setShowOrbitArcs);
   const showSunGlow = useGraphStore((s) => s.showSunGlow);
@@ -497,18 +499,19 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             </div>
             <div className="space-y-3">
               {[
-                { label: "Link strength", value: linkStrength, set: setLinkStrength, min: 0, max: 3, step: 0.05 },
-                { label: "Charge", value: chargeStrength, set: setChargeStrength, min: 0, max: 3, step: 0.05 },
-                { label: "Collide radius", value: collideRadius, set: setCollideRadius, min: 0, max: 4, step: 0.1 },
-                { label: "Centroid pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05 },
-                { label: "Ring spacing", value: ringSpacing, set: setRingSpacing, min: 0.4, max: 2.5, step: 0.05 },
-                { label: "Sun arc spread", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05 },
-                { label: "Child halo", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05 },
+                { label: "Link strength", value: linkStrength, set: setLinkStrength, min: 0, max: 3, step: 0.05, suffix: "×" },
+                { label: "Charge", value: chargeStrength, set: setChargeStrength, min: 0, max: 3, step: 0.05, suffix: "×" },
+                { label: "Collide radius", value: collideRadius, set: setCollideRadius, min: 0, max: 4, step: 0.1, suffix: "×" },
+                { label: "Centroid pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05, suffix: "×" },
+                { label: "Ring spacing", value: ringSpacing, set: setRingSpacing, min: 0.4, max: 2.5, step: 0.05, suffix: "×" },
+                { label: "Ring count", value: ringCount, set: setRingCount, min: 1, max: 12, step: 1, suffix: "" },
+                { label: "Sun arc spread", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05, suffix: "×" },
+                { label: "Child halo", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05, suffix: "×" },
               ].map((s) => (
                 <label key={s.label} className="block">
                   <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
                     <span>{s.label}</span>
-                    <span>{s.value.toFixed(2)}×</span>
+                    <span>{s.step === 1 ? s.value.toFixed(0) : s.value.toFixed(2)}{s.suffix}</span>
                   </div>
                   <input
                     type="range"

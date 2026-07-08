@@ -60,6 +60,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const collideRadius = useGraphStore((s) => s.collideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
   const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const ringCount = useGraphStore((s) => s.ringCount);
   const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
@@ -84,7 +85,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
   useEffect(() => {
     fgRef.current?.d3ReheatSimulation();
-  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, sunArcSpread, childHaloRadius]);
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius]);
 
   // Build the solar-system plan: rank main nodes by degree, spread them across
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
@@ -95,8 +96,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
       .slice()
       .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
-    const ringCount = Math.max(3, Math.ceil(Math.sqrt(Math.max(mains.length, 1))));
-    const perRing = Math.ceil(mains.length / ringCount);
+    const effectiveRingCount = Math.max(1, Math.min(mains.length, ringCount));
+    const perRing = Math.ceil(mains.length / effectiveRingCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
     for (let i = 0; i < mains.length; i++) {
       const ring = Math.floor(i / perRing);
@@ -130,8 +131,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       }
       if (best) parentOf.set(n.id, best);
     }
-    return { ringOf, parentOf, ringCount, arc };
-  }, [graph, sunArcSpread]);
+    return { ringOf, parentOf, ringCount: effectiveRingCount, arc };
+  }, [graph, sunArcSpread, ringCount]);
   const solarPlanRef = useRef(solarPlan);
   useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const orbitLayoutRef = useRef(orbitLayout);
