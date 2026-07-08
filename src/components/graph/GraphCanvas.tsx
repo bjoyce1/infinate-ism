@@ -18,6 +18,18 @@ type ForceGraphHandle = {
 
 const HUB_ID = "site_mrcap1_com";
 
+// Solar-system layout constants (world units).
+const RING_BASE = 220;
+const RING_GAP = 150;
+const HUB_OFFSET = 60; // sun sits a bit down-left of origin so it reads as bottom-left
+
+type SolarPlan = {
+  ringOf: Map<string, { ring: number; angle: number }>;
+  parentOf: Map<string, string>; // child id -> parent main id
+  ringCount: number;
+  arc: number;
+};
+
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
   const wrapRef = useRef<HTMLDivElement>(null);
