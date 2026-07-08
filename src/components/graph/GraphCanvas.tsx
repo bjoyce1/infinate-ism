@@ -221,7 +221,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     // Loosen links between main (hub / image) nodes so highly-connected
     // hubs don't pull each other into a tight ball, but keep them loosely grouped.
     type LinkEndpoint = string | ClusterNode;
-    type SimLink = { source: LinkEndpoint; target: LinkEndpoint };
+    type SimLink = { source: LinkEndpoint; target: LinkEndpoint; weight?: number };
     const isMain = (n: LinkEndpoint) =>
       typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
     const linkForce = (fgRef.current.d3Force("link") as unknown) as
@@ -229,8 +229,21 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       | null;
     if (linkForce) {
       linkForce
-        .distance((l) => (isMain(l.source) && isMain(l.target) ? 200 : 36))
-        .strength((l) => (isMain(l.source) && isMain(l.target) ? 0.02 : 0.55));
+        .distance((l) => {
+          if (isMain(l.source) && isMain(l.target)) {
+            // Heavier weight pulls two main nodes closer together.
+            const w = Math.max(1, l.weight ?? 1);
+            return Math.max(60, 220 / Math.sqrt(w));
+          }
+          return 36;
+        })
+        .strength((l) => {
+          if (isMain(l.source) && isMain(l.target)) {
+            const w = Math.max(1, l.weight ?? 1);
+            return Math.min(0.5, 0.02 * w);
+          }
+          return 0.55;
+        });
     }
     fgRef.current.d3ReheatSimulation();
   }, [ForceGraph, graph]);
