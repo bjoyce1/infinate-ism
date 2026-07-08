@@ -71,6 +71,10 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setSunArcSpread = useGraphStore((s) => s.setSunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
+  const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
+  const setShowOrbitArcs = useGraphStore((s) => s.setShowOrbitArcs);
+  const showSunGlow = useGraphStore((s) => s.showSunGlow);
+  const setShowSunGlow = useGraphStore((s) => s.setShowSunGlow);
   const resetForceParams = useGraphStore((s) => s.resetForceParams);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const setLayoutSeed = useGraphStore((s) => s.setLayoutSeed);
@@ -517,6 +521,48 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                   />
                 </label>
               ))}
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Orbit arcs</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showOrbitArcs}
+                  onClick={() => setShowOrbitArcs(!showOrbitArcs)}
+                  className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer ${
+                    showOrbitArcs
+                      ? "bg-neon-primary/30 border-neon-primary"
+                      : "bg-white/5 border-obsidian-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
+                      showOrbitArcs ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Sun glow</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showSunGlow}
+                  onClick={() => setShowSunGlow(!showSunGlow)}
+                  className={`relative h-5 w-9 rounded-full border transition-colors cursor-pointer ${
+                    showSunGlow
+                      ? "bg-neon-primary/30 border-neon-primary"
+                      : "bg-white/5 border-obsidian-border"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-3.5 rounded-full transition-transform ${
+                      showSunGlow ? "translate-x-4 bg-neon-primary" : "translate-x-0.5 bg-white/60"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             <div className="mt-4 pt-3 border-t border-obsidian-border">
               <div className="flex items-center justify-between mb-2">
