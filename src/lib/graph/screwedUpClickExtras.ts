@@ -54,11 +54,15 @@ type Landmark = {
   description: string;
   tags: string[];
   url?: string;
+  phone?: string;
+  hours?: string;
+  email?: string;
   relation: string;
   weight?: number;
   image?: string;
   gallery?: string[];
 };
+
 
 // Real Houston places tied to the Screwed Up Click origin story. Each becomes
 // a "building" inside the SUC neighborhood — the street layout renders every
