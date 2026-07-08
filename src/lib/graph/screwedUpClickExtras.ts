@@ -244,12 +244,26 @@ export function withScrewedUpClick(base: NormalizedGraph): NormalizedGraph {
     else if (n.id === SUC_HUB)
       nodes[i] = { ...n, ...SUC_PROFILE, degree: (n.degree ?? 0) + degreeBump, is_hub: true };
     else if (n.id === "suc_legacy_screw_tapes")
-      nodes[i] = { ...n, image: screwTapeAsset.url, artwork: screwTapeAsset.url };
+      nodes[i] = {
+        ...n,
+        image: screwTapeAsset.url,
+        artwork: screwTapeAsset.url,
+        alt: "Black Maxell XLI 100 cassette tape hand-labeled 'DJ Screw June 27 Fool' — a physical Screwed Up Click grey tape.",
+        caption: "A surviving grey tape from the Screw House era, slowed and chopped by DJ Screw.",
+      };
   }
   {
     const tape = byId.get("suc_legacy_screw_tapes");
-    if (tape) byId.set(tape.id, { ...tape, image: screwTapeAsset.url, artwork: screwTapeAsset.url });
+    if (tape)
+      byId.set(tape.id, {
+        ...tape,
+        image: screwTapeAsset.url,
+        artwork: screwTapeAsset.url,
+        alt: "Black Maxell XLI 100 cassette tape hand-labeled 'DJ Screw June 27 Fool' — a physical Screwed Up Click grey tape.",
+        caption: "A surviving grey tape from the Screw House era, slowed and chopped by DJ Screw.",
+      });
   }
+
 
   // Add landmark nodes + wire them to the SUC HQ (skip if already merged).
   for (const lm of LANDMARKS) {
