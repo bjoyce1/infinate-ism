@@ -74,7 +74,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const collideRadiusRef = useRef(collideRadius);
   const centroidPullRef = useRef(centroidPull);
   const ringSpacingRef = useRef(ringSpacing);
-  const ringCountRef = useRef(ringCount);
   const sunArcSpreadRef = useRef(sunArcSpread);
   const childHaloRadiusRef = useRef(childHaloRadius);
   useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
@@ -82,7 +81,6 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
   useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
   useEffect(() => { ringSpacingRef.current = ringSpacing; }, [ringSpacing]);
-  useEffect(() => { ringCountRef.current = ringCount; }, [ringCount]);
   useEffect(() => { sunArcSpreadRef.current = sunArcSpread; }, [sunArcSpread]);
   useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
   useEffect(() => {
