@@ -43,6 +43,23 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const spawnOrbitRadius = useGraphStore((s) => s.spawnOrbitRadius);
   const spawnOrbitSpeed = useGraphStore((s) => s.spawnOrbitSpeed);
   const orbitLayout = useGraphStore((s) => s.orbitLayout);
+  const linkStrength = useGraphStore((s) => s.linkStrength);
+  const chargeStrength = useGraphStore((s) => s.chargeStrength);
+  const collideRadius = useGraphStore((s) => s.collideRadius);
+  const centroidPull = useGraphStore((s) => s.centroidPull);
+  // Refs so the injected forces read live values without needing to re-register
+  // (re-registering resets particle motion and jitters the layout).
+  const linkStrengthRef = useRef(linkStrength);
+  const chargeStrengthRef = useRef(chargeStrength);
+  const collideRadiusRef = useRef(collideRadius);
+  const centroidPullRef = useRef(centroidPull);
+  useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
+  useEffect(() => { chargeStrengthRef.current = chargeStrength; }, [chargeStrength]);
+  useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
+  useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
+  useEffect(() => {
+    fgRef.current?.d3ReheatSimulation();
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull]);
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
