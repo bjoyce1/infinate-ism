@@ -60,6 +60,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const collideRadius = useGraphStore((s) => s.collideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
   const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const ringCount = useGraphStore((s) => s.ringCount);
   const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
   const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const showOrbitArcs = useGraphStore((s) => s.showOrbitArcs);
