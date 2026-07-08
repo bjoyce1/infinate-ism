@@ -99,7 +99,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       .slice()
       .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
     const effectiveRingCount = Math.max(1, Math.min(mains.length, ringCount));
-    const perRing = Math.ceil(mains.length / ringCount);
+    const perRing = Math.ceil(mains.length / effectiveRingCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
     for (let i = 0; i < mains.length; i++) {
       const ring = Math.floor(i / perRing);
@@ -133,7 +133,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       }
       if (best) parentOf.set(n.id, best);
     }
-    return { ringOf, parentOf, ringCount, arc };
+    return { ringOf, parentOf, ringCount: effectiveRingCount, arc };
   }, [graph, sunArcSpread, ringCount]);
   const solarPlanRef = useRef(solarPlan);
   useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
