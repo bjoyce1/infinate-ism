@@ -102,7 +102,9 @@ export function withSwishahouse(base: NormalizedGraph): NormalizedGraph {
 
   // Cross-links into existing Houston rap graph.
   // Strong pull: Paul Wall broke out of Swishahouse — keep him close to the hub.
-  addLink(SWISHA_HUB, "artist_paul_wall", "roster-alumnus", 8);
+  // Weight 14 → link distance ≈ 220/√14 ≈ 59, strength capped at 0.5, so the
+  // simulation holds them adjacent without ever letting the sprites overlap.
+  addLink(SWISHA_HUB, "artist_paul_wall", "roster-alumnus", 14);
   addLink(SWISHA_HUB, "suc_member_lil_keke", "houston-scene", 1);
   addLink(SWISHA_HUB, "site_spc_houston", "houston-scene", 1.5);
   addLink(SWISHA_HUB, "spc_artist_dj_screw", "chopped-and-screwed-lineage", 1.5);
