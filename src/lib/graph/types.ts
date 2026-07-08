@@ -48,6 +48,10 @@ export type GraphLink = {
   target: string;
   relation?: string;
   weight?: number;
+  walk_distance?: string;
+  walk_duration?: string;
+  walk_directions?: string;
+  walk_days?: Array<{ label?: string; distance?: string; duration?: string; directions?: string }>;
 };
 
 export type NormalizedGraph = {
