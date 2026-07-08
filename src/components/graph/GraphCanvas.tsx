@@ -74,6 +74,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const collideRadiusRef = useRef(collideRadius);
   const centroidPullRef = useRef(centroidPull);
   const ringSpacingRef = useRef(ringSpacing);
+  const ringCountRef = useRef(ringCount);
   const sunArcSpreadRef = useRef(sunArcSpread);
   const childHaloRadiusRef = useRef(childHaloRadius);
   useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
@@ -81,11 +82,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
   useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
   useEffect(() => { ringSpacingRef.current = ringSpacing; }, [ringSpacing]);
+  useEffect(() => { ringCountRef.current = ringCount; }, [ringCount]);
   useEffect(() => { sunArcSpreadRef.current = sunArcSpread; }, [sunArcSpread]);
   useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
   useEffect(() => {
     fgRef.current?.d3ReheatSimulation();
-  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, sunArcSpread, childHaloRadius]);
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius]);
 
   // Build the solar-system plan: rank main nodes by degree, spread them across
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
