@@ -450,6 +450,15 @@ export function buildStreetLayout(
         : a.kind === "building" && b.kind === "building"
           ? "alley"
           : "street";
+    const walk =
+      l.walk_directions || l.walk_distance || l.walk_duration || l.walk_days
+        ? {
+            distance: l.walk_distance,
+            duration: l.walk_duration,
+            directions: l.walk_directions,
+            days: l.walk_days,
+          }
+        : undefined;
     roads.push({
       id: `${l.source}__${l.target}__${i}`,
       from: l.source,
@@ -457,6 +466,7 @@ export function buildStreetLayout(
       points,
       length,
       kind,
+      walk,
     });
   }
 
