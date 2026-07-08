@@ -22,6 +22,7 @@ import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminScrapeRouteImport } from './routes/admin.scrape'
 import { Route as AdminPointblankRouteImport } from './routes/admin.pointblank'
 import { Route as AdminImagesRouteImport } from './routes/admin.images'
+import { Route as AuthenticatedResourcesRouteImport } from './routes/_authenticated/resources'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
@@ -98,6 +99,11 @@ const AdminImagesRoute = AdminImagesRouteImport.update({
   path: '/images',
   getParentRoute: () => AdminRoute,
 } as any)
+const AuthenticatedResourcesRoute = AuthenticatedResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
   id: '/prompts',
   path: '/prompts',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/resources': typeof AuthenticatedResourcesRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/resources': typeof AuthenticatedResourcesRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
+  '/_authenticated/resources': typeof AuthenticatedResourcesRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/pointblank': typeof AdminPointblankRoute
   '/admin/scrape': typeof AdminScrapeRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/projects'
     | '/prompts'
+    | '/resources'
     | '/admin/images'
     | '/admin/pointblank'
     | '/admin/scrape'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/projects'
     | '/prompts'
+    | '/resources'
     | '/admin/images'
     | '/admin/pointblank'
     | '/admin/scrape'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inbox'
     | '/_authenticated/projects'
     | '/_authenticated/prompts'
+    | '/_authenticated/resources'
     | '/admin/images'
     | '/admin/pointblank'
     | '/admin/scrape'
@@ -422,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImagesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_authenticated/resources': {
+      id: '/_authenticated/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof AuthenticatedResourcesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/prompts': {
       id: '/_authenticated/prompts'
       path: '/prompts'
@@ -522,6 +541,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRouteWithChildren
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
+  AuthenticatedResourcesRoute: typeof AuthenticatedResourcesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -531,6 +551,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRouteWithChildren,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
+  AuthenticatedResourcesRoute: AuthenticatedResourcesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
