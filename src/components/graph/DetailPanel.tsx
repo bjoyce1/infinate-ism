@@ -58,7 +58,10 @@ export function DetailPanel({ graph }: { graph: NormalizedGraph }) {
     "image",
     "artwork",
     "gallery",
+    "alt",
+    "caption",
   ]);
+
   const galleryRaw = (node as Record<string, unknown>).gallery;
   const gallery: string[] = Array.isArray(galleryRaw)
     ? galleryRaw.filter((v): v is string => typeof v === "string")
