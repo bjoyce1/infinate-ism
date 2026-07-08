@@ -18,12 +18,13 @@ export const getDashboard = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const [projects, tasks, captures, clients, areas] = await Promise.all([
+    const [projects, tasks, captures, clients, areas, notes] = await Promise.all([
       supabase.from("projects").select("*").eq("user_id", userId).order("updated_at", { ascending: false }),
       supabase.from("tasks").select("*").eq("user_id", userId).in("status", ["todo", "doing"]).order("due_date", { ascending: true, nullsFirst: false }).limit(50),
       supabase.from("captures").select("*").eq("user_id", userId).eq("status", "inbox").order("created_at", { ascending: false }).limit(10),
       supabase.from("clients").select("*").eq("user_id", userId).eq("is_archived", false),
       supabase.from("areas").select("*").eq("user_id", userId).eq("is_archived", false),
+      supabase.from("notes").select("*").eq("user_id", userId).eq("is_archived", false).order("updated_at", { ascending: false }).limit(100),
     ]);
     return {
       projects: projects.data ?? [],
@@ -31,6 +32,7 @@ export const getDashboard = createServerFn({ method: "POST" })
       captures: captures.data ?? [],
       clients: clients.data ?? [],
       areas: areas.data ?? [],
+      notes: notes.data ?? [],
     };
   });
 
