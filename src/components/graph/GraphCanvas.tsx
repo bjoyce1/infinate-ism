@@ -21,7 +21,7 @@ const HUB_ID = "site_mrcap1_com";
 // Solar-system layout constants (world units).
 const RING_BASE = 220;
 const RING_GAP = 150;
-const HUB_OFFSET = 60; // sun sits a bit down-left of origin so it reads as bottom-left
+const HUB_OFFSET = 0; // Sun at origin; planets in upper-right arc naturally place Sun at bottom-left of the fitted view
 
 type SolarPlan = {
   ringOf: Map<string, { ring: number; angle: number }>;
