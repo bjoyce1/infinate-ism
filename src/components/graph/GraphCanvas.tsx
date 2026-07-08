@@ -18,6 +18,18 @@ type ForceGraphHandle = {
 
 const HUB_ID = "site_mrcap1_com";
 
+// Solar-system layout constants (world units).
+const RING_BASE = 220;
+const RING_GAP = 150;
+const HUB_OFFSET = 0; // Sun at origin; planets in upper-right arc naturally place Sun at bottom-left of the fitted view
+
+type SolarPlan = {
+  ringOf: Map<string, { ring: number; angle: number }>;
+  parentOf: Map<string, string>; // child id -> parent main id
+  ringCount: number;
+  arc: number;
+};
+
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -47,6 +59,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const chargeStrength = useGraphStore((s) => s.chargeStrength);
   const collideRadius = useGraphStore((s) => s.collideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
+  const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
+  const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const layoutResetToken = useGraphStore((s) => s.layoutResetToken);
   // Refs so the injected forces read live values without needing to re-register
@@ -55,13 +70,60 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const chargeStrengthRef = useRef(chargeStrength);
   const collideRadiusRef = useRef(collideRadius);
   const centroidPullRef = useRef(centroidPull);
+  const ringSpacingRef = useRef(ringSpacing);
+  const sunArcSpreadRef = useRef(sunArcSpread);
+  const childHaloRadiusRef = useRef(childHaloRadius);
   useEffect(() => { linkStrengthRef.current = linkStrength; }, [linkStrength]);
   useEffect(() => { chargeStrengthRef.current = chargeStrength; }, [chargeStrength]);
   useEffect(() => { collideRadiusRef.current = collideRadius; }, [collideRadius]);
   useEffect(() => { centroidPullRef.current = centroidPull; }, [centroidPull]);
+  useEffect(() => { ringSpacingRef.current = ringSpacing; }, [ringSpacing]);
+  useEffect(() => { sunArcSpreadRef.current = sunArcSpread; }, [sunArcSpread]);
+  useEffect(() => { childHaloRadiusRef.current = childHaloRadius; }, [childHaloRadius]);
   useEffect(() => {
     fgRef.current?.d3ReheatSimulation();
-  }, [linkStrength, chargeStrength, collideRadius, centroidPull]);
+  }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, sunArcSpread, childHaloRadius]);
+
+  // Build the solar-system plan: rank main nodes by degree, spread them across
+  // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
+  // node is attached to its most-connected main-node neighbor.
+  const solarPlan = useMemo<SolarPlan>(() => {
+    const arc = (Math.PI / 2) * sunArcSpread;
+    const mains = graph.nodes
+      .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
+      .slice()
+      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
+    const ringCount = Math.max(3, Math.ceil(Math.sqrt(Math.max(mains.length, 1))));
+    const perRing = Math.ceil(mains.length / ringCount);
+    const ringOf = new Map<string, { ring: number; angle: number }>();
+    for (let i = 0; i < mains.length; i++) {
+      const ring = Math.floor(i / perRing);
+      const idxInRing = i % perRing;
+      const countInRing = Math.min(perRing, mains.length - ring * perRing);
+      const spacing = arc / Math.max(countInRing, 1);
+      const angle = -arc + spacing * (idxInRing + 0.5);
+      ringOf.set(mains[i].id, { ring, angle });
+    }
+    const mainIds = new Set(mains.map((m) => m.id));
+    const parentOf = new Map<string, string>();
+    for (const n of graph.nodes) {
+      if (n.id === HUB_ID) continue;
+      if (mainIds.has(n.id)) continue;
+      const nbrs = graph.neighbors.get(n.id);
+      if (!nbrs) continue;
+      let best: string | null = null;
+      let bestDeg = -1;
+      for (const nb of nbrs) {
+        if (!mainIds.has(nb)) continue;
+        const d = graph.byId.get(nb)?.degree ?? 0;
+        if (d > bestDeg) { bestDeg = d; best = nb; }
+      }
+      if (best) parentOf.set(n.id, best);
+    }
+    return { ringOf, parentOf, ringCount, arc };
+  }, [graph, sunArcSpread]);
+  const solarPlanRef = useRef(solarPlan);
+  useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
@@ -77,18 +139,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => {
     if (!orbitLayout) return;
     type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
-
-    // Seed positions: nodes in the same community sit near each other on a
-    // wide circle. The hub goes at origin (soft-pinned, not hard-pinned, so
-    // it can breathe with its cluster).
-    const commKeys: (number | string)[] = [];
-    const commIndex = new Map<number | string, number>();
-    for (const n of graph.nodes) {
-      const k = n.community ?? "__none";
-      if (!commIndex.has(k)) { commIndex.set(k, commKeys.length); commKeys.push(k); }
-    }
-    const N = Math.max(commKeys.length, 1);
-    const R = 260 + Math.sqrt(graph.nodes.length) * 22;
+    // Seed positions using the solar plan: hub near "bottom-left", planets on
+    // rings arcing up-and-right, children in a small halo around their parent.
     const seedStr = String(layoutSeed);
     const hash = (s: string) => {
       let h = 2166136261 ^ (layoutSeed | 0);
@@ -96,25 +148,47 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
       return (h >>> 0) / 0xffffffff;
     };
+    const plan = solarPlan;
+    const halo = 60 * childHaloRadius;
+    const spacing = RING_GAP * ringSpacing;
 
     for (const raw of graph.nodes) {
       const n = raw as Pos;
       n.fx = undefined; n.fy = undefined;
       if (n.id === HUB_ID) {
-        n.x = 0; n.y = 0; n.vx = 0; n.vy = 0;
+        n.x = -HUB_OFFSET; n.y = HUB_OFFSET; n.vx = 0; n.vy = 0;
         continue;
       }
-      const idx = commIndex.get(n.community ?? "__none") ?? 0;
-      const baseAngle = (idx / N) * Math.PI * 2;
-      const jitter = (hash(n.id) - 0.5) * 0.6;
-      const angle = baseAngle + jitter;
-      const rr = R * (0.5 + hash(n.id + "|r") * 0.6);
-      n.x = Math.cos(angle) * rr;
-      n.y = Math.sin(angle) * rr;
+      const ring = plan.ringOf.get(n.id);
+      if (ring) {
+        const rr = RING_BASE + ring.ring * spacing;
+        const jitter = (hash(n.id) - 0.5) * 0.08;
+        const a = ring.angle + jitter;
+        n.x = Math.cos(a) * rr;
+        n.y = Math.sin(a) * rr;
+      } else {
+        const parent = plan.parentOf.get(n.id);
+        const p = parent ? plan.ringOf.get(parent) : null;
+        if (p) {
+          const rr = RING_BASE + p.ring * spacing;
+          const px = Math.cos(p.angle) * rr;
+          const py = Math.sin(p.angle) * rr;
+          const localA = hash(n.id + "|a") * Math.PI * 2;
+          const localR = halo * (0.4 + hash(n.id + "|r") * 0.8);
+          n.x = px + Math.cos(localA) * localR;
+          n.y = py + Math.sin(localA) * localR;
+        } else {
+          // Untethered nodes: park near the hub in a loose cloud.
+          const a = hash(n.id) * Math.PI * 2;
+          const rr = 80 + hash(n.id + "|r") * 120;
+          n.x = -HUB_OFFSET + Math.cos(a) * rr;
+          n.y = HUB_OFFSET + Math.sin(a) * rr;
+        }
+      }
       n.vx = 0; n.vy = 0;
     }
     fgRef.current?.d3ReheatSimulation();
-  }, [graph, orbitLayout, layoutSeed, layoutResetToken]);
+  }, [graph, orbitLayout, layoutSeed, layoutResetToken, solarPlan, ringSpacing, childHaloRadius]);
 
 
   // Refs so the force closure always reads the latest values without re-registering.
@@ -189,10 +263,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     }
   };
 
-  // Cluster-clustering force: pull every node gently toward the live centroid
-  // of its own community. That's it. No orbits, no rings, no per-node hacks —
-  // d3's default link, charge, collide, and center forces do the actual layout,
-  // producing the Obsidian-style organic cluster look.
+  // Solar-system force: pull main nodes toward their (ring, angle) polar
+  // target, and pull each child node toward its parent planet within a small
+  // halo. Hub is soft-pinned at the "Sun" position.
   useEffect(() => {
     if (!ForceGraph || !fgRef.current) return;
     type ClusterNode = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
@@ -200,23 +273,44 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
 
     const clusterForce = (alpha: number) => {
       if (!nodes.length || !orbitLayoutRef.current) return;
-      const centers = new Map<number | string, { cx: number; cy: number; n: number }>();
-      for (const n of nodes) {
-        if (n.x == null || n.y == null) continue;
-        const k = n.community ?? "__none";
-        const c = centers.get(k) ?? { cx: 0, cy: 0, n: 0 };
-        c.cx += n.x; c.cy += n.y; c.n += 1;
-        centers.set(k, c);
+      const plan = solarPlanRef.current;
+      const spacing = RING_GAP * ringSpacingRef.current;
+      const halo = 60 * childHaloRadiusRef.current;
+      const ringPull = 0.18 * alpha * centroidPullRef.current;
+      const childPull = 0.10 * alpha * centroidPullRef.current;
+      const sunPull = 0.25 * alpha;
+      // Precompute planet positions for children.
+      const planetPos = new Map<string, { x: number; y: number }>();
+      for (const [id, r] of plan.ringOf) {
+        const rr = RING_BASE + r.ring * spacing;
+        planetPos.set(id, { x: Math.cos(r.angle) * rr, y: Math.sin(r.angle) * rr });
       }
-      for (const c of centers.values()) { c.cx /= c.n; c.cy /= c.n; }
-      const pull = 0.12 * alpha * centroidPullRef.current;
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        if (n.id === HUB_ID) continue;
-        const c = centers.get(n.community ?? "__none");
-        if (!c) continue;
-        n.vx = (n.vx ?? 0) + (c.cx - n.x) * pull;
-        n.vy = (n.vy ?? 0) + (c.cy - n.y) * pull;
+        if (n.id === HUB_ID) {
+          n.vx = (n.vx ?? 0) + (-HUB_OFFSET - n.x) * sunPull;
+          n.vy = (n.vy ?? 0) + (HUB_OFFSET - n.y) * sunPull;
+          continue;
+        }
+        const ring = plan.ringOf.get(n.id);
+        if (ring) {
+          const rr = RING_BASE + ring.ring * spacing;
+          const tx = Math.cos(ring.angle) * rr;
+          const ty = Math.sin(ring.angle) * rr;
+          n.vx = (n.vx ?? 0) + (tx - n.x) * ringPull;
+          n.vy = (n.vy ?? 0) + (ty - n.y) * ringPull;
+          continue;
+        }
+        const parentId = plan.parentOf.get(n.id);
+        const p = parentId ? planetPos.get(parentId) : undefined;
+        if (p) {
+          // Pull child into a halo around parent (keep some slack via halo dist).
+          const dx = p.x - n.x; const dy = p.y - n.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const overshoot = Math.max(0, d - halo);
+          n.vx = (n.vx ?? 0) + (dx / d) * overshoot * childPull;
+          n.vy = (n.vy ?? 0) + (dy / d) * overshoot * childPull;
+        }
       }
     };
     (clusterForce as unknown as { initialize: (n: ClusterNode[]) => void }).initialize = (n) => { nodes = n; };
@@ -461,6 +555,30 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           height={size.h}
           backgroundColor="rgba(0,0,0,0)"
           nodeCanvasObject={nodeCanvasObject}
+          onRenderFramePre={(ctx: CanvasRenderingContext2D, globalScale: number) => {
+            if (!orbitLayout) return;
+            const plan = solarPlan;
+            const spacing = RING_GAP * ringSpacing;
+            const arc = plan.arc;
+            ctx.save();
+            ctx.lineWidth = 0.6 / globalScale;
+            for (let r = 0; r < plan.ringCount; r++) {
+              const rr = RING_BASE + r * spacing;
+              ctx.strokeStyle = `rgba(180,200,255,${0.08 + (r % 2 === 0 ? 0.02 : 0)})`;
+              ctx.beginPath();
+              ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
+              ctx.stroke();
+            }
+            // Sun glow
+            const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 90);
+            grad.addColorStop(0, "rgba(255,170,60,0.35)");
+            grad.addColorStop(1, "rgba(255,170,60,0)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(-HUB_OFFSET, HUB_OFFSET, 90, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }}
           nodePointerAreaPaint={(node: GraphNode & { x?: number; y?: number }, color: string, ctx: CanvasRenderingContext2D) => {
             if (node.x == null || node.y == null) return;
             const isHub = Boolean(node.is_hub || node.image);

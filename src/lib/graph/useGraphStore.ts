@@ -20,6 +20,9 @@ type State = {
   chargeStrength: number;
   collideRadius: number;
   centroidPull: number;
+  ringSpacing: number;
+  sunArcSpread: number;
+  childHaloRadius: number;
   layoutSeed: number;
   layoutResetToken: number;
   showLabels: boolean;
@@ -54,6 +57,9 @@ type State = {
   setChargeStrength: (v: number) => void;
   setCollideRadius: (v: number) => void;
   setCentroidPull: (v: number) => void;
+  setRingSpacing: (v: number) => void;
+  setSunArcSpread: (v: number) => void;
+  setChildHaloRadius: (v: number) => void;
   resetForceParams: () => void;
   setLayoutSeed: (v: number) => void;
   resetLayout: () => void;
@@ -99,6 +105,9 @@ export const useGraphStore = create<State>()(
   chargeStrength: 1,
   collideRadius: 1,
   centroidPull: 1,
+  ringSpacing: 1,
+  sunArcSpread: 1,
+  childHaloRadius: 1,
   layoutSeed: 1337,
   layoutResetToken: 0,
   showLabels: true,
@@ -143,8 +152,19 @@ export const useGraphStore = create<State>()(
   setChargeStrength: (v) => set({ chargeStrength: v }),
   setCollideRadius: (v) => set({ collideRadius: v }),
   setCentroidPull: (v) => set({ centroidPull: v }),
+  setRingSpacing: (v) => set({ ringSpacing: v }),
+  setSunArcSpread: (v) => set({ sunArcSpread: v }),
+  setChildHaloRadius: (v) => set({ childHaloRadius: v }),
   resetForceParams: () =>
-    set({ linkStrength: 1, chargeStrength: 1, collideRadius: 1, centroidPull: 1 }),
+    set({
+      linkStrength: 1,
+      chargeStrength: 1,
+      collideRadius: 1,
+      centroidPull: 1,
+      ringSpacing: 1,
+      sunArcSpread: 1,
+      childHaloRadius: 1,
+    }),
   setLayoutSeed: (v) => set({ layoutSeed: Math.floor(v) || 1 }),
   resetLayout: () => set((s) => ({ layoutResetToken: s.layoutResetToken + 1 })),
   setShowLabels: (v) => set({ showLabels: v }),

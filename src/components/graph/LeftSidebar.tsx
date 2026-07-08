@@ -65,6 +65,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
   const setCollideRadius = useGraphStore((s) => s.setCollideRadius);
   const centroidPull = useGraphStore((s) => s.centroidPull);
   const setCentroidPull = useGraphStore((s) => s.setCentroidPull);
+  const ringSpacing = useGraphStore((s) => s.ringSpacing);
+  const setRingSpacing = useGraphStore((s) => s.setRingSpacing);
+  const sunArcSpread = useGraphStore((s) => s.sunArcSpread);
+  const setSunArcSpread = useGraphStore((s) => s.setSunArcSpread);
+  const childHaloRadius = useGraphStore((s) => s.childHaloRadius);
+  const setChildHaloRadius = useGraphStore((s) => s.setChildHaloRadius);
   const resetForceParams = useGraphStore((s) => s.resetForceParams);
   const layoutSeed = useGraphStore((s) => s.layoutSeed);
   const setLayoutSeed = useGraphStore((s) => s.setLayoutSeed);
@@ -491,6 +497,9 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 { label: "Charge", value: chargeStrength, set: setChargeStrength, min: 0, max: 3, step: 0.05 },
                 { label: "Collide radius", value: collideRadius, set: setCollideRadius, min: 0, max: 4, step: 0.1 },
                 { label: "Centroid pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05 },
+                { label: "Ring spacing", value: ringSpacing, set: setRingSpacing, min: 0.4, max: 2.5, step: 0.05 },
+                { label: "Sun arc spread", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05 },
+                { label: "Child halo", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05 },
               ].map((s) => (
                 <label key={s.label} className="block">
                   <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
