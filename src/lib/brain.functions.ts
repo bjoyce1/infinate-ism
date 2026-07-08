@@ -283,6 +283,45 @@ export const upsertClient = createServerFn({ method: "POST" })
     return row;
   });
 
+// ---------- notes ----------
+export const upsertNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: uuid.optional(),
+    title: z.string().min(1).max(300),
+    content: z.string().max(20000).optional().nullable(),
+    project_id: uuid.optional().nullable(),
+    area_id: uuid.optional().nullable(),
+    tags: z.array(z.string()).default([]),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const payload = { ...data, user_id: context.userId };
+    const q = data.id
+      ? context.supabase.from("notes").update(payload).eq("id", data.id).eq("user_id", context.userId).select().single()
+      : context.supabase.from("notes").insert(payload).select().single();
+    const { data: row, error } = await q;
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const deleteNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("notes").delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: uuid }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("clients").delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 // ---------- prompts ----------
 export const listPrompts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
