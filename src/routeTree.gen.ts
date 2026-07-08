@@ -27,7 +27,6 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedConstellationRouteImport } from './routes/_authenticated/constellation'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedAreasRouteImport } from './routes/_authenticated/areas'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -125,12 +124,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConstellationRoute =
-  AuthenticatedConstellationRouteImport.update({
-    id: '/constellation',
-    path: '/constellation',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
@@ -182,7 +175,6 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/areas': typeof AuthenticatedAreasRoute
   '/clients': typeof AuthenticatedClientsRoute
-  '/constellation': typeof AuthenticatedConstellationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -209,7 +201,6 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/areas': typeof AuthenticatedAreasRoute
   '/clients': typeof AuthenticatedClientsRoute
-  '/constellation': typeof AuthenticatedConstellationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -238,7 +229,6 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/areas': typeof AuthenticatedAreasRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
-  '/_authenticated/constellation': typeof AuthenticatedConstellationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
@@ -267,7 +257,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/areas'
     | '/clients'
-    | '/constellation'
     | '/dashboard'
     | '/inbox'
     | '/projects'
@@ -294,7 +283,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/areas'
     | '/clients'
-    | '/constellation'
     | '/dashboard'
     | '/inbox'
     | '/projects'
@@ -322,7 +310,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/areas'
     | '/_authenticated/clients'
-    | '/_authenticated/constellation'
     | '/_authenticated/dashboard'
     | '/_authenticated/inbox'
     | '/_authenticated/projects'
@@ -482,13 +469,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/constellation': {
-      id: '/_authenticated/constellation'
-      path: '/constellation'
-      fullPath: '/constellation'
-      preLoaderRoute: typeof AuthenticatedConstellationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/clients': {
       id: '/_authenticated/clients'
       path: '/clients'
@@ -557,7 +537,6 @@ const AuthenticatedProjectsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAreasRoute: typeof AuthenticatedAreasRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
-  AuthenticatedConstellationRoute: typeof AuthenticatedConstellationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRouteWithChildren
@@ -568,7 +547,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAreasRoute: AuthenticatedAreasRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
-  AuthenticatedConstellationRoute: AuthenticatedConstellationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRouteWithChildren,
