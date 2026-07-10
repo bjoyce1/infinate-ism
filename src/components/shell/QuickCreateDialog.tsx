@@ -24,13 +24,13 @@ export function QuickCreateDialog({ open, onOpenChange }: { open: boolean; onOpe
       const uid = u.user?.id;
       if (!uid) throw new Error("Sign in required.");
       if (kind === "task") {
-        await supabase.from("tasks").insert({ user_id: uid, title: title.trim(), description: body || null, status: "todo", priority: "medium" }).throwOnError();
+        await supabase.from("tasks").insert({ user_id: uid, title: title.trim(), description: body || undefined, status: "todo", priority: "medium" }).throwOnError();
       } else if (kind === "note") {
-        await supabase.from("notes").insert({ user_id: uid, title: title.trim(), content: body || null }).throwOnError();
+        await supabase.from("notes").insert({ user_id: uid, title: title.trim(), content: body || undefined }).throwOnError();
       } else if (kind === "project") {
-        await supabase.from("projects").insert({ user_id: uid, name: title.trim(), goal: body || null, status: "active", priority: "medium" }).throwOnError();
+        await supabase.from("projects").insert({ user_id: uid, name: title.trim(), goal: body || undefined, status: "active", priority: "medium" }).throwOnError();
       } else {
-        await supabase.from("clients").insert({ user_id: uid, name: title.trim(), notes: body || null }).throwOnError();
+        await supabase.from("clients").insert({ user_id: uid, name: title.trim(), notes: body || undefined }).throwOnError();
       }
       toast.success(`${labelOf(kind)} created`);
       setTitle(""); setBody("");
