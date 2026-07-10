@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as MissionRouteImport } from './routes/mission'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InboxRouteImport } from './routes/inbox'
+import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as ContentRouteImport } from './routes/content'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as ClientsRouteImport } from './routes/clients'
@@ -57,6 +58,11 @@ const McpRoute = McpRouteImport.update({
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceRoute = FinanceRouteImport.update({
+  id: '/finance',
+  path: '/finance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContentRoute = ContentRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/content': typeof ContentRoute
+  '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/content': typeof ContentRoute
+  '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/content': typeof ContentRoute
+  '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/command'
     | '/content'
+    | '/finance'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/command'
     | '/content'
+    | '/finance'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/command'
     | '/content'
+    | '/finance'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -329,6 +341,7 @@ export interface RootRouteChildren {
   ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
   ContentRoute: typeof ContentRoute
+  FinanceRoute: typeof FinanceRoute
   InboxRoute: typeof InboxRoute
   McpRoute: typeof McpRoute
   MissionRoute: typeof MissionRoute
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/inbox'
       preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finance': {
+      id: '/finance'
+      path: '/finance'
+      fullPath: '/finance'
+      preLoaderRoute: typeof FinanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content': {
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
   ContentRoute: ContentRoute,
+  FinanceRoute: FinanceRoute,
   InboxRoute: InboxRoute,
   McpRoute: McpRoute,
   MissionRoute: MissionRoute,
