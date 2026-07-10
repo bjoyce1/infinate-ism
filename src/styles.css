@@ -41,8 +41,60 @@
   --color-neon-primary: #3DED97;
   --color-neon-dim: #1B4D36;
   --color-muted-text: #8E9196;
+  /* C.A.P.I.S.M. Command Center tokens */
+  --color-cc-bg:      #060608;
+  --color-cc-panel:   #0F1013;
+  --color-cc-panel-2: #14161B;
+  --color-cc-border:  #22252D;
+  --color-cc-border-2:#2E323C;
+  --color-cc-text:    #E8EAF0;
+  --color-cc-muted:   #7A7F8C;
+  --color-cc-violet:  #8B5CF6;
+  --color-cc-crimson: #E23E57;
+  --color-cc-emerald: #35D399;
+  --color-cc-cyan:    #38BDF8;
+  --color-cc-gold:    #F4B740;
   --font-sora: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Ambient dashboard background — subtle grid + radial glow */
+.cc-app-bg {
+  background:
+    radial-gradient(1200px 800px at 15% -10%, rgba(139,92,246,0.10), transparent 60%),
+    radial-gradient(1000px 700px at 100% 100%, rgba(56,189,248,0.08), transparent 60%),
+    linear-gradient(180deg, #060608 0%, #0A0A0D 100%);
+}
+.cc-grid-overlay {
+  background-image:
+    linear-gradient(rgba(139,92,246,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+.cc-panel {
+  background: linear-gradient(180deg, rgba(20,22,27,0.72) 0%, rgba(15,16,19,0.72) 100%);
+  border: 1px solid var(--color-cc-border);
+  border-radius: 14px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset, 0 20px 60px -30px rgba(0,0,0,0.7);
+}
+.cc-panel-hover { transition: border-color .18s ease, transform .18s ease; }
+.cc-panel-hover:hover { border-color: var(--color-cc-border-2); }
+
+@keyframes cc-pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: .55; transform: scale(1.35); }
+}
+.cc-pulse::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: 9999px; background: inherit; opacity: .6;
+  animation: cc-pulse 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-pulse::after { animation: none; }
 }
 
 /*
