@@ -26,9 +26,10 @@ function MissionView() {
   }, [fetchProjects, fetchTasks]);
 
   const buckets: { key: T["status"]; label: string; accent: string }[] = [
-    { key: "todo",        label: "To Do",       accent: "var(--cc-cyan)" },
-    { key: "in_progress", label: "In Progress", accent: "var(--cc-gold)" },
-    { key: "done",        label: "Done",        accent: "var(--cc-emerald)" },
+    { key: "todo",    label: "To Do",   accent: "var(--cc-cyan)" },
+    { key: "doing",   label: "Doing",   accent: "var(--cc-gold)" },
+    { key: "blocked", label: "Blocked", accent: "var(--cc-crimson)" },
+    { key: "done",    label: "Done",    accent: "var(--cc-emerald)" },
   ];
 
   return (
