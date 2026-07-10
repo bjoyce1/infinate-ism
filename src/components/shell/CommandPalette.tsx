@@ -26,7 +26,7 @@ export function CommandPalette({
         supabase.from("clients").select("id,name,company").ilike("name", term).limit(6),
         supabase.from("notes").select("id,title,content").or(`title.ilike.${term},content.ilike.${term}`).limit(6),
         supabase.from("tasks").select("id,title,status").ilike("title", term).limit(6),
-        supabase.from("prompts").select("id,title,body").or(`title.ilike.${term},body.ilike.${term}`).limit(6),
+        supabase.from("prompts").select("id,title,prompt").or(`title.ilike.${term},prompt.ilike.${term}`).limit(6),
         supabase.from("resources").select("id,title,url").ilike("title", term).limit(6),
       ]);
       if (cancelled) return;
@@ -35,7 +35,7 @@ export function CommandPalette({
       (c.data ?? []).forEach((r) => out.push({ kind: "client", id: r.id, label: r.name, sub: r.company ?? undefined }));
       (n.data ?? []).forEach((r) => out.push({ kind: "note", id: r.id, label: r.title ?? "Untitled note", sub: (r.content ?? "").slice(0, 80) }));
       (t.data ?? []).forEach((r) => out.push({ kind: "task", id: r.id, label: r.title, sub: r.status }));
-      (pr.data ?? []).forEach((r) => out.push({ kind: "prompt", id: r.id, label: r.title ?? "Prompt", sub: (r.body ?? "").slice(0, 80) }));
+      (pr.data ?? []).forEach((r) => out.push({ kind: "prompt", id: r.id, label: r.title ?? "Prompt", sub: (r.prompt ?? "").slice(0, 80) }));
       (rs.data ?? []).forEach((r) => out.push({ kind: "resource", id: r.id, label: r.title ?? "Resource", sub: r.url ?? undefined }));
       setHits(out);
     })();
