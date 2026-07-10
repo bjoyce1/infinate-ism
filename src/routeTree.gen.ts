@@ -15,6 +15,7 @@ import { Route as MissionRouteImport } from './routes/mission'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as CommandRouteImport } from './routes/command'
+import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -58,6 +59,11 @@ const InboxRoute = InboxRouteImport.update({
 const CommandRoute = CommandRouteImport.update({
   id: '/command',
   path: '/command',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientsRoute = ClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/clients'
     | '/command'
     | '/inbox'
     | '/mcp'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/clients'
     | '/command'
     | '/inbox'
     | '/mcp'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/clients'
     | '/command'
     | '/inbox'
     | '/mcp'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
   InboxRoute: typeof InboxRoute
   McpRoute: typeof McpRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/command'
       fullPath: '/command'
       preLoaderRoute: typeof CommandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clients': {
+      id: '/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -456,6 +476,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
   InboxRoute: InboxRoute,
   McpRoute: McpRoute,
