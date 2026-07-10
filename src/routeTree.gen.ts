@@ -16,6 +16,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -64,6 +65,11 @@ const CommandRoute = CommandRouteImport.update({
 const ClientsRoute = ClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
   '/inbox': typeof InboxRoute
@@ -218,6 +227,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/calendar'
     | '/clients'
     | '/command'
     | '/inbox'
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/calendar'
     | '/clients'
     | '/command'
     | '/inbox'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/calendar'
     | '/clients'
     | '/command'
     | '/inbox'
@@ -288,6 +300,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  CalendarRoute: typeof CalendarRoute
   ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
   InboxRoute: typeof InboxRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       path: '/clients'
       fullPath: '/clients'
       preLoaderRoute: typeof ClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -476,6 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  CalendarRoute: CalendarRoute,
   ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
   InboxRoute: InboxRoute,
