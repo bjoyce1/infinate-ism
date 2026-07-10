@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as MissionRouteImport } from './routes/mission'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as InboxRouteImport } from './routes/inbox'
+import { Route as ContentRouteImport } from './routes/content'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -56,6 +57,11 @@ const McpRoute = McpRouteImport.update({
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentRoute = ContentRouteImport.update({
+  id: '/content',
+  path: '/content',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommandRoute = CommandRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
+  '/content': typeof ContentRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
+  '/content': typeof ContentRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
+  '/content': typeof ContentRoute
   '/inbox': typeof InboxRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
+    | '/content'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
+    | '/content'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
+    | '/content'
     | '/inbox'
     | '/mcp'
     | '/mission'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
+  ContentRoute: typeof ContentRoute
   InboxRoute: typeof InboxRoute
   McpRoute: typeof McpRoute
   MissionRoute: typeof MissionRoute
@@ -363,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/inbox'
       preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content': {
+      id: '/content'
+      path: '/content'
+      fullPath: '/content'
+      preLoaderRoute: typeof ContentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/command': {
@@ -520,6 +540,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
+  ContentRoute: ContentRoute,
   InboxRoute: InboxRoute,
   McpRoute: McpRoute,
   MissionRoute: MissionRoute,
