@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TodayRouteImport } from './routes/today'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MissionRouteImport } from './routes/mission'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as IntegrationsRouteImport } from './routes/integrations'
@@ -45,6 +46,11 @@ const TodayRoute = TodayRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionRoute = MissionRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof IntegrationsRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/integrations': typeof IntegrationsRoute
   '/mcp': typeof McpRoute
   '/mission': typeof MissionRoute
+  '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/mcp'
     | '/mission'
+    | '/settings'
     | '/sitemap.xml'
     | '/today'
     | '/.mcp/list-tools'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/mcp'
     | '/mission'
+    | '/settings'
     | '/sitemap.xml'
     | '/today'
     | '/.mcp/list-tools'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/mcp'
     | '/mission'
+    | '/settings'
     | '/sitemap.xml'
     | '/today'
     | '/.mcp/list-tools'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   IntegrationsRoute: typeof IntegrationsRoute
   McpRoute: typeof McpRoute
   MissionRoute: typeof MissionRoute
+  SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TodayRoute: typeof TodayRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mission': {
@@ -607,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsRoute: IntegrationsRoute,
   McpRoute: McpRoute,
   MissionRoute: MissionRoute,
+  SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TodayRoute: TodayRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
