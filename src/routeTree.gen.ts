@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TodayRouteImport } from './routes/today'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CommandRouteImport } from './routes/command'
@@ -27,6 +28,11 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
+const TodayRoute = TodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/command': typeof CommandRoute
   '/mcp': typeof McpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/command': typeof CommandRoute
   '/mcp': typeof McpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/command': typeof CommandRoute
   '/mcp': typeof McpRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/today': typeof TodayRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/images': typeof AdminImagesRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/mcp'
     | '/sitemap.xml'
+    | '/today'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/mcp'
     | '/sitemap.xml'
+    | '/today'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/command'
     | '/mcp'
     | '/sitemap.xml'
+    | '/today'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/images'
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   CommandRoute: typeof CommandRoute
   McpRoute: typeof McpRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TodayRoute: typeof TodayRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -252,6 +265,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/today': {
+      id: '/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof TodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommandRoute: CommandRoute,
   McpRoute: McpRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TodayRoute: TodayRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
