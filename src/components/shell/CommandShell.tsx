@@ -1,5 +1,5 @@
 import { type ReactNode, useState, useEffect } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { NAV_ITEMS, GROUP_LABELS, type NavItem } from "@/lib/commandCenter/nav";
 import { fmtChicagoNow } from "@/lib/commandCenter/format";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,8 +55,10 @@ export function CommandShell({ children, hideChrome = false }: { children: React
   const [createOpen, setCreateOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
   const now = useNow();
   const { date, time } = fmtChicagoNow(now);
 
@@ -80,10 +82,27 @@ export function CommandShell({ children, hideChrome = false }: { children: React
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => setEmail(session?.user.email ?? null));
+    supabase.auth.getSession().then(({ data }) => {
+      setEmail(data.session?.user.email ?? null);
+      setAuthChecked(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => {
+      setEmail(session?.user.email ?? null);
+      setAuthChecked(true);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  // Gate C.A.P.I.S.M. modules behind auth. Public surfaces stay open.
+  const PUBLIC_PREFIXES = ["/", "/auth", "/admin", "/analytics", "/absoulutelycaptivating"];
+  const isProtectedPath =
+    NAV_ITEMS.some((i) => i.to !== "/" && (pathname === i.to || pathname.startsWith(i.to + "/"))) &&
+    !PUBLIC_PREFIXES.some((p) => p !== "/" && (pathname === p || pathname.startsWith(p + "/")));
+  useEffect(() => {
+    if (authChecked && !email && isProtectedPath) {
+      navigate({ to: "/auth", search: { next: pathname } as never, replace: true });
+    }
+  }, [authChecked, email, isProtectedPath, pathname, navigate]);
 
   const groups = (["core", "work", "intel", "ops"] as const).map((g) => ({
     key: g,
