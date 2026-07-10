@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { generateText } from "ai";
 
 // ---------------- Command Overview ----------------
 
@@ -358,6 +359,3 @@ ${JSON.stringify(grounding).slice(0, 8000)}`;
 
     return { text };
   });
-
-// need this import last so the file is a module
-import { generateText } from "ai";
