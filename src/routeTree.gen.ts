@@ -17,6 +17,7 @@ import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as BrainRouteImport } from './routes/brain'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -70,6 +71,11 @@ const ClientsRoute = ClientsRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrainRoute = BrainRouteImport.update({
+  id: '/brain',
+  path: '/brain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/brain': typeof BrainRoute
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/brain': typeof BrainRoute
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/analytics': typeof AnalyticsRoute
   '/auth': typeof AuthRoute
+  '/brain': typeof BrainRoute
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/brain'
     | '/calendar'
     | '/clients'
     | '/command'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/brain'
     | '/calendar'
     | '/clients'
     | '/command'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/analytics'
     | '/auth'
+    | '/brain'
     | '/calendar'
     | '/clients'
     | '/command'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AnalyticsRoute: typeof AnalyticsRoute
   AuthRoute: typeof AuthRoute
+  BrainRoute: typeof BrainRoute
   CalendarRoute: typeof CalendarRoute
   ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brain': {
+      id: '/brain'
+      path: '/brain'
+      fullPath: '/brain'
+      preLoaderRoute: typeof BrainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -496,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AnalyticsRoute: AnalyticsRoute,
   AuthRoute: AuthRoute,
+  BrainRoute: BrainRoute,
   CalendarRoute: CalendarRoute,
   ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
