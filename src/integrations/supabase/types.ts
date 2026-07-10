@@ -142,6 +142,527 @@ export type Database = {
           },
         ]
       }
+      cc_activity: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          kind: string
+          metadata: Json
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          summary: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_alerts: {
+        Row: {
+          body: string | null
+          created_at: string
+          href: string | null
+          id: string
+          is_read: boolean
+          metadata: Json
+          severity: Database["public"]["Enums"]["cc_alert_severity"]
+          source: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json
+          severity?: Database["public"]["Enums"]["cc_alert_severity"]
+          source?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          is_read?: boolean
+          metadata?: Json
+          severity?: Database["public"]["Enums"]["cc_alert_severity"]
+          source?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_automation_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_starter: boolean
+          last_error: string | null
+          last_run_at: string | null
+          name: string
+          status: Database["public"]["Enums"]["cc_automation_status"]
+          trigger: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_starter?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["cc_automation_status"]
+          trigger?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_starter?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["cc_automation_status"]
+          trigger?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_communications: {
+        Row: {
+          body: string | null
+          category: Database["public"]["Enums"]["cc_inbox_category"]
+          client_id: string | null
+          deadline: string | null
+          draft: string | null
+          external_id: string | null
+          id: string
+          is_demo: boolean
+          is_handled: boolean
+          metadata: Json
+          project_id: string | null
+          received_at: string
+          sender: string | null
+          snippet: string | null
+          source: string
+          subject: string | null
+          suggested_action: string | null
+          urgency: number
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          category?: Database["public"]["Enums"]["cc_inbox_category"]
+          client_id?: string | null
+          deadline?: string | null
+          draft?: string | null
+          external_id?: string | null
+          id?: string
+          is_demo?: boolean
+          is_handled?: boolean
+          metadata?: Json
+          project_id?: string | null
+          received_at?: string
+          sender?: string | null
+          snippet?: string | null
+          source: string
+          subject?: string | null
+          suggested_action?: string | null
+          urgency?: number
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          category?: Database["public"]["Enums"]["cc_inbox_category"]
+          client_id?: string | null
+          deadline?: string | null
+          draft?: string | null
+          external_id?: string | null
+          id?: string
+          is_demo?: boolean
+          is_handled?: boolean
+          metadata?: Json
+          project_id?: string | null
+          received_at?: string
+          sender?: string | null
+          snippet?: string | null
+          source?: string
+          subject?: string | null
+          suggested_action?: string | null
+          urgency?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cc_communications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cc_communications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cc_connectors: {
+        Row: {
+          account_label: string | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          metadata: Json
+          provider: string
+          scopes: string[]
+          state: Database["public"]["Enums"]["cc_connector_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_label?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          metadata?: Json
+          provider: string
+          scopes?: string[]
+          state?: Database["public"]["Enums"]["cc_connector_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_label?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          metadata?: Json
+          provider?: string
+          scopes?: string[]
+          state?: Database["public"]["Enums"]["cc_connector_state"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_content_items: {
+        Row: {
+          body: string | null
+          created_at: string
+          format: Database["public"]["Enums"]["cc_content_format"]
+          hook: string | null
+          id: string
+          is_demo: boolean
+          metadata: Json
+          platforms: string[]
+          project_id: string | null
+          scheduled_for: string | null
+          source_id: string | null
+          source_type: string | null
+          stage: Database["public"]["Enums"]["cc_content_stage"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          format?: Database["public"]["Enums"]["cc_content_format"]
+          hook?: string | null
+          id?: string
+          is_demo?: boolean
+          metadata?: Json
+          platforms?: string[]
+          project_id?: string | null
+          scheduled_for?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          stage?: Database["public"]["Enums"]["cc_content_stage"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          format?: Database["public"]["Enums"]["cc_content_format"]
+          hook?: string | null
+          id?: string
+          is_demo?: boolean
+          metadata?: Json
+          platforms?: string[]
+          project_id?: string | null
+          scheduled_for?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          stage?: Database["public"]["Enums"]["cc_content_stage"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cc_content_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cc_daily_briefs: {
+        Row: {
+          brief_date: string
+          created_at: string
+          focus: string[]
+          id: string
+          kind: string
+          metadata: Json
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          brief_date: string
+          created_at?: string
+          focus?: string[]
+          id?: string
+          kind?: string
+          metadata?: Json
+          summary: string
+          user_id: string
+        }
+        Update: {
+          brief_date?: string
+          created_at?: string
+          focus?: string[]
+          id?: string
+          kind?: string
+          metadata?: Json
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_dashboard_prefs: {
+        Row: {
+          card_order: string[]
+          hidden_cards: string[]
+          layout: Json
+          theme_options: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_order?: string[]
+          hidden_cards?: string[]
+          layout?: Json
+          theme_options?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_order?: string[]
+          hidden_cards?: string[]
+          layout?: Json
+          theme_options?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cc_finance_alerts: {
+        Row: {
+          amount_cents: number | null
+          client_id: string | null
+          created_at: string
+          currency: string
+          due_date: string | null
+          id: string
+          is_demo: boolean
+          is_resolved: boolean
+          kind: string
+          label: string
+          metadata: Json
+          project_id: string | null
+          severity: Database["public"]["Enums"]["cc_alert_severity"]
+          user_id: string
+          vendor: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          is_demo?: boolean
+          is_resolved?: boolean
+          kind: string
+          label: string
+          metadata?: Json
+          project_id?: string | null
+          severity?: Database["public"]["Enums"]["cc_alert_severity"]
+          user_id: string
+          vendor?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          is_demo?: boolean
+          is_resolved?: boolean
+          kind?: string
+          label?: string
+          metadata?: Json
+          project_id?: string | null
+          severity?: Database["public"]["Enums"]["cc_alert_severity"]
+          user_id?: string
+          vendor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cc_finance_alerts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cc_finance_alerts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cc_followups: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          detail: string | null
+          due_date: string | null
+          id: string
+          is_resolved: boolean
+          project_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          waiting_on: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          detail?: string | null
+          due_date?: string | null
+          id?: string
+          is_resolved?: boolean
+          project_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          waiting_on?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          detail?: string | null
+          due_date?: string | null
+          id?: string
+          is_resolved?: boolean
+          project_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          waiting_on?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cc_followups_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cc_followups_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cc_saved_views: {
+        Row: {
+          created_at: string
+          filters: Json
+          id: string
+          is_pinned: boolean
+          name: string
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          is_pinned?: boolean
+          name: string
+          scope: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          id?: string
+          is_pinned?: boolean
+          name?: string
+          scope?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           budget_cents: number | null
@@ -753,6 +1274,31 @@ export type Database = {
         | "research"
         | "other"
       brain_task_status: "todo" | "doing" | "done" | "blocked"
+      cc_alert_severity: "info" | "success" | "warning" | "critical"
+      cc_automation_status: "active" | "paused" | "error"
+      cc_connector_state: "disconnected" | "connected" | "error" | "pending"
+      cc_content_format:
+        | "social_post"
+        | "short_video"
+        | "article"
+        | "newsletter"
+        | "podcast"
+        | "press_release"
+      cc_content_stage:
+        | "idea"
+        | "draft"
+        | "review"
+        | "scheduled"
+        | "published"
+        | "repurpose"
+      cc_inbox_category:
+        | "urgent"
+        | "needs_reply"
+        | "needs_decision"
+        | "waiting"
+        | "finance_security"
+        | "fyi"
+        | "noise"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -921,6 +1467,34 @@ export const Constants = {
         "other",
       ],
       brain_task_status: ["todo", "doing", "done", "blocked"],
+      cc_alert_severity: ["info", "success", "warning", "critical"],
+      cc_automation_status: ["active", "paused", "error"],
+      cc_connector_state: ["disconnected", "connected", "error", "pending"],
+      cc_content_format: [
+        "social_post",
+        "short_video",
+        "article",
+        "newsletter",
+        "podcast",
+        "press_release",
+      ],
+      cc_content_stage: [
+        "idea",
+        "draft",
+        "review",
+        "scheduled",
+        "published",
+        "repurpose",
+      ],
+      cc_inbox_category: [
+        "urgent",
+        "needs_reply",
+        "needs_decision",
+        "waiting",
+        "finance_security",
+        "fyi",
+        "noise",
+      ],
     },
   },
 } as const
