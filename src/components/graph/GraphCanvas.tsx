@@ -7,7 +7,12 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useServerFn } from "@tanstack/react-start";
 import { setNodeImage } from "@/lib/setNodeImage.functions";
 import { toast } from "sonner";
-import { planNeighborhoods, applyNeighborhoodSeed, type NeighborhoodPlan } from "@/lib/graph/neighborhoodLayout";
+import {
+  planHybridKnowledgeLayout,
+  applyHybridSeed,
+  HUB_ID as HYBRID_HUB_ID,
+  type HybridPlan,
+} from "@/lib/graph/hybridKnowledgeLayout";
 
 type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
@@ -17,12 +22,10 @@ type ForceGraphHandle = {
   d3ReheatSimulation: () => void;
 };
 
-const HUB_ID = "site_mrcap1_com";
+const HUB_ID = HYBRID_HUB_ID;
 
-// Radial-tree layout constants (world units). Hub at origin, mains on
-// concentric full-circle rings, children branch outward from their parent.
-const RING_BASE = 260;
-const RING_GAP = 190;
+// Hybrid hierarchical layout — HUB at origin, branch roots in stable
+// angular sectors, families packed radially within each sector.
 const HUB_OFFSET = 0;
 
 // Obsidian palette
@@ -30,11 +33,48 @@ const COLOR_BG = "#0a0a0f";
 const COLOR_LINK = "rgba(124,156,255,0.14)";
 const COLOR_LINK_HI = "rgba(61,237,208,0.75)";
 const COLOR_LINK_DIM = "rgba(255,255,255,0.025)";
+const COLOR_CROSSLINK = "rgba(124,156,255,0.06)";
 const COLOR_NODE = "#7c9cff";
 const COLOR_NODE_HI = "#3dedd0";
 const COLOR_LABEL = "#c9d1e0";
 const COLOR_IMG_BORDER = "#3dedd0";
 const COLOR_IMG_GLOW = "#7c9cff";
+
+// Deterministic per-branch tint (low opacity) — used for family hulls.
+const BRANCH_TINTS = [
+  [124, 156, 255],
+  [61, 237, 208],
+  [242, 165, 96],
+  [217, 119, 217],
+  [122, 211, 143],
+  [255, 191, 130],
+  [155, 187, 255],
+  [255, 129, 172],
+];
+const branchTint = (branchId: string, alpha: number) => {
+  let h = 0;
+  for (let i = 0; i < branchId.length; i++) h = (h * 31 + branchId.charCodeAt(i)) >>> 0;
+  const [r, g, b] = BRANCH_TINTS[h % BRANCH_TINTS.length];
+  return `rgba(${r},${g},${b},${alpha})`;
+};
+
+// Persist user drag offsets locally (never to Supabase). Keyed by node id
+// relative to the deterministic planner target for that node.
+const DRAG_STORAGE_KEY = "infinite-ism:2d-drag-offsets";
+type DragOffsets = Record<string, { dx: number; dy: number }>;
+function loadDragOffsets(): DragOffsets {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(DRAG_STORAGE_KEY);
+    if (!raw) return {};
+    const v = JSON.parse(raw) as DragOffsets;
+    return v && typeof v === "object" ? v : {};
+  } catch { return {}; }
+}
+function saveDragOffsets(v: DragOffsets) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(DRAG_STORAGE_KEY, JSON.stringify(v)); } catch { /* ignore */ }
+}
 
 // Legacy `SolarPlan` replaced by the pure neighborhood planner in
 // `src/lib/graph/neighborhoodLayout.ts`. Kept here as a comment to note the
@@ -102,11 +142,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current?.d3ReheatSimulation();
   }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius, parentAttract]);
 
-  // Build the solar-system plan: rank main nodes by degree, spread them across
-  // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
-  // node is attached to its most-connected main-node neighbor.
-  const neighborhoodPlan = useMemo<NeighborhoodPlan>(
-    () => planNeighborhoods(graph, layoutSeed),
+  // Hybrid hierarchical plan: HUB at (0,0) → major branches in stable
+  // sectors → each branch packed as its own family neighborhood.
+  const neighborhoodPlan = useMemo<HybridPlan>(
+    () => planHybridKnowledgeLayout(graph, layoutSeed),
     [graph, layoutSeed, layoutResetToken],
   );
   const planRef = useRef(neighborhoodPlan);
