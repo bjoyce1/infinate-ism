@@ -85,27 +85,19 @@ function humanize(s: string): string {
 
 // ── Build hierarchical taxonomy ────────────────────────────────────────────
 
-export type BuildOpts = {
-  /** Cap of children shown at each level before creating a "+N more" cluster. */
-  maxCommunitiesPerDept?: number;
-  maxSubhubsPerCommunity?: number;
-  maxLeavesPerSubhub?: number;
-};
-
-const DEFAULT_OPTS: Required<BuildOpts> = {
-  maxCommunitiesPerDept: 6,
-  maxSubhubsPerCommunity: 5,
-  maxLeavesPerSubhub: 12,
-};
-
 export type Taxonomy = {
   root: TreeDatum;
-  assignments: Map<string, DeptKey>;   // nodeId -> dept
+  assignments: Map<string, DeptKey>;
   totalByDept: Record<DeptKey, number>;
+  /** Every taxonomy node in-order, addressable by id. */
+  index: Map<string, TreeDatum>;
+  /** Child → parent map for ancestry expansion. */
+  parentOf: Map<string, string>;
+  /** Ordered ids of the direct children of every hub. */
+  childrenOf: Map<string, string[]>;
 };
 
-export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Taxonomy {
-  const o = { ...DEFAULT_OPTS, ...opts };
+export function buildTaxonomy(graph: NormalizedGraph): Taxonomy {
   const first = new Map<string, DeptKey>();
   for (const n of graph.nodes) first.set(n.id, classifyNode(n));
   const assignments = neighborVote(graph, first);
@@ -129,17 +121,11 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
 
   const depts: TreeDatum[] = DEPARTMENTS.map((spec) => {
     const dbuck = buckets.get(spec.key) ?? new Map<number, GraphNode[]>();
-
-    // Rank communities by member count.
     const ranked = [...dbuck.entries()]
       .map(([cid, members]) => ({ cid, members: [...members].sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0)) }))
-      .sort((a, b) => b.members.length - a.members.length);
+      .sort((a, b) => b.members.length - a.members.length || a.cid - b.cid);
 
-    const shown = ranked.slice(0, o.maxCommunitiesPerDept);
-    const overflow = ranked.slice(o.maxCommunitiesPerDept);
-
-    const communityNodes: TreeDatum[] = shown.map(({ cid, members }) => {
-      // Sub-branches by source group.
+    const communityNodes: TreeDatum[] = ranked.map(({ cid, members }) => {
       const groups = new Map<string, GraphNode[]>();
       for (const m of members) {
         const g = sourceGroupOf(m);
@@ -148,15 +134,11 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
         groups.set(g, list);
       }
       const rankedGroups = [...groups.entries()]
-        .map(([g, ms]) => ({ g, ms }))
-        .sort((a, b) => b.ms.length - a.ms.length);
-      const shownGroups = rankedGroups.slice(0, o.maxSubhubsPerCommunity);
-      const overflowGroups = rankedGroups.slice(o.maxSubhubsPerCommunity);
+        .map(([g, ms]) => ({ g, ms: [...ms].sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0) || a.id.localeCompare(b.id)) }))
+        .sort((a, b) => b.ms.length - a.ms.length || a.g.localeCompare(b.g));
 
-      const subhubs: TreeDatum[] = shownGroups.map(({ g, ms }) => {
-        const kept = ms.slice(0, o.maxLeavesPerSubhub);
-        const overflowLeaves = ms.length - kept.length;
-        const leaves: TreeDatum[] = kept.map((m) => ({
+      const subhubs: TreeDatum[] = rankedGroups.map(({ g, ms }) => {
+        const leaves: TreeDatum[] = ms.map((m) => ({
           id: `leaf:${m.id}`,
           label: m.label,
           kind: "leaf",
@@ -166,16 +148,6 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
           node: m,
           meta: { community: cid, source: g, category: m.category },
         }));
-        if (overflowLeaves > 0) {
-          leaves.push({
-            id: `cluster:${spec.key}:${cid}:${g}`,
-            label: `+${overflowLeaves} more`,
-            kind: "cluster",
-            dept: spec.key,
-            color: spec.color,
-            count: overflowLeaves,
-          });
-        }
         return {
           id: `subhub:${spec.key}:${cid}:${g}`,
           label: humanize(g),
@@ -186,18 +158,6 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
           children: leaves,
         };
       });
-
-      if (overflowGroups.length) {
-        const total = overflowGroups.reduce((s, g) => s + g.ms.length, 0);
-        subhubs.push({
-          id: `subhub-overflow:${spec.key}:${cid}`,
-          label: `+${overflowGroups.length} groups · ${total} items`,
-          kind: "cluster",
-          dept: spec.key,
-          color: spec.color,
-          count: total,
-        });
-      }
 
       return {
         id: `community:${spec.key}:${cid}`,
@@ -210,18 +170,6 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
         children: subhubs,
       };
     });
-
-    if (overflow.length) {
-      const total = overflow.reduce((s, x) => s + x.members.length, 0);
-      communityNodes.push({
-        id: `community-overflow:${spec.key}`,
-        label: `+${overflow.length} clusters · ${total} items`,
-        kind: "cluster",
-        dept: spec.key,
-        color: spec.color,
-        count: total,
-      });
-    }
 
     return {
       id: `dept:${spec.key}`,
@@ -243,9 +191,38 @@ export function buildTaxonomy(graph: NormalizedGraph, opts: BuildOpts = {}): Tax
     children: depts,
   };
 
-  return { root, assignments, totalByDept };
+  const index = new Map<string, TreeDatum>();
+  const parentOf = new Map<string, string>();
+  const childrenOf = new Map<string, string[]>();
+  const walk = (d: TreeDatum, parent?: TreeDatum) => {
+    index.set(d.id, d);
+    if (parent) parentOf.set(d.id, parent.id);
+    const kids = d.children ?? [];
+    childrenOf.set(d.id, kids.map((k) => k.id));
+    for (const c of kids) walk(c, d);
+  };
+  walk(root);
+
+  return { root, assignments, totalByDept, index, parentOf, childrenOf };
 }
 
 export const TREE_ROOT_ID = ROOT_ID;
 export const TREE_ROOT_SUB = ROOT_SUB;
 export const deptColorFor = (k: DeptKey) => DEPT_COLOR[k];
+
+/** Return the ancestor chain from root → node (inclusive). */
+export function ancestorsOf(t: Taxonomy, id: string): string[] {
+  const chain: string[] = [];
+  let cur: string | undefined = id;
+  while (cur) {
+    chain.unshift(cur);
+    cur = t.parentOf.get(cur);
+  }
+  return chain;
+}
+
+/** Find the taxonomy id of the leaf backing a real graph node id. */
+export function leafIdForGraphNode(t: Taxonomy, graphNodeId: string): string | null {
+  const id = `leaf:${graphNodeId}`;
+  return t.index.has(id) ? id : null;
+}
