@@ -129,8 +129,8 @@ describe("planNeighborhoods", () => {
     applyNeighborhoodSeed(filtered.nodes, plan);
     for (const n of filtered.nodes) {
       const t = plan.targets.get(n.id)!;
-      expect(n.x).toBe(t.x);
-      expect(n.y).toBe(t.y);
+      expect((n as { x?: number }).x).toBe(t.x);
+      expect((n as { y?: number }).y).toBe(t.y);
     }
     // Original graph.nodes must NOT have been mutated by the planner.
     for (const raw of g.nodes) {
