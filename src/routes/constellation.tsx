@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listPages, getPage } from "@/lib/brain.functions";
+import { loadGraph } from "@/lib/graph/loadGraph";
+import type { NormalizedGraph, GraphNode } from "@/lib/graph/types";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Search, X, Menu, ChevronsUpDown, ChevronsDownUp, Sliders } from "lucide-react";
@@ -17,7 +19,6 @@ export const Route = createFileRoute("/constellation")({
 // ---------- Types ----------
 
 type BrainPage = { id: string; slug: string; title: string; type: string; department: string | null; updated_at: string };
-type GraphRaw = { nodes: Array<{ id: string; label?: string; file_type?: string; community?: number | null }>; links: Array<{ source: string; target: string }> };
 
 type MemNode = {
   kind: "brain" | "graph";
@@ -26,7 +27,7 @@ type MemNode = {
   title: string;
   dept: DeptKey;
   degree: number;
-  meta?: { file_type?: string; community?: number | null };
+  meta?: { file_type?: string; community?: number | null; category?: string; image?: string };
 };
 
 type DeptKey = "Personal" | "Product" | "Community" | "Content" | "Business";
@@ -49,8 +50,8 @@ const C_CORE  = "#D18A3A";
 
 // ---------- Classification ----------
 
-function classifyGraphNode(n: { label?: string; file_type?: string }): DeptKey {
-  const ft = n.file_type ?? "";
+function classifyGraphNode(n: { label?: string; file_type?: string; category?: string }): DeptKey {
+  const ft = n.file_type ?? n.category ?? "";
   if (ft === "code" || /route|component|config|module|hook/.test(ft)) return "Product";
   if (ft === "blog" || ft === "image" || ft === "video") return "Content";
   if (["music","artist","hub","release","shop","sound","archive","member","audio","album"].includes(ft)) return "Community";
@@ -80,7 +81,7 @@ function Constellation() {
   const fetchPage = useServerFn(getPage);
 
   const [pages, setPages] = useState<BrainPage[]>([]);
-  const [graph, setGraph] = useState<GraphRaw | null>(null);
+  const [graph, setGraph] = useState<NormalizedGraph | null>(null);
 
   const [q, setQ] = useState("");
   const [layout, setLayout] = useState<Layout>("rings");
@@ -109,7 +110,7 @@ function Constellation() {
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
 
   useEffect(() => { void fetchPages({ data: undefined as never }).then((r) => setPages(r as BrainPage[])); }, [fetchPages]);
-  useEffect(() => { fetch("/graph.json").then((r) => r.ok ? r.json() as Promise<GraphRaw> : null).then((g) => g && setGraph(g)).catch(() => {}); }, []);
+  useEffect(() => { loadGraph().then((g) => setGraph(g)).catch(() => {}); }, []);
 
   // Rotation ticker.
   useEffect(() => {
@@ -139,16 +140,11 @@ function Constellation() {
         dept: (p.department as DeptKey) ?? "Business", degree: 8,
       }));
     if (!graph) return brain;
-    const deg = new Map<string, number>();
-    for (const l of graph.links) {
-      deg.set(l.source, (deg.get(l.source) ?? 0) + 1);
-      deg.set(l.target, (deg.get(l.target) ?? 0) + 1);
-    }
-    const gnodes: MemNode[] = graph.nodes.map((n) => ({
+    const gnodes: MemNode[] = graph.nodes.map((n: GraphNode) => ({
       kind: "graph", id: n.id, title: n.label ?? n.id,
-      dept: classifyGraphNode(n),
-      degree: deg.get(n.id) ?? 0,
-      meta: { file_type: n.file_type, community: n.community ?? null },
+      dept: classifyGraphNode({ label: n.label, file_type: n.file_type, category: n.category }),
+      degree: n.degree ?? 0,
+      meta: { file_type: n.file_type, community: n.community ?? null, category: n.category, image: n.image ?? n.artwork },
     }));
     return [...brain, ...gnodes];
   }, [pages, graph]);
@@ -194,13 +190,13 @@ function Constellation() {
 
   const openGraph = useCallback((id: string, dept: DeptKey) => {
     if (!graph) return;
-    const raw = graph.nodes.find((n) => n.id === id);
+    const raw = graph.byId.get(id);
     if (!raw) return;
     const neighbors = graph.links
       .filter((l) => l.source === id || l.target === id)
       .map((l) => (l.source === id ? l.target : l.source))
       .slice(0, 40);
-    setSelected({ kind: "graph", node: { ...raw, dept, neighbors } });
+    setSelected({ kind: "graph", node: { id: raw.id, label: raw.label, file_type: raw.file_type, community: raw.community ?? null, dept, neighbors } });
   }, [graph]);
 
   // Stage dimensions.
