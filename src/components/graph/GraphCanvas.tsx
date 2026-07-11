@@ -342,10 +342,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const parentId = plan.parentOf.get(n.id);
         const p = parentId ? planetPos.get(parentId) : undefined;
         if (p) {
-          // Always pull child toward parent. Inside the halo we still apply a
-          // gentle pull so the cluster stays cohesive; outside the halo the
-          // pull scales with overshoot to snap stragglers back in.
-          const dx = p.x - n.x; const dy = p.y - n.y;
+          // Pull child toward a target point that sits OUTWARD along the
+          // parent's radial direction — this keeps the tree branching outward
+          // from the hub instead of collapsing on top of the parent.
+          const pr = Math.hypot(p.x, p.y) || 1;
+          const outX = p.x + (p.x / pr) * halo * 1.2;
+          const outY = p.y + (p.y / pr) * halo * 1.2;
+          const dx = outX - n.x; const dy = outY - n.y;
           const d = Math.hypot(dx, dy) || 1;
           const inside = Math.min(d, halo);
           const overshoot = Math.max(0, d - halo);
