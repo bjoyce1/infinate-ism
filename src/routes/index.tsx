@@ -9,6 +9,7 @@ import type { NormalizedGraph } from "@/lib/graph/types";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { GraphCanvas3D } from "@/components/graph/GraphCanvas3D";
 import { StreetMapCanvas } from "@/components/graph/StreetMapCanvas";
+import { TreeOfLifeCanvas } from "@/components/graph/TreeOfLifeCanvas";
 import { LeftSidebar } from "@/components/graph/LeftSidebar";
 import { RightPanel } from "@/components/graph/RightPanel";
 import { TopBar } from "@/components/graph/TopBar";
@@ -22,7 +23,7 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useSwipeGestures } from "@/hooks/useSwipeGestures";
 
 const searchSchema = z.object({
-  view: fallback(z.enum(["2d", "3d", "street"]), "2d").default("2d"),
+  view: fallback(z.enum(["2d", "3d", "street", "tree"]), "2d").default("2d"),
   node: fallback(z.string(), "").default(""),
   focus: fallback(z.coerce.boolean(), false).default(false),
 });
@@ -169,6 +170,7 @@ function Index() {
         {viewMode === "2d" && <GraphCanvas graph={graph} />}
         {viewMode === "3d" && <GraphCanvas3D graph={graph} />}
         {viewMode === "street" && <StreetMapCanvas graph={graph} />}
+        {viewMode === "tree" && <TreeOfLifeCanvas graph={graph} />}
         {viewMode === "3d" ? <InfiniteIsmHud graph={graph} /> : <TopBar graph={graph} />}
         <HubHoverCard graph={graph} />
       </main>
