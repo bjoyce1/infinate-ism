@@ -474,8 +474,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     ctx.globalAlpha = dim ? 0.15 : 1;
     const img = node.image ? getImage(node.image) : null;
     if (img) {
-      ctx.shadowColor = "#F59E0B";
-      ctx.shadowBlur = isAnchor ? 30 : 18;
+      ctx.shadowColor = "#F5D33F";
+      ctx.shadowBlur = isAnchor ? 32 : 18;
       ctx.save();
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
@@ -486,8 +486,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-      ctx.strokeStyle = "#F59E0B";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "#C99A56";
+      ctx.lineWidth = 1.25;
       ctx.stroke();
     } else {
       ctx.beginPath();
@@ -633,10 +633,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             return highlightSet.has(s) && highlightSet.has(t) ? 2.4 * particleIntensity : 0;
           }}
           linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return "rgba(228,228,231,0.55)";
+            if (!highlightSet) return "rgba(232,192,138,0.55)";
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? "#3DED97" : "rgba(228,228,231,0)";
+            return highlightSet.has(s) && highlightSet.has(t) ? "#F5D33F" : "rgba(232,192,138,0)";
           }}
           cooldownTicks={Infinity}
           d3AlphaDecay={0}
