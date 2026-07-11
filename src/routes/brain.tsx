@@ -210,7 +210,7 @@ function BrainView() {
           )}
         </CCPanel>
 
-        <CCPanel title={<span className="inline-flex items-center gap-2"><HeartPulse className="size-3.5" /> Health details</span> as unknown as string}>
+        <CCPanel title="Health details">
           {!health ? <CCEmpty title="Loading…" /> : (
             <div className="space-y-3 text-[11px]">
               <HealthList label="Orphan pages" items={health.checks.orphans} accent="var(--cc-gold)" />
