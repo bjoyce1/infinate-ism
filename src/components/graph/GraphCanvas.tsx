@@ -561,35 +561,62 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             ctx.save();
             ctx.lineWidth = 0.6 / globalScale;
             if (showOrbitArcs) {
-              // Translucent neighborhood halos behind each top-level parent.
-              for (const rootId of plan.roots) {
-                const t = plan.targets.get(rootId);
-                const r = plan.radius.get(rootId);
-                if (!t || !r) continue;
+              // Rounded organic family hulls for each top-level branch —
+              // sized to actual descendant positions in `data.nodes`.
+              const branchPts = new Map<string, Array<{ x: number; y: number }>>();
+              for (const n of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+                if (n.id === HUB_ID) continue;
+                if (n.x == null || n.y == null) continue;
+                const b = plan.branchOf.get(n.id);
+                if (!b) continue;
+                let arr = branchPts.get(b);
+                if (!arr) { arr = []; branchPts.set(b, arr); }
+                arr.push({ x: n.x, y: n.y });
+              }
+              for (const [branchId, pts] of branchPts) {
+                if (pts.length < 2) continue;
+                // Bounding disc: centroid + max-radius padded.
+                let cx = 0, cy = 0;
+                for (const p of pts) { cx += p.x; cy += p.y; }
+                cx /= pts.length; cy /= pts.length;
+                let rr = 0;
+                for (const p of pts) {
+                  const d = Math.hypot(p.x - cx, p.y - cy);
+                  if (d > rr) rr = d;
+                }
+                rr = Math.max(60, rr + 34);
+                const fill = branchTint(branchId, 0.055);
+                const stroke = branchTint(branchId, 0.22);
                 ctx.beginPath();
-                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
-                const grad = ctx.createRadialGradient(t.x, t.y, r * 0.2, t.x, t.y, r * 1.9);
-                grad.addColorStop(0, "rgba(124,156,255,0.06)");
-                grad.addColorStop(1, "rgba(124,156,255,0)");
-                ctx.fillStyle = grad;
+                ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+                ctx.fillStyle = fill;
                 ctx.fill();
-                ctx.setLineDash([2 / globalScale, 4 / globalScale]);
-                ctx.strokeStyle = "rgba(124,156,255,0.10)";
-                ctx.beginPath();
-                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
+                ctx.setLineDash([3 / globalScale, 5 / globalScale]);
+                ctx.lineWidth = 0.9 / globalScale;
+                ctx.strokeStyle = stroke;
                 ctx.stroke();
                 ctx.setLineDash([]);
+                // Branch label near the top edge of the hull.
+                if (globalScale > 0.6) {
+                  const label = (graph.byId.get(branchId)?.label ?? branchId).slice(0, 40);
+                  const fontSize = Math.max(7, Math.min(16, 11 / globalScale + 2));
+                  ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
+                  ctx.textAlign = "center";
+                  ctx.textBaseline = "bottom";
+                  ctx.fillStyle = branchTint(branchId, 0.9);
+                  ctx.fillText(label, cx, cy - rr - 4);
+                }
               }
             }
             if (showSunGlow) {
-              // Hub glow — cool cyan/violet
-              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 140);
-              grad.addColorStop(0, "rgba(61,237,208,0.35)");
-              grad.addColorStop(0.5, "rgba(124,156,255,0.15)");
+              // Subtle centered ambient glow behind Infinite ISM.
+              const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 220);
+              grad.addColorStop(0, "rgba(61,237,208,0.20)");
+              grad.addColorStop(0.5, "rgba(124,156,255,0.08)");
               grad.addColorStop(1, "rgba(124,156,255,0)");
               ctx.fillStyle = grad;
               ctx.beginPath();
-              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 140, 0, Math.PI * 2);
+              ctx.arc(0, 0, 220, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
