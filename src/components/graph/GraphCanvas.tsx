@@ -106,11 +106,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
   // node is attached to its most-connected main-node neighbor.
   const solarPlan = useMemo<SolarPlan>(() => {
-    const arc = (Math.PI / 2) * sunArcSpread;
+    // Radial-tree layout: hub at center, main nodes distributed on
+    // concentric FULL-CIRCLE rings, grouped by community for angular
+    // coherence. Children branch outward from their parent's angle.
+    const arc = Math.PI * 2; // full circle
     const mains = graph.nodes
       .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
       .slice()
-      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
+      .sort((a, b) => {
+        const ca = a.community ?? 999;
+        const cb = b.community ?? 999;
+        if (ca !== cb) return ca - cb;
+        return (b.degree ?? 0) - (a.degree ?? 0);
+      });
     const effectiveRingCount = Math.max(1, Math.min(mains.length, ringCount));
     const perRing = Math.ceil(mains.length / effectiveRingCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
@@ -119,11 +127,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const idxInRing = i % perRing;
       const countInRing = Math.min(perRing, mains.length - ring * perRing);
       const spacing = arc / Math.max(countInRing, 1);
-      const angle = -arc + spacing * (idxInRing + 0.5);
+      // Offset alternate rings so nodes don't align radially and links don't overlap.
+      const ringOffset = (ring % 2) * spacing * 0.5;
+      const angle = spacing * idxInRing + ringOffset;
       ringOf.set(mains[i].id, { ring, angle });
     }
-    // Anchor Paul Wall next to Swishahouse on the same ring so they consistently
-    // start close without overlapping. Angular offset ≈ 90 world units at ring r.
+    // Keep Paul Wall adjacent to Swishahouse.
     const swisha = ringOf.get("site_swishahouse");
     if (swisha && ringOf.has("artist_paul_wall")) {
       const rr = RING_BASE + swisha.ring * RING_GAP;
@@ -147,7 +156,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       if (best) parentOf.set(n.id, best);
     }
     return { ringOf, parentOf, ringCount: effectiveRingCount, arc };
-  }, [graph, sunArcSpread, ringCount]);
+  }, [graph, ringCount]);
   const solarPlanRef = useRef(solarPlan);
   useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const orbitLayoutRef = useRef(orbitLayout);
