@@ -50,6 +50,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brain_pages: {
+        Row: {
+          body: string
+          citations: Json
+          created_at: string
+          department: Database["public"]["Enums"]["brain_department"] | null
+          frontmatter: Json
+          id: string
+          slug: string
+          title: string
+          type: Database["public"]["Enums"]["brain_page_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          citations?: Json
+          created_at?: string
+          department?: Database["public"]["Enums"]["brain_department"] | null
+          frontmatter?: Json
+          id?: string
+          slug: string
+          title: string
+          type?: Database["public"]["Enums"]["brain_page_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          citations?: Json
+          created_at?: string
+          department?: Database["public"]["Enums"]["brain_department"] | null
+          frontmatter?: Json
+          id?: string
+          slug?: string
+          title?: string
+          type?: Database["public"]["Enums"]["brain_page_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       capism_events: {
         Row: {
           community: number | null
@@ -90,6 +132,7 @@ export type Database = {
           file_url: string | null
           id: string
           next_action: string | null
+          page_id: string | null
           priority: Database["public"]["Enums"]["brain_priority"]
           project_id: string | null
           source_url: string | null
@@ -106,6 +149,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           next_action?: string | null
+          page_id?: string | null
           priority?: Database["public"]["Enums"]["brain_priority"]
           project_id?: string | null
           source_url?: string | null
@@ -122,6 +166,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           next_action?: string | null
+          page_id?: string | null
           priority?: Database["public"]["Enums"]["brain_priority"]
           project_id?: string | null
           source_url?: string | null
@@ -133,6 +178,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "captures_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "brain_pages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "captures_project_id_fkey"
             columns: ["project_id"]
@@ -921,6 +973,48 @@ export type Database = {
           },
         ]
       }
+      page_links: {
+        Row: {
+          created_at: string
+          id: string
+          relation: string
+          source_page_id: string
+          target_page_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          relation?: string
+          source_page_id: string
+          target_page_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          relation?: string
+          source_page_id?: string
+          target_page_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_links_source_page_id_fkey"
+            columns: ["source_page_id"]
+            isOneToOne: false
+            referencedRelation: "brain_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "page_links_target_page_id_fkey"
+            columns: ["target_page_id"]
+            isOneToOne: false
+            referencedRelation: "brain_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1237,7 +1331,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
-      brain_capture_status: "inbox" | "processed" | "archived"
+      brain_capture_status:
+        | "inbox"
+        | "processed"
+        | "archived"
+        | "enriched"
+        | "filed"
       brain_capture_type:
         | "note"
         | "idea"
@@ -1250,6 +1349,12 @@ export type Database = {
         | "file"
         | "ai_prompt"
         | "screenshot"
+      brain_department:
+        | "Community"
+        | "Product"
+        | "Content"
+        | "Personal"
+        | "Business"
       brain_node_kind:
         | "project"
         | "area"
@@ -1259,6 +1364,16 @@ export type Database = {
         | "client"
         | "resource"
         | "prompt"
+      brain_page_type:
+        | "person"
+        | "company"
+        | "concept"
+        | "content"
+        | "project"
+        | "personal"
+        | "skill"
+        | "routine"
+        | "application"
       brain_payment_status: "none" | "unpaid" | "partial" | "paid" | "overdue"
       brain_priority: "low" | "medium" | "high" | "urgent"
       brain_project_status: "active" | "paused" | "completed" | "archived"
@@ -1427,7 +1542,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
-      brain_capture_status: ["inbox", "processed", "archived"],
+      brain_capture_status: [
+        "inbox",
+        "processed",
+        "archived",
+        "enriched",
+        "filed",
+      ],
       brain_capture_type: [
         "note",
         "idea",
@@ -1441,6 +1562,13 @@ export const Constants = {
         "ai_prompt",
         "screenshot",
       ],
+      brain_department: [
+        "Community",
+        "Product",
+        "Content",
+        "Personal",
+        "Business",
+      ],
       brain_node_kind: [
         "project",
         "area",
@@ -1450,6 +1578,17 @@ export const Constants = {
         "client",
         "resource",
         "prompt",
+      ],
+      brain_page_type: [
+        "person",
+        "company",
+        "concept",
+        "content",
+        "project",
+        "personal",
+        "skill",
+        "routine",
+        "application",
       ],
       brain_payment_status: ["none", "unpaid", "partial", "paid", "overdue"],
       brain_priority: ["low", "medium", "high", "urgent"],
