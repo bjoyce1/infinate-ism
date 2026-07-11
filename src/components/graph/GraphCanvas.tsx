@@ -7,7 +7,7 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useServerFn } from "@tanstack/react-start";
 import { setNodeImage } from "@/lib/setNodeImage.functions";
 import { toast } from "sonner";
-import { planNeighborhoods, applyNeighborhoodSeed, HUB_ID as N_HUB_ID, type NeighborhoodPlan } from "@/lib/graph/neighborhoodLayout";
+import { planNeighborhoods, applyNeighborhoodSeed, type NeighborhoodPlan } from "@/lib/graph/neighborhoodLayout";
 
 type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
@@ -113,7 +113,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => { planRef.current = neighborhoodPlan; }, [neighborhoodPlan]);
   // Suppress unused-parameter lint for legacy tuning knobs that no longer
   // gate the plan geometry directly.
-  void ringCount; void sunArcSpread;
+  // Legacy tuning knobs kept for store compatibility. They no longer directly
+  // gate the neighborhood plan geometry, but users can still adjust them —
+  // touching a `ref` here silences "assigned but never read" for the refs
+  // above without changing runtime behavior.
+  void ringCount; void sunArcSpread; void ringSpacingRef.current;
+  void childHaloRadiusRef.current; void sunArcSpreadRef.current;
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
