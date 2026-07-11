@@ -522,9 +522,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkColor = (link: { source: GraphNode | string; target: GraphNode | string }) => {
     const s = typeof link.source === "string" ? link.source : link.source.id;
     const t = typeof link.target === "string" ? link.target : link.target.id;
-    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return "rgba(61,237,151,0.5)";
+    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return "rgba(232,192,138,0.55)";
     if (highlightSet) return "rgba(255,255,255,0.03)";
-    return "rgba(255,255,255,0.08)";
+    return "rgba(139,123,255,0.10)";
   };
 
   return (
@@ -538,17 +538,17 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundColor: "#0A0A0B",
+          backgroundColor: "#050508",
           backgroundImage: [
-            "radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.55), transparent 60%)",
-            "radial-gradient(1px 1px at 78% 32%, rgba(255,255,255,0.45), transparent 60%)",
-            "radial-gradient(1.2px 1.2px at 44% 74%, rgba(255,255,255,0.5), transparent 60%)",
-            "radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 26% 58%, rgba(255,255,255,0.4), transparent 60%)",
-            "radial-gradient(1.5px 1.5px at 62% 12%, rgba(255,255,255,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,0.3), transparent 60%)",
-            "radial-gradient(1px 1px at 96% 54%, rgba(255,255,255,0.35), transparent 60%)",
-            "radial-gradient(circle at 50% 50%, rgba(61,237,151,0.05), transparent 70%)",
+            "radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.45), transparent 60%)",
+            "radial-gradient(1px 1px at 78% 32%, rgba(255,255,255,0.4), transparent 60%)",
+            "radial-gradient(1.2px 1.2px at 44% 74%, rgba(232,192,138,0.35), transparent 60%)",
+            "radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.3), transparent 60%)",
+            "radial-gradient(1px 1px at 26% 58%, rgba(255,255,255,0.35), transparent 60%)",
+            "radial-gradient(1.5px 1.5px at 62% 12%, rgba(139,123,255,0.35), transparent 60%)",
+            "radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,0.25), transparent 60%)",
+            "radial-gradient(1px 1px at 96% 54%, rgba(255,255,255,0.3), transparent 60%)",
+            "radial-gradient(circle at 50% 45%, rgba(139,123,255,0.10), transparent 70%)",
           ].join(", "),
           backgroundSize: "600px 600px, 720px 720px, 540px 540px, 800px 800px, 660px 660px, 700px 700px, 620px 620px, 580px 580px, 100% 100%",
         }}
@@ -579,20 +579,23 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             if (showOrbitArcs) {
               for (let r = 0; r < plan.ringCount; r++) {
                 const rr = RING_BASE + r * spacing;
-                ctx.strokeStyle = `rgba(180,200,255,${0.08 + (r % 2 === 0 ? 0.02 : 0)})`;
+                ctx.strokeStyle = `rgba(201,154,86,${0.10 + (r % 2 === 0 ? 0.03 : 0)})`;
+                ctx.setLineDash([2 / globalScale, 4 / globalScale]);
                 ctx.beginPath();
                 ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
                 ctx.stroke();
+                ctx.setLineDash([]);
               }
             }
             if (showSunGlow) {
               // Sun glow
-              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 90);
-              grad.addColorStop(0, "rgba(255,170,60,0.35)");
-              grad.addColorStop(1, "rgba(255,170,60,0)");
+              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 110);
+              grad.addColorStop(0, "rgba(245,211,63,0.42)");
+              grad.addColorStop(0.5, "rgba(209,138,58,0.18)");
+              grad.addColorStop(1, "rgba(209,138,58,0)");
               ctx.fillStyle = grad;
               ctx.beginPath();
-              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 90, 0, Math.PI * 2);
+                ctx.arc(-HUB_OFFSET, HUB_OFFSET, 110, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
