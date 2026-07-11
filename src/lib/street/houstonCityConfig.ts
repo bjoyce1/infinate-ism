@@ -225,10 +225,12 @@ export const DISTRICT_BY_COMMUNITY = new Map<number, District>(
 
 export const DOWNTOWN_ID: DistrictId = "downtown";
 
-// City-scale bounds used by the initial camera fit.
+// City-scale bounds used by the initial camera fit. Tight to the districts
+// (not to the full highway skeleton) so downtown reads clearly on load and
+// the outer freeways spill off the edges for a "real city" feel.
 export const CITY_BOUNDS = {
-  minX: -20000,
-  maxX: 20000,
-  minY: -20000,
-  maxY: 22000,
+  minX: -6500,
+  maxX: 6500,
+  minY: -7500,
+  maxY: 8000,
 };
