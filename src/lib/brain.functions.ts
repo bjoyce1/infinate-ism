@@ -95,7 +95,7 @@ export const listCaptures = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(100);
-    if (data.status) q.eq("status", data.status);
+    if (data.status) q.eq("status", data.status as never);
     const { data: rows, error } = await q;
     if (error) throw error;
     return rows ?? [];
