@@ -32,10 +32,10 @@ export const Route = createFileRoute("/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Mnemosyne — Second Brain" },
-      { name: "description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
-      { property: "og:title", content: "Mnemosyne — Second Brain" },
-      { property: "og:description", content: "Explore your knowledge graph as a dark constellation of notes, code, blogs, and art." },
+      { title: "Infinite ISM Tree — Mnemosyne" },
+      { name: "description", content: "Explore your Second Brain as a living, department-organized taxonomy tree." },
+      { property: "og:title", content: "Infinite ISM Tree — Mnemosyne" },
+      { property: "og:description", content: "Explore your Second Brain as a living, department-organized taxonomy tree." },
       { property: "og:url", content: "https://infinate-ism.lovable.app/" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/554faf89-68c2-49e1-a105-48f2ec3cd563" },
