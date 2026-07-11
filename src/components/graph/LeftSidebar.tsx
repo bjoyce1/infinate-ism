@@ -530,7 +530,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             </div>
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Neighborhood halos</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Family hulls</span>
                 <button
                   type="button"
                   role="switch"
@@ -550,7 +550,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Sun glow</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Center halo</span>
                 <button
                   type="button"
                   role="switch"
