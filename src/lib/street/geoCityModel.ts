@@ -75,6 +75,31 @@ function hash01(str: string, salt = 0): number {
   return (h >>> 0) / 4294967296;
 }
 
+function polygonBBox(ring: LngLat[]): [number, number, number, number] {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const [x, y] of ring) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  return [minX, minY, maxX, maxY];
+}
+
+export function pointInPolygon(pt: LngLat, ring: LngLat[]): boolean {
+  const [x, y] = pt;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    const intersect =
+      yi > y !== yj > y &&
+      x < ((xj - xi) * (y - yi)) / (yj - yi + 1e-12) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 function inferKind(n: GraphNode): BuildingKind {
   const label = (n.label || "").toLowerCase();
   const type = (n.file_type || "").toLowerCase();
@@ -94,20 +119,42 @@ function inferKind(n: GraphNode): BuildingKind {
 }
 
 // Deterministic scatter inside a district's bounding rectangle.
-function scatterCoord(dist: GeoDistrict, seed: string, ring: number, indexInRing: number, capacity: number): LngLat {
+// Deterministic scatter that stays strictly inside the district polygon.
+// Uses radial placement around the district centre, then rejection-samples
+// within the polygon bounding box if the radial pick falls outside the
+// irregular shape (e.g. Mr. CAP Personal District).
+function scatterCoord(
+  dist: GeoDistrict,
+  seed: string,
+  ring: number,
+  indexInRing: number,
+  capacity: number,
+): LngLat {
   const [cx, cy] = dist.center;
-  const halfW = Math.abs(dist.polygon[1][0] - dist.polygon[0][0]) / 2;
-  const halfH = Math.abs(dist.polygon[2][1] - dist.polygon[0][1]) / 2;
-  // Radial-ish placement so hubs stay near centre.
-  const r = 0.15 + ring * 0.28;
+  const [minX, minY, maxX, maxY] = polygonBBox(dist.polygon);
+  const halfW = (maxX - minX) / 2;
+  const halfH = (maxY - minY) / 2;
+
+  const baseR = 0.15 + ring * 0.28;
   const angBase = (indexInRing / Math.max(1, capacity)) * Math.PI * 2;
-  const jitter = (hash01(seed + dist.id, ring) - 0.5) * 0.5;
-  const ang = angBase + jitter;
-  const rr = r + (hash01(seed + dist.id, ring + 7) - 0.5) * 0.20;
-  return [
-    cx + Math.cos(ang) * rr * halfW,
-    cy + Math.sin(ang) * rr * halfH,
-  ];
+
+  // Try the deterministic radial pick first, then shrink toward the centre
+  // on rejection so we always land inside the (possibly irregular) polygon.
+  for (let attempt = 0; attempt < 16; attempt++) {
+    const jitter = (hash01(seed + dist.id, ring + attempt) - 0.5) * 0.5;
+    const ang = angBase + jitter;
+    const rMul = Math.max(0, 1 - attempt * 0.12);
+    const rr =
+      (baseR + (hash01(seed + dist.id, ring + 7 + attempt) - 0.5) * 0.2) *
+      rMul;
+    const candidate: LngLat = [
+      cx + Math.cos(ang) * rr * halfW,
+      cy + Math.sin(ang) * rr * halfH,
+    ];
+    if (pointInPolygon(candidate, dist.polygon)) return candidate;
+  }
+  // Last resort — centre is always inside.
+  return [cx, cy];
 }
 
 function addProperty(

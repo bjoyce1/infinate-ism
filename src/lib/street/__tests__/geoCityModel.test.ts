@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GraphNode, NormalizedGraph } from "@/lib/graph/types";
-import { buildGeoCityModel } from "../geoCityModel";
-import { DOWNTOWN_BUILDINGS, GEO_DISTRICTS } from "../houstonGeoConfig";
+import { buildGeoCityModel, pointInPolygon } from "../geoCityModel";
+import {
+  DOWNTOWN_BUILDINGS,
+  GEO_DISTRICTS,
+  MRCAP_PERSONAL_POLYGON,
+} from "../houstonGeoConfig";
 
 function makeGraph(nodes: GraphNode[], links: { source: string; target: string; relation?: string }[] = []): NormalizedGraph {
   const byId = new Map(nodes.map((n) => [n.id, n]));
@@ -68,5 +72,23 @@ describe("buildGeoCityModel", () => {
     expect(insts.length).toBe(2);
     const owner = m.roads.filter((r) => r.tier === "sameOwner");
     expect(owner.length).toBeGreaterThan(0);
+  });
+
+  it("keeps every Mr. CAP Personal District property inside the real street polygon", () => {
+    const mrcap = GEO_DISTRICTS.find((d) => d.id === "mrcap_personal")!;
+    const nodes: GraphNode[] = Array.from({ length: 40 }, (_, i) => ({
+      id: `mc_${i}`,
+      label: `mc_${i}`,
+      category: "other",
+      degree: 1,
+      community: mrcap.communityId!,
+      is_hub: i === 0,
+    } as GraphNode));
+    const m = buildGeoCityModel(makeGraph(nodes));
+    const props = m.properties.filter((p) => p.districtId === "mrcap_personal");
+    expect(props.length).toBeGreaterThanOrEqual(nodes.length);
+    for (const p of props) {
+      expect(pointInPolygon(p.coord, MRCAP_PERSONAL_POLYGON)).toBe(true);
+    }
   });
 });
