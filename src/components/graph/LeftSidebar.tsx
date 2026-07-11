@@ -450,12 +450,12 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
 
           <div>
             <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text mb-4">
-              Spawn Orbits
+              Neighborhood
             </h3>
             <div className="space-y-3">
               <label className="block">
                 <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
-                  <span>Orbit radius</span>
+                  <span>Family radius</span>
                   <span>{spawnOrbitRadius.toFixed(1)}×</span>
                 </div>
                 <input
@@ -470,7 +470,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
               </label>
               <label className="block">
                 <div className="flex justify-between text-[10px] font-mono text-muted-text mb-1">
-                  <span>Rotation speed</span>
+                  <span>Family drift</span>
                   <span>{spawnOrbitSpeed.toFixed(1)}×</span>
                 </div>
                 <input
@@ -489,7 +489,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-text">
-                Force Layout
+                Neighborhood Layout
               </h3>
               <button
                 type="button"
@@ -501,14 +501,14 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             </div>
             <div className="space-y-3">
               {[
-                { label: "Link strength", value: linkStrength, set: setLinkStrength, min: 0, max: 3, step: 0.05, suffix: "×" },
+                { label: "Cross-link strength", value: linkStrength, set: setLinkStrength, min: 0, max: 3, step: 0.05, suffix: "×" },
                 { label: "Charge", value: chargeStrength, set: setChargeStrength, min: 0, max: 3, step: 0.05, suffix: "×" },
                 { label: "Collide radius", value: collideRadius, set: setCollideRadius, min: 0, max: 4, step: 0.1, suffix: "×" },
-                { label: "Centroid pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05, suffix: "×" },
-                { label: "Ring spacing", value: ringSpacing, set: setRingSpacing, min: 0.4, max: 2.5, step: 0.05, suffix: "×" },
-                { label: "Ring count", value: ringCount, set: setRingCount, min: 1, max: 12, step: 1, suffix: "" },
-                { label: "Sun arc spread", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05, suffix: "×" },
-                { label: "Child halo", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05, suffix: "×" },
+                { label: "Neighborhood pull", value: centroidPull, set: setCentroidPull, min: 0, max: 3, step: 0.05, suffix: "×" },
+                { label: "Neighborhood spacing", value: ringSpacing, set: setRingSpacing, min: 0.4, max: 2.5, step: 0.05, suffix: "×" },
+                { label: "Neighborhood tiers", value: ringCount, set: setRingCount, min: 1, max: 12, step: 1, suffix: "" },
+                { label: "Family arc", value: sunArcSpread, set: setSunArcSpread, min: 0.5, max: 2, step: 0.05, suffix: "×" },
+                { label: "Family radius", value: childHaloRadius, set: setChildHaloRadius, min: 0.3, max: 3, step: 0.05, suffix: "×" },
                 { label: "Parent-attract strength", value: parentAttract, set: setParentAttract, min: 0, max: 3, step: 0.05, suffix: "×" },
               ].map((s) => (
                 <label key={s.label} className="block">
@@ -530,7 +530,7 @@ export function LeftSidebar({ graph }: { graph: NormalizedGraph }) {
             </div>
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Orbit arcs</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-text">Neighborhood halos</span>
                 <button
                   type="button"
                   role="switch"
