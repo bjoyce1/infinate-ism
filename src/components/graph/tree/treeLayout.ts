@@ -111,7 +111,7 @@ export function layoutTree({ root, width, height, expanded, density }: LayoutInp
         byId.set(sub.id, subLaid);
         links.push({ source: commLaid, target: subLaid });
 
-        if (sub.data === undefined && sub.kind === "cluster") return;
+        if (sub.kind === "cluster") return;
 
         const showLeaves = showLeavesAll || expanded.has(sub.id);
         if (!showLeaves) return;
