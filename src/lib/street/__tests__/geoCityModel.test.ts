@@ -112,13 +112,17 @@ describe("buildGeoCityModel", () => {
     // Representative points just inside each side must be inside the polygon.
     const cx = -95.33937;
     const cy = 29.70335;
-    // near north (just below OST/MLK corner)
-    expect(pointInPolygon([cx, 29.7080], MRCAP_PERSONAL_POLYGON)).toBe(true);
-    // near south (just above Griggs)
-    expect(pointInPolygon([cx, 29.6985], MRCAP_PERSONAL_POLYGON)).toBe(true);
-    // near west (just east of Calhoun, mid-column)
+    // Centroid always inside
+    expect(pointInPolygon([cx, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Interior probe near the NE (below OST diagonal) — OST runs NE, so
+    // near the NE corner high latitudes are inside; at cx (midway west) OST
+    // sits around 29.7075, so use 29.7085 near the NE corner longitude.
+    expect(pointInPolygon([-95.3372, 29.7085], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just above Griggs, near SE corner
+    expect(pointInPolygon([-95.3370, 29.6985], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just east of Calhoun (mid column)
     expect(pointInPolygon([-95.3445, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
-    // near east (just west of MLK)
-    expect(pointInPolygon([-95.3350, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just west of MLK (mid column) — MLK curves, so pick a safely-inside lon
+    expect(pointInPolygon([-95.3355, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
   });
 });
