@@ -18,10 +18,22 @@ type ForceGraphHandle = {
 
 const HUB_ID = "site_mrcap1_com";
 
-// Solar-system layout constants (world units).
-const RING_BASE = 220;
-const RING_GAP = 150;
-const HUB_OFFSET = 0; // Sun at origin; planets in upper-right arc naturally place Sun at bottom-left of the fitted view
+// Radial-tree layout constants (world units). Hub at origin, mains on
+// concentric full-circle rings, children branch outward from their parent.
+const RING_BASE = 260;
+const RING_GAP = 190;
+const HUB_OFFSET = 0;
+
+// Obsidian palette
+const COLOR_BG = "#0a0a0f";
+const COLOR_LINK = "rgba(124,156,255,0.14)";
+const COLOR_LINK_HI = "rgba(61,237,208,0.75)";
+const COLOR_LINK_DIM = "rgba(255,255,255,0.025)";
+const COLOR_NODE = "#7c9cff";
+const COLOR_NODE_HI = "#3dedd0";
+const COLOR_LABEL = "#c9d1e0";
+const COLOR_IMG_BORDER = "#3dedd0";
+const COLOR_IMG_GLOW = "#7c9cff";
 
 type SolarPlan = {
   ringOf: Map<string, { ring: number; angle: number }>;
