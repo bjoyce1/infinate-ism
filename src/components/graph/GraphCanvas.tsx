@@ -609,23 +609,23 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             if (showOrbitArcs) {
               for (let r = 0; r < plan.ringCount; r++) {
                 const rr = RING_BASE + r * spacing;
-                ctx.strokeStyle = `rgba(201,154,86,${0.10 + (r % 2 === 0 ? 0.03 : 0)})`;
+                ctx.strokeStyle = `rgba(124,156,255,${0.08 + (r % 2 === 0 ? 0.04 : 0)})`;
                 ctx.setLineDash([2 / globalScale, 4 / globalScale]);
                 ctx.beginPath();
-                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
+                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
               }
             }
             if (showSunGlow) {
-              // Sun glow
-              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 110);
-              grad.addColorStop(0, "rgba(245,211,63,0.42)");
-              grad.addColorStop(0.5, "rgba(209,138,58,0.18)");
-              grad.addColorStop(1, "rgba(209,138,58,0)");
+              // Hub glow — cool cyan/violet
+              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 140);
+              grad.addColorStop(0, "rgba(61,237,208,0.35)");
+              grad.addColorStop(0.5, "rgba(124,156,255,0.15)");
+              grad.addColorStop(1, "rgba(124,156,255,0)");
               ctx.fillStyle = grad;
               ctx.beginPath();
-                ctx.arc(-HUB_OFFSET, HUB_OFFSET, 110, 0, Math.PI * 2);
+              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 140, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
@@ -663,18 +663,21 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             return highlightSet.has(s) && highlightSet.has(t) ? 2.4 * particleIntensity : 0;
           }}
           linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return "rgba(232,192,138,0.55)";
+            if (!highlightSet) return "rgba(124,156,255,0.45)";
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? "#F5D33F" : "rgba(232,192,138,0)";
+            return highlightSet.has(s) && highlightSet.has(t) ? COLOR_NODE_HI : "rgba(124,156,255,0)";
           }}
-          cooldownTicks={Infinity}
-          d3AlphaDecay={0}
-          d3AlphaMin={0}
-          d3VelocityDecay={0.65}
+          cooldownTicks={300}
+          d3AlphaDecay={0.03}
+          d3AlphaMin={0.002}
+          d3VelocityDecay={0.55}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
+          onNodeDoubleClick={() => {
+            if (!focusMode) toggleFocus();
+          }}
           onNodeRightClick={(
             node: GraphNode,
             event: MouseEvent,
