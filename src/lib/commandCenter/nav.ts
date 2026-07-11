@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, CalendarDays, Inbox, Target, Users, Calendar,
-  Brain, Network, Sparkles, Wallet, Zap, Plug, Settings,
+  Brain, Network, Sparkles, Wallet, Zap, Plug, Settings, Orbit,
 } from "lucide-react";
 
 export type NavItem = {
@@ -21,6 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/calendar",     label: "Calendar",            short: "Calendar",  icon: Calendar,        accent: "var(--cc-cyan)",    group: "work" },
   { to: "/brain",        label: "Second Brain",        short: "Brain",     icon: Brain,           accent: "var(--cc-violet)",  group: "intel" },
   { to: "/",             label: "Knowledge Graph",     short: "Graph",     icon: Network,         accent: "var(--cc-violet)",  group: "intel" },
+  { to: "/constellation",label: "Command Constellation",short: "Constell.",icon: Orbit,           accent: "var(--cc-gold)",    group: "intel" },
   { to: "/content",      label: "Content Intelligence",short: "Content",   icon: Sparkles,        accent: "var(--cc-gold)",    group: "intel" },
   { to: "/finance",      label: "Finance & Admin",     short: "Finance",   icon: Wallet,          accent: "var(--cc-emerald)", group: "ops" },
   { to: "/automations",  label: "Automations",         short: "Auto",      icon: Zap,             accent: "var(--cc-crimson)", group: "ops" },
