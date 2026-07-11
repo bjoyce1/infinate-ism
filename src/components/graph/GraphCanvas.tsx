@@ -291,7 +291,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const spacing = RING_GAP * ringSpacingRef.current;
       const halo = 60 * childHaloRadiusRef.current;
       const ringPull = 0.18 * alpha * centroidPullRef.current;
-      const childPull = 0.10 * alpha * centroidPullRef.current * parentAttractRef.current;
+      // Stronger, always-on child→parent pull so spawns stay tight to their
+      // parent planet instead of drifting across the canvas.
+      const childPull = 0.35 * alpha * centroidPullRef.current * parentAttractRef.current;
       const sunPull = 0.25 * alpha;
       // Precompute planet positions for children.
       const planetPos = new Map<string, { x: number; y: number }>();
@@ -318,12 +320,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const parentId = plan.parentOf.get(n.id);
         const p = parentId ? planetPos.get(parentId) : undefined;
         if (p) {
-          // Pull child into a halo around parent (keep some slack via halo dist).
+          // Always pull child toward parent. Inside the halo we still apply a
+          // gentle pull so the cluster stays cohesive; outside the halo the
+          // pull scales with overshoot to snap stragglers back in.
           const dx = p.x - n.x; const dy = p.y - n.y;
           const d = Math.hypot(dx, dy) || 1;
+          const inside = Math.min(d, halo);
           const overshoot = Math.max(0, d - halo);
-          n.vx = (n.vx ?? 0) + (dx / d) * overshoot * childPull;
-          n.vy = (n.vy ?? 0) + (dy / d) * overshoot * childPull;
+          const magnitude = inside * 0.35 + overshoot * 1.5;
+          n.vx = (n.vx ?? 0) + (dx / d) * magnitude * childPull;
+          n.vy = (n.vy ?? 0) + (dy / d) * magnitude * childPull;
         }
       }
     };
@@ -333,8 +339,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current.d3Force(
       "charge",
       forceManyBody<ClusterNode>()
-        .strength((n) => (n.is_hub || n.image ? -120 : -18) * chargeStrengthRef.current)
-        .distanceMax(220),
+        // Weaker repulsion on satellites so they stay clustered around their
+        // parent planet instead of pushing each other outward.
+        .strength((n) => (n.is_hub || n.image ? -120 : -8) * chargeStrengthRef.current)
+        .distanceMax(160),
     );
     // Prevent small satellite nodes from overlapping. Image / hub nodes are
     // allowed to overlap freely so main-node art can stack visually.
@@ -365,7 +373,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const w = Math.max(1, l.weight ?? 1);
             return Math.max(60, 220 / Math.sqrt(w));
           }
-          return 36;
+          // Short, stiff link between a child and its parent keeps spawn
+          // clusters glued to the planet they belong to.
+          return 28;
         })
         .strength((l) => {
           const scale = linkStrengthRef.current;
@@ -373,7 +383,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             const w = Math.max(1, l.weight ?? 1);
             return Math.min(0.5, 0.02 * w) * scale;
           }
-          return 0.55 * scale;
+          return 0.9 * scale;
         });
     }
     fgRef.current.d3ReheatSimulation();
