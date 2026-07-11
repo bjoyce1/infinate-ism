@@ -493,6 +493,29 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     return set;
   }, [hoveredId, selectedId, graph.neighbors]);
 
+  // Keyboard nav: Esc clears selection, F toggles focus mode, arrows jump to
+  // a neighbor of the current selection.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      if (e.key === "Escape") { select(null); return; }
+      if (e.key === "f" || e.key === "F") { toggleFocus(); return; }
+      if (!selectedId) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "ArrowDown") {
+        const nbrs = Array.from(graph.neighbors.get(selectedId) ?? []);
+        if (!nbrs.length) return;
+        const dir = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1;
+        const idx = nbrs.indexOf(selectedId);
+        const next = nbrs[((idx + dir) % nbrs.length + nbrs.length) % nbrs.length] ?? nbrs[0];
+        select(next);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, graph.neighbors, select, toggleFocus]);
+
   const nodeCanvasObject = (
     node: GraphNode & { x?: number; y?: number },
     ctx: CanvasRenderingContext2D,
