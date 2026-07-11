@@ -384,8 +384,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   // Seed positions on the EXACT cloned node objects the force-graph receives.
   // This must happen before the renderer initializes those nodes so they
   // spawn in a readable grouped state without needing "Reset Layout".
+  // User drag offsets — persisted locally so a manually-adjusted family
+  // stays where the user left it across reloads.
+  const dragOffsetsRef = useRef<DragOffsets>(loadDragOffsets());
+
   useEffect(() => {
-    applyNeighborhoodSeed(data.nodes, neighborhoodPlan);
+    applyHybridSeed(data.nodes, neighborhoodPlan);
+    // Apply persisted user drag offsets on top of the deterministic seed.
+    const offs = dragOffsetsRef.current;
+    for (const n of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+      const o = offs[n.id];
+      if (o && n.x != null && n.y != null) { n.x += o.dx; n.y += o.dy; }
+    }
     fgRef.current?.d3ReheatSimulation();
   }, [data, neighborhoodPlan, layoutResetToken]);
 
@@ -407,8 +417,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     if (!anchor) return null;
     const set = new Set<string>([anchor]);
     for (const nb of graph.neighbors.get(anchor) ?? []) set.add(nb);
+    // Ancestor path back to HUB — always highlighted on hover/select so the
+    // hierarchy up to Infinite ISM is visually explicit.
+    for (const a of neighborhoodPlan.ancestorsOf(anchor)) set.add(a);
+    // Direct children too.
+    for (const c of neighborhoodPlan.childrenOf.get(anchor) ?? []) set.add(c);
     return set;
-  }, [hoveredId, selectedId, graph.neighbors]);
+  }, [hoveredId, selectedId, graph.neighbors, neighborhoodPlan]);
 
   // Keyboard nav: Esc clears selection, F toggles focus mode, arrows jump to
   // a neighbor of the current selection.
