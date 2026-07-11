@@ -156,7 +156,16 @@ function Index() {
     <div className="h-screen w-full bg-obsidian-bg text-white font-sora flex overflow-hidden">
       <h1 className="sr-only">Mnemosyne — Explore Your Second Brain</h1>
       <LeftSidebar graph={graph} />
-      <main className="flex-1 relative bg-[radial-gradient(circle_at_center,_#161618_0%,_#0A0A0B_100%)]">
+      <main className="flex-1 relative bg-[#050508]">
+        {/* Ambient violet haze — matches Command Constellation */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 45%, rgba(139,123,255,0.10) 0%, rgba(5,5,8,0) 55%)",
+          }}
+        />
         {viewMode === "2d" && <GraphCanvas graph={graph} />}
         {viewMode === "3d" && <GraphCanvas3D graph={graph} />}
         {viewMode === "street" && <StreetMapCanvas graph={graph} />}
