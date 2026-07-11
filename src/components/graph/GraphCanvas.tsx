@@ -7,6 +7,7 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useServerFn } from "@tanstack/react-start";
 import { setNodeImage } from "@/lib/setNodeImage.functions";
 import { toast } from "sonner";
+import { planNeighborhoods, applyNeighborhoodSeed, HUB_ID as N_HUB_ID, type NeighborhoodPlan } from "@/lib/graph/neighborhoodLayout";
 
 type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
@@ -35,12 +36,10 @@ const COLOR_LABEL = "#c9d1e0";
 const COLOR_IMG_BORDER = "#3dedd0";
 const COLOR_IMG_GLOW = "#7c9cff";
 
-type SolarPlan = {
-  ringOf: Map<string, { ring: number; angle: number }>;
-  parentOf: Map<string, string>; // child id -> parent main id
-  ringCount: number;
-  arc: number;
-};
+// Legacy `SolarPlan` replaced by the pure neighborhood planner in
+// `src/lib/graph/neighborhoodLayout.ts`. Kept here as a comment to note the
+// intent: every non-root node now has one stable primary layout parent, and
+// families are packed around their parent rather than around a global hub.
 
 export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const [size, setSize] = useState({ w: 800, h: 600 });
@@ -106,60 +105,15 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   // Build the solar-system plan: rank main nodes by degree, spread them across
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
   // node is attached to its most-connected main-node neighbor.
-  const solarPlan = useMemo<SolarPlan>(() => {
-    // Radial-tree layout: hub at center, main nodes distributed on
-    // concentric FULL-CIRCLE rings, grouped by community for angular
-    // coherence. Children branch outward from their parent's angle.
-    const arc = Math.PI * 2; // full circle
-    const mains = graph.nodes
-      .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
-      .slice()
-      .sort((a, b) => {
-        const ca = a.community ?? 999;
-        const cb = b.community ?? 999;
-        if (ca !== cb) return ca - cb;
-        return (b.degree ?? 0) - (a.degree ?? 0);
-      });
-    const effectiveRingCount = Math.max(1, Math.min(mains.length, ringCount));
-    const perRing = Math.ceil(mains.length / effectiveRingCount);
-    const ringOf = new Map<string, { ring: number; angle: number }>();
-    for (let i = 0; i < mains.length; i++) {
-      const ring = Math.floor(i / perRing);
-      const idxInRing = i % perRing;
-      const countInRing = Math.min(perRing, mains.length - ring * perRing);
-      const spacing = arc / Math.max(countInRing, 1);
-      // Offset alternate rings so nodes don't align radially and links don't overlap.
-      const ringOffset = (ring % 2) * spacing * 0.5;
-      const angle = spacing * idxInRing + ringOffset;
-      ringOf.set(mains[i].id, { ring, angle });
-    }
-    // Keep Paul Wall adjacent to Swishahouse.
-    const swisha = ringOf.get("site_swishahouse");
-    if (swisha && ringOf.has("artist_paul_wall")) {
-      const rr = RING_BASE + swisha.ring * RING_GAP;
-      const delta = Math.min(0.6, 90 / Math.max(rr, 1));
-      ringOf.set("artist_paul_wall", { ring: swisha.ring, angle: swisha.angle + delta });
-    }
-    const mainIds = new Set(mains.map((m) => m.id));
-    const parentOf = new Map<string, string>();
-    for (const n of graph.nodes) {
-      if (n.id === HUB_ID) continue;
-      if (mainIds.has(n.id)) continue;
-      const nbrs = graph.neighbors.get(n.id);
-      if (!nbrs) continue;
-      let best: string | null = null;
-      let bestDeg = -1;
-      for (const nb of nbrs) {
-        if (!mainIds.has(nb)) continue;
-        const d = graph.byId.get(nb)?.degree ?? 0;
-        if (d > bestDeg) { bestDeg = d; best = nb; }
-      }
-      if (best) parentOf.set(n.id, best);
-    }
-    return { ringOf, parentOf, ringCount: effectiveRingCount, arc };
-  }, [graph, ringCount]);
-  const solarPlanRef = useRef(solarPlan);
-  useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
+  const neighborhoodPlan = useMemo<NeighborhoodPlan>(
+    () => planNeighborhoods(graph, layoutSeed),
+    [graph, layoutSeed, layoutResetToken],
+  );
+  const planRef = useRef(neighborhoodPlan);
+  useEffect(() => { planRef.current = neighborhoodPlan; }, [neighborhoodPlan]);
+  // Suppress unused-parameter lint for legacy tuning knobs that no longer
+  // gate the plan geometry directly.
+  void ringCount; void sunArcSpread;
   const orbitLayoutRef = useRef(orbitLayout);
   useEffect(() => { orbitLayoutRef.current = orbitLayout; }, [orbitLayout]);
   useEffect(() => {
@@ -168,64 +122,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current?.d3ReheatSimulation();
   }, [orbitLayout]);
 
-  // Organic force-directed layout, Obsidian-style. No orbits, no fixed rings —
-  // d3-force does the work. We just give it good starting positions (spread on
-  // a ring, seeded by community) so it settles into readable clusters instead
-  // of a chaotic hairball.
-  useEffect(() => {
-    if (!orbitLayout) return;
-    type Pos = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
-    // Seed positions using the solar plan: hub near "bottom-left", planets on
-    // rings arcing up-and-right, children in a small halo around their parent.
-    const seedStr = String(layoutSeed);
-    const hash = (s: string) => {
-      let h = 2166136261 ^ (layoutSeed | 0);
-      for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-      for (let i = 0; i < seedStr.length; i++) h = Math.imul(h ^ seedStr.charCodeAt(i), 16777619);
-      return (h >>> 0) / 0xffffffff;
-    };
-    const plan = solarPlan;
-    const halo = 60 * childHaloRadius;
-    const spacing = RING_GAP * ringSpacing;
-
-    for (const raw of graph.nodes) {
-      const n = raw as Pos;
-      n.fx = undefined; n.fy = undefined;
-      if (n.id === HUB_ID) {
-        n.x = -HUB_OFFSET; n.y = HUB_OFFSET; n.vx = 0; n.vy = 0;
-        continue;
-      }
-      const ring = plan.ringOf.get(n.id);
-      if (ring) {
-        const rr = RING_BASE + ring.ring * spacing;
-        const jitter = (hash(n.id) - 0.5) * 0.08;
-        const a = ring.angle + jitter;
-        n.x = Math.cos(a) * rr;
-        n.y = Math.sin(a) * rr;
-      } else {
-        const parent = plan.parentOf.get(n.id);
-        const p = parent ? plan.ringOf.get(parent) : null;
-        if (p) {
-          // Branch radially OUTWARD from the parent along its ring angle,
-          // with a small angular spread — gives a clean tree silhouette.
-          const rr = RING_BASE + p.ring * spacing;
-          const angularSpread = 0.35; // radians
-          const branchAngle = p.angle + (hash(n.id + "|a") - 0.5) * angularSpread;
-          const branchDist = rr + halo * (0.5 + hash(n.id + "|r") * 1.6);
-          n.x = Math.cos(branchAngle) * branchDist;
-          n.y = Math.sin(branchAngle) * branchDist;
-        } else {
-          // Untethered nodes: park near the hub in a loose cloud.
-          const a = hash(n.id) * Math.PI * 2;
-          const rr = 80 + hash(n.id + "|r") * 120;
-          n.x = -HUB_OFFSET + Math.cos(a) * rr;
-          n.y = HUB_OFFSET + Math.sin(a) * rr;
-        }
-      }
-      n.vx = 0; n.vy = 0;
-    }
-    fgRef.current?.d3ReheatSimulation();
-  }, [graph, orbitLayout, layoutSeed, layoutResetToken, solarPlan, ringSpacing, childHaloRadius]);
+  // Placeholder — seeding is done directly on the cloned filtered nodes
+  // that the renderer consumes. See the effect below that runs after
+  // `data` is memoized.
 
 
   // Refs so the force closure always reads the latest values without re-registering.
@@ -308,112 +207,78 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     type ClusterNode = GraphNode & { x?: number; y?: number; vx?: number; vy?: number; fx?: number; fy?: number };
     let nodes: ClusterNode[] = [];
 
+    // Neighborhood centroid force: pull every node toward its planned target,
+    // with a stronger pull on children (so families stay tight around their
+    // parent) and a gentle soft-pin on the hub.
     const clusterForce = (alpha: number) => {
       if (!nodes.length || !orbitLayoutRef.current) return;
-      const plan = solarPlanRef.current;
-      const spacing = RING_GAP * ringSpacingRef.current;
-      const halo = 60 * childHaloRadiusRef.current;
-      const ringPull = 0.18 * alpha * centroidPullRef.current;
-      // Stronger, always-on child→parent pull so spawns stay tight to their
-      // parent planet instead of drifting across the canvas.
-      const childPull = 0.35 * alpha * centroidPullRef.current * parentAttractRef.current;
-      const sunPull = 0.25 * alpha;
-      // Precompute planet positions for children.
-      const planetPos = new Map<string, { x: number; y: number }>();
-      for (const [id, r] of plan.ringOf) {
-        const rr = RING_BASE + r.ring * spacing;
-        planetPos.set(id, { x: Math.cos(r.angle) * rr, y: Math.sin(r.angle) * rr });
-      }
+      const plan = planRef.current;
+      const base = 0.22 * alpha * centroidPullRef.current;
+      const childBoost = parentAttractRef.current;
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        if (n.id === HUB_ID) {
-          n.vx = (n.vx ?? 0) + (-HUB_OFFSET - n.x) * sunPull;
-          n.vy = (n.vy ?? 0) + (HUB_OFFSET - n.y) * sunPull;
-          continue;
-        }
-        const ring = plan.ringOf.get(n.id);
-        if (ring) {
-          const rr = RING_BASE + ring.ring * spacing;
-          const tx = Math.cos(ring.angle) * rr;
-          const ty = Math.sin(ring.angle) * rr;
-          n.vx = (n.vx ?? 0) + (tx - n.x) * ringPull;
-          n.vy = (n.vy ?? 0) + (ty - n.y) * ringPull;
-          continue;
-        }
-        const parentId = plan.parentOf.get(n.id);
-        const p = parentId ? planetPos.get(parentId) : undefined;
-        if (p) {
-          // Pull child toward a target point that sits OUTWARD along the
-          // parent's radial direction — this keeps the tree branching outward
-          // from the hub instead of collapsing on top of the parent.
-          const pr = Math.hypot(p.x, p.y) || 1;
-          const outX = p.x + (p.x / pr) * halo * 1.2;
-          const outY = p.y + (p.y / pr) * halo * 1.2;
-          const dx = outX - n.x; const dy = outY - n.y;
-          const d = Math.hypot(dx, dy) || 1;
-          const inside = Math.min(d, halo);
-          const overshoot = Math.max(0, d - halo);
-          const magnitude = inside * 0.35 + overshoot * 1.5;
-          n.vx = (n.vx ?? 0) + (dx / d) * magnitude * childPull;
-          n.vy = (n.vy ?? 0) + (dy / d) * magnitude * childPull;
-        }
+        const t = plan.targets.get(n.id);
+        if (!t) continue;
+        const d = (plan.depth.get(n.id) ?? 0);
+        // Roots/leaves scaling: deeper nodes are pulled slightly harder so
+        // grandchildren keep tight sub-neighborhoods.
+        const k = base * (d === 0 ? 0.35 : d === 1 ? 0.9 : 1.15 * childBoost);
+        n.vx = (n.vx ?? 0) + (t.x - n.x) * k;
+        n.vy = (n.vy ?? 0) + (t.y - n.y) * k;
       }
     };
     (clusterForce as unknown as { initialize: (n: ClusterNode[]) => void }).initialize = (n) => { nodes = n; };
     fgRef.current.d3Force("orbital", clusterForce);
-    // Uniform repulsion so nothing clumps into a blob.
+    // Short-range repulsion only — the neighborhood plan does the global
+    // arrangement, so we only need to prevent local overlap.
     fgRef.current.d3Force(
       "charge",
       forceManyBody<ClusterNode>()
-        // Weaker repulsion on satellites so they stay clustered around their
-        // parent planet instead of pushing each other outward.
-        .strength((n) => (n.is_hub || n.image ? -120 : -8) * chargeStrengthRef.current)
-        .distanceMax(160),
+        .strength((n) => (n.is_hub || n.image ? -90 : -14) * chargeStrengthRef.current)
+        .distanceMax(140),
     );
-    // Prevent small satellite nodes from overlapping. Image / hub nodes are
-    // allowed to overlap freely so main-node art can stack visually.
+    // Collision on ALL nodes including hub/image nodes — no more zero-radius
+    // hub nodes eating their neighborhoods.
     const collide = forceCollide<ClusterNode>()
       .radius((n) => {
         const isHub = Boolean(n.is_hub || n.image);
-        if (isHub) return 0;
-        const base = Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
+        const base = isHub
+          ? Math.max(14, Math.min(28, 10 + Math.sqrt(n.degree ?? 0) * 1.2)) + 4
+          : Math.max(1.5, Math.min(6, 1.5 + Math.sqrt(n.degree ?? 0))) + 4;
         return base * collideRadiusRef.current;
       })
-      .strength(1)
-      .iterations(3);
+      .strength(0.9)
+      .iterations(2);
     fgRef.current.d3Force("collide", collide);
     // Loosen links between main (hub / image) nodes so highly-connected
     // hubs don't pull each other into a tight ball, but keep them loosely grouped.
     type LinkEndpoint = string | ClusterNode;
     type SimLink = { source: LinkEndpoint; target: LinkEndpoint; weight?: number };
-    const isMain = (n: LinkEndpoint) =>
-      typeof n === "object" && n !== null && Boolean(n.is_hub || n.image);
+    const idOf = (n: LinkEndpoint) => (typeof n === "string" ? n : n.id);
     const linkForce = (fgRef.current.d3Force("link") as unknown) as
       | (ForceLink<ClusterNode, SimLink> & { distance: (fn: (l: SimLink) => number) => unknown; strength: (fn: (l: SimLink) => number) => unknown })
       | null;
     if (linkForce) {
       linkForce
         .distance((l) => {
-          if (isMain(l.source) && isMain(l.target)) {
-            // Heavier weight pulls two main nodes closer together.
-            const w = Math.max(1, l.weight ?? 1);
-            return Math.max(60, 220 / Math.sqrt(w));
-          }
-          // Short, stiff link between a child and its parent keeps spawn
-          // clusters glued to the planet they belong to.
-          return 28;
+          const plan = planRef.current;
+          const s = idOf(l.source); const t = idOf(l.target);
+          if (plan.isStructural(s, t)) return 34;
+          // Cross-links: long rest length so they visually connect without
+          // yanking neighborhoods together.
+          return 280;
         })
         .strength((l) => {
           const scale = linkStrengthRef.current;
-          if (isMain(l.source) && isMain(l.target)) {
-            const w = Math.max(1, l.weight ?? 1);
-            return Math.min(0.5, 0.02 * w) * scale;
-          }
-          return 0.9 * scale;
+          const plan = planRef.current;
+          const s = idOf(l.source); const t = idOf(l.target);
+          if (plan.isStructural(s, t)) return 0.9 * scale;
+          // Cross-links: weak so they don't drag families apart.
+          return 0.03 * scale;
         });
     }
     fgRef.current.d3ReheatSimulation();
-  }, [ForceGraph, graph]);
+  }, [ForceGraph, graph, neighborhoodPlan]);
   useEffect(() => {
     if (!pulseNodeId) return;
     let raf = 0;
@@ -471,6 +336,14 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       }),
     [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId],
   );
+
+  // Seed positions on the EXACT cloned node objects the force-graph receives.
+  // This must happen before the renderer initializes those nodes so they
+  // spawn in a readable grouped state without needing "Reset Layout".
+  useEffect(() => {
+    applyNeighborhoodSeed(data.nodes, neighborhoodPlan);
+    fgRef.current?.d3ReheatSimulation();
+  }, [data, neighborhoodPlan, layoutResetToken]);
 
   useEffect(() => {
     if (!recenterToken || !fgRef.current) return;
