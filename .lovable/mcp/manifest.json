@@ -72,6 +72,151 @@
           ]
         },
         "outputSchema": null
+      },
+      {
+        "name": "brain_capture",
+        "title": "Capture into Second Brain",
+        "description": "Create a new capture (raw note or URL) in the user's Second Brain inbox. Returns the capture id so it can be enriched later.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "description": "Optional title. If omitted, derived from body or URL.",
+              "type": "string"
+            },
+            "body": {
+              "description": "Text content of the capture.",
+              "type": "string"
+            },
+            "source_url": {
+              "description": "Optional source URL — will be fetched and summarized if body is empty.",
+              "type": "string",
+              "format": "uri"
+            },
+            "tags": {
+              "description": "Optional tags.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "brain_query",
+        "title": "Ask the Second Brain",
+        "description": "Query the user's Second Brain with 3-layer retrieval (keyword hits → link neighborhood → AI synthesis). Returns an answer with inline [slug] citations.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "minLength": 2,
+              "description": "Natural language question to answer from the brain."
+            }
+          },
+          "required": [
+            "question"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "brain_get_page",
+        "title": "Get brain page",
+        "description": "Fetch a Second Brain page by slug, including citations and inbound/outbound page links.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The page slug (e.g. 'paul-wall')."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "brain_update_page",
+        "title": "Update brain page",
+        "description": "Update a Second Brain page identified by slug. Provide any of title, body, frontmatter, or citations. Citations replace the existing list.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Slug of the page to update."
+            },
+            "title": {
+              "type": "string"
+            },
+            "body": {
+              "description": "Markdown body. Replaces existing body.",
+              "type": "string"
+            },
+            "frontmatter": {
+              "description": "Structured metadata object. Replaces existing frontmatter.",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "citations": {
+              "description": "Full replacement citation list.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
       }
     ]
   }
