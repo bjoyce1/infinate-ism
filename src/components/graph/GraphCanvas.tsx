@@ -205,13 +205,14 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const parent = plan.parentOf.get(n.id);
         const p = parent ? plan.ringOf.get(parent) : null;
         if (p) {
+          // Branch radially OUTWARD from the parent along its ring angle,
+          // with a small angular spread — gives a clean tree silhouette.
           const rr = RING_BASE + p.ring * spacing;
-          const px = Math.cos(p.angle) * rr;
-          const py = Math.sin(p.angle) * rr;
-          const localA = hash(n.id + "|a") * Math.PI * 2;
-          const localR = halo * (0.4 + hash(n.id + "|r") * 0.8);
-          n.x = px + Math.cos(localA) * localR;
-          n.y = py + Math.sin(localA) * localR;
+          const angularSpread = 0.35; // radians
+          const branchAngle = p.angle + (hash(n.id + "|a") - 0.5) * angularSpread;
+          const branchDist = rr + halo * (0.5 + hash(n.id + "|r") * 1.6);
+          n.x = Math.cos(branchAngle) * branchDist;
+          n.y = Math.sin(branchAngle) * branchDist;
         } else {
           // Untethered nodes: park near the hub in a loose cloud.
           const a = hash(n.id) * Math.PI * 2;
