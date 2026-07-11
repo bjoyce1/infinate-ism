@@ -75,9 +75,9 @@ export const createCapture = createServerFn({ method: "POST" })
         body,
         source_url: data.source_url,
         tags: data.tags ?? [],
-        status: "inbox",
-        type: "note",
-        priority: "medium",
+        status: "inbox" as never,
+        type: "note" as never,
+        priority: "medium" as never,
       })
       .select()
       .single();
@@ -164,7 +164,7 @@ SOURCE URL: ${cap.source_url ?? "(none)"}`;
     }
 
     // Mark capture as enriched (idempotent).
-    await supabase.from("captures").update({ status: "enriched" }).eq("id", cap.id);
+    await supabase.from("captures").update({ status: "enriched" as never }).eq("id", cap.id);
 
     return parsed;
   });
@@ -194,7 +194,7 @@ export const fileCapture = createServerFn({ method: "POST" })
       const mergedCitations = [
         ...(Array.isArray(existing.citations) ? existing.citations as unknown[] : []),
         ...citations,
-      ];
+      ] as never;
       const { data: upd, error } = await supabase.from("brain_pages")
         .update({
           title: proposal.title,
@@ -211,7 +211,7 @@ export const fileCapture = createServerFn({ method: "POST" })
         user_id: userId,
         slug, title: proposal.title,
         type: proposal.type, department: proposal.department,
-        body, citations,
+        body, citations: citations as never,
       }).select("id").single();
       if (error) throw error;
       pageId = ins.id;
@@ -237,7 +237,7 @@ export const fileCapture = createServerFn({ method: "POST" })
       }, { onConflict: "source_page_id,target_page_id,relation" });
     }
 
-    await supabase.from("captures").update({ status: "filed", page_id: pageId }).eq("id", data.captureId);
+    await supabase.from("captures").update({ status: "filed" as never, page_id: pageId }).eq("id", data.captureId);
     return { pageId, slug };
   });
 
@@ -285,7 +285,7 @@ export const updatePage = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {};
     for (const k of ["title","body","type","department"] as const) if (data[k] !== undefined) patch[k] = data[k];
     const { error } = await context.supabase.from("brain_pages")
-      .update(patch).eq("id", data.id).eq("user_id", context.userId);
+      .update(patch as never).eq("id", data.id).eq("user_id", context.userId);
     if (error) throw error;
     return { ok: true };
   });
@@ -432,7 +432,7 @@ export const seedBrainRings = createServerFn({ method: "POST" })
     for (const a of SEED_APPS) rows.push({ user_id: userId, slug: `app-${slugify(a)}`, title: a, type: "application", department: "Business", body: `Connected application: ${a}.`, citations: [] });
 
     for (const row of rows) {
-      const { error } = await supabase.from("brain_pages").upsert(row, { onConflict: "user_id,slug" });
+      const { error } = await supabase.from("brain_pages").upsert(row as never, { onConflict: "user_id,slug" });
       if (!error) created++;
     }
     return { created };
