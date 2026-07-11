@@ -18,7 +18,6 @@ import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as ContentRouteImport } from './routes/content'
-import { Route as ConstellationRouteImport } from './routes/constellation'
 import { Route as CommandRouteImport } from './routes/command'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -82,11 +81,6 @@ const FinanceRoute = FinanceRouteImport.update({
 const ContentRoute = ContentRouteImport.update({
   id: '/content',
   path: '/content',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConstellationRoute = ConstellationRouteImport.update({
-  id: '/constellation',
-  path: '/constellation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommandRoute = CommandRouteImport.update({
@@ -199,7 +193,6 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
-  '/constellation': typeof ConstellationRoute
   '/content': typeof ContentRoute
   '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
@@ -230,7 +223,6 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
-  '/constellation': typeof ConstellationRoute
   '/content': typeof ContentRoute
   '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
@@ -262,7 +254,6 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/clients': typeof ClientsRoute
   '/command': typeof CommandRoute
-  '/constellation': typeof ConstellationRoute
   '/content': typeof ContentRoute
   '/finance': typeof FinanceRoute
   '/inbox': typeof InboxRoute
@@ -295,7 +286,6 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
-    | '/constellation'
     | '/content'
     | '/finance'
     | '/inbox'
@@ -326,7 +316,6 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
-    | '/constellation'
     | '/content'
     | '/finance'
     | '/inbox'
@@ -357,7 +346,6 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/clients'
     | '/command'
-    | '/constellation'
     | '/content'
     | '/finance'
     | '/inbox'
@@ -389,7 +377,6 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   ClientsRoute: typeof ClientsRoute
   CommandRoute: typeof CommandRoute
-  ConstellationRoute: typeof ConstellationRoute
   ContentRoute: typeof ContentRoute
   FinanceRoute: typeof FinanceRoute
   InboxRoute: typeof InboxRoute
@@ -469,13 +456,6 @@ declare module '@tanstack/react-router' {
       path: '/content'
       fullPath: '/content'
       preLoaderRoute: typeof ContentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/constellation': {
-      id: '/constellation'
-      path: '/constellation'
-      fullPath: '/constellation'
-      preLoaderRoute: typeof ConstellationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/command': {
@@ -641,7 +621,6 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   ClientsRoute: ClientsRoute,
   CommandRoute: CommandRoute,
-  ConstellationRoute: ConstellationRoute,
   ContentRoute: ContentRoute,
   FinanceRoute: FinanceRoute,
   InboxRoute: InboxRoute,
