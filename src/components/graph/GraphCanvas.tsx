@@ -59,6 +59,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
+  const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const recenterToken = useGraphStore((s) => s.recenterToken);
