@@ -19,8 +19,7 @@ const SOURCE_IS_PARENT = new Set([
   "parent_of", "has_child", "contains", "includes",
   "owns", "hosts",
   // Book / album / site → chapter/track/section ownership.
-  "chapter", "chapter_of_book", "section", "track",
-  "audio", "nft_code", "code_of", "song_of", "verse",
+  "chapter", "section", "track", "audio", "nft_code", "verse",
 ]);
 const TARGET_IS_PARENT = new Set([
   "child_of", "member_of", "belongs_to", "part_of",
