@@ -132,6 +132,9 @@ function pickParent(
     const c = graph.byId.get(other);
     if (!c) continue;
     let s = 0;
+    // The HUB is the canonical root — if it links to us and nothing more
+    // specific claims us as a child, we belong directly under it.
+    if (c.id === HUB_ID) s += 1000;
     if (c.community != null && c.community === n.community) s += 120;
     if (mainSet.has(c.id)) s += 240;
     if (c.is_hub) s += 90;
