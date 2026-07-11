@@ -179,3 +179,19 @@ function TodayView() {
     </div>
   );
 }
+
+function BriefBlock({ icon, label, count, children }: { icon: React.ReactNode; label: string; count: number; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-cc-border bg-black/30 p-3">
+      <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-cc-muted">
+        {icon}<span className="flex-1 truncate">{label}</span>
+        <span className="rounded bg-white/[0.04] px-1.5 py-0.5 text-cc-text">{count}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EmptyLine({ text }: { text: string }) {
+  return <div className="text-[12px] text-cc-muted">{text}</div>;
+}
