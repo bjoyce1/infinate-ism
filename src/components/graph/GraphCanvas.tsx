@@ -509,8 +509,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     ctx.globalAlpha = dim ? 0.15 : 1;
     const img = node.image ? getImage(node.image) : null;
     if (img) {
-      ctx.shadowColor = "#F5D33F";
-      ctx.shadowBlur = isAnchor ? 32 : 18;
+      ctx.shadowColor = isAnchor ? COLOR_IMG_BORDER : COLOR_IMG_GLOW;
+      ctx.shadowBlur = isAnchor ? 26 : 14;
       ctx.save();
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
@@ -521,15 +521,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-      ctx.strokeStyle = "#C99A56";
-      ctx.lineWidth = 1.25;
+      ctx.strokeStyle = isAnchor ? COLOR_IMG_BORDER : "rgba(124,156,255,0.55)";
+      ctx.lineWidth = isAnchor ? 1.75 : 1;
       ctx.stroke();
     } else {
+      const fill = isAnchor ? COLOR_NODE_HI : (isHub ? COLOR_NODE : color);
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = isAnchor ? 18 : 6;
+      ctx.fillStyle = fill;
+      ctx.shadowColor = fill;
+      ctx.shadowBlur = isAnchor ? 16 : 4;
       ctx.fill();
       ctx.shadowBlur = 0;
     }
@@ -538,7 +539,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const ring = base + 4 + t * 14;
       ctx.beginPath();
       ctx.arc(node.x, node.y, ring, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(252, 211, 77, ${0.85 * (1 - t)})`;
+      ctx.strokeStyle = `rgba(61, 237, 208, ${0.85 * (1 - t)})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -548,7 +549,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.fillStyle = "#E4E4E7";
+      ctx.fillStyle = isAnchor ? COLOR_NODE_HI : COLOR_LABEL;
       ctx.fillText(label.slice(0, 40), node.x, node.y + base + 2);
     }
     ctx.globalAlpha = 1;
@@ -557,9 +558,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkColor = (link: { source: GraphNode | string; target: GraphNode | string }) => {
     const s = typeof link.source === "string" ? link.source : link.source.id;
     const t = typeof link.target === "string" ? link.target : link.target.id;
-    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return "rgba(232,192,138,0.55)";
-    if (highlightSet) return "rgba(255,255,255,0.03)";
-    return "rgba(139,123,255,0.10)";
+    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return COLOR_LINK_HI;
+    if (highlightSet) return COLOR_LINK_DIM;
+    return COLOR_LINK;
   };
 
   return (
