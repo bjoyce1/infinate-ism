@@ -17,7 +17,7 @@ function makeGraph(nodes: GraphNode[], links: { source: string; target: string; 
     neighbors,
     byId,
     communities: [],
-    categoryCounts: {},
+    categoryCounts: { code: 0, blog: 0, music: 0, image: 0, capture: 0, other: 0 },
   };
 }
 
