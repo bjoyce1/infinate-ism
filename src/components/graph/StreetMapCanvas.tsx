@@ -214,6 +214,15 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
 
+    // Ensure map resizes once its container settles.
+    const ro = new ResizeObserver(() => {
+      map.resize();
+    });
+    ro.observe(containerRef.current);
+    // Also nudge once after next frame — SSR hydration can yield 0-sized container.
+    requestAnimationFrame(() => map.resize());
+    setTimeout(() => map.resize(), 300);
+
     map.on("load", () => {
       styleReadyRef.current = true;
       applyDarkStyle(map);
@@ -233,6 +242,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     return () => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
       styleReadyRef.current = false;
