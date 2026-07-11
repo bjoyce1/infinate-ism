@@ -10,7 +10,7 @@ type State = {
   activeCommunity: number | null;
   activeCategories: Set<Category>;
   searchOpen: boolean;
-  viewMode: "2d" | "3d" | "street";
+  viewMode: "2d" | "3d" | "street" | "tree";
   particleIntensity: number;
   linkIntensity: number;
   spawnOrbitRadius: number;
@@ -52,7 +52,7 @@ type State = {
   toggleCategory: (c: Category) => void;
   setSearchOpen: (v: boolean) => void;
   toggleViewMode: () => void;
-  setViewMode: (v: "2d" | "3d" | "street") => void;
+  setViewMode: (v: "2d" | "3d" | "street" | "tree") => void;
   setParticleIntensity: (v: number) => void;
   setLinkIntensity: (v: number) => void;
   setSpawnOrbitRadius: (v: number) => void;
@@ -151,7 +151,14 @@ export const useGraphStore = create<State>()(
   setSearchOpen: (v) => set({ searchOpen: v }),
   toggleViewMode: () =>
     set((s) => ({
-      viewMode: s.viewMode === "2d" ? "3d" : s.viewMode === "3d" ? "street" : "2d",
+      viewMode:
+        s.viewMode === "2d"
+          ? "3d"
+          : s.viewMode === "3d"
+            ? "street"
+            : s.viewMode === "street"
+              ? "tree"
+              : "2d",
     })),
   setViewMode: (v) => set({ viewMode: v }),
   setParticleIntensity: (v) => set({ particleIntensity: v }),
