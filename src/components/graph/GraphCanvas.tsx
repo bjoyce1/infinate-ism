@@ -569,24 +569,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       className="absolute inset-0 overflow-hidden"
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* Static starfield background — never rotates or orbits with the nodes */}
+      {/* Obsidian backdrop — near-black with a subtle dot grid + cool radial haze */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundColor: "#050508",
+          backgroundColor: COLOR_BG,
           backgroundImage: [
-            "radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.45), transparent 60%)",
-            "radial-gradient(1px 1px at 78% 32%, rgba(255,255,255,0.4), transparent 60%)",
-            "radial-gradient(1.2px 1.2px at 44% 74%, rgba(232,192,138,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.3), transparent 60%)",
-            "radial-gradient(1px 1px at 26% 58%, rgba(255,255,255,0.35), transparent 60%)",
-            "radial-gradient(1.5px 1.5px at 62% 12%, rgba(139,123,255,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,0.25), transparent 60%)",
-            "radial-gradient(1px 1px at 96% 54%, rgba(255,255,255,0.3), transparent 60%)",
-            "radial-gradient(circle at 50% 45%, rgba(139,123,255,0.10), transparent 70%)",
+            "radial-gradient(rgba(124,156,255,0.06) 1px, transparent 1px)",
+            "radial-gradient(circle at 50% 50%, rgba(61,237,208,0.06), transparent 65%)",
+            "radial-gradient(circle at 50% 50%, rgba(124,156,255,0.08), transparent 80%)",
           ].join(", "),
-          backgroundSize: "600px 600px, 720px 720px, 540px 540px, 800px 800px, 660px 660px, 700px 700px, 620px 620px, 580px 580px, 100% 100%",
+          backgroundSize: "22px 22px, 100% 100%, 100% 100%",
         }}
       />
       <div
