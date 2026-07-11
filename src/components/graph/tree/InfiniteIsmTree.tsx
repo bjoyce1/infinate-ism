@@ -23,7 +23,7 @@ function branchPath(sx: number, sy: number, tx: number, ty: number): string {
   return `M ${sx} ${sy} C ${sx} ${midY}, ${tx} ${midY}, ${tx} ${ty}`;
 }
 
-function useResize(ref: React.RefObject<HTMLDivElement>) {
+function useResize(ref: React.RefObject<HTMLDivElement | null>) {
   const [size, setSize] = useState({ w: 1200, h: 1800 });
   useEffect(() => {
     if (!ref.current) return;
