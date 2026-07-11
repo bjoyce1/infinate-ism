@@ -91,4 +91,38 @@ describe("buildGeoCityModel", () => {
       expect(pointInPolygon(p.coord, MRCAP_PERSONAL_POLYGON)).toBe(true);
     }
   });
+
+  it("MRCAP_PERSONAL_POLYGON is a closed ring reaching every boundary road", () => {
+    const ring = MRCAP_PERSONAL_POLYGON;
+    // Closed
+    expect(ring[0]).toEqual(ring[ring.length - 1]);
+    // Sufficient detail
+    expect(ring.length).toBeGreaterThan(40);
+    // North edge must reach Old Spanish Trail — OST ∩ MLK sits at ~29.7088.
+    const maxLat = Math.max(...ring.map((p) => p[1]));
+    expect(maxLat).toBeGreaterThanOrEqual(29.7087);
+    // South edge reaches Griggs
+    const minLat = Math.min(...ring.map((p) => p[1]));
+    expect(minLat).toBeLessThanOrEqual(29.6981);
+    // West edge reaches Calhoun (~-95.346), east reaches MLK (~-95.334)
+    const minLon = Math.min(...ring.map((p) => p[0]));
+    const maxLon = Math.max(...ring.map((p) => p[0]));
+    expect(minLon).toBeLessThanOrEqual(-95.3455);
+    expect(maxLon).toBeGreaterThanOrEqual(-95.3345);
+    // Representative points just inside each side must be inside the polygon.
+    const cx = -95.33937;
+    const cy = 29.70335;
+    // Centroid always inside
+    expect(pointInPolygon([cx, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Interior probe near the NE (below OST diagonal) — OST runs NE, so
+    // near the NE corner high latitudes are inside; at cx (midway west) OST
+    // sits around 29.7075, so use 29.7085 near the NE corner longitude.
+    expect(pointInPolygon([-95.3372, 29.7085], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just above Griggs, near SE corner
+    expect(pointInPolygon([-95.3370, 29.6985], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just east of Calhoun (mid column)
+    expect(pointInPolygon([-95.3445, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
+    // Just west of MLK (mid column) — MLK curves, so pick a safely-inside lon
+    expect(pointInPolygon([-95.3355, cy], MRCAP_PERSONAL_POLYGON)).toBe(true);
+  });
 });

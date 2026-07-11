@@ -430,8 +430,21 @@ function addOverlayLayers(map: maplibregl.Map) {
       geometry: { type: "Polygon" as const, coordinates: [d.polygon] },
     })),
   };
+  // Separate Point source for labels — one point per district at its centroid.
+  // Rendering labels on the polygon layer can emit duplicates when MapLibre's
+  // symbol placer finds multiple candidate anchors inside an irregular ring
+  // (e.g. the street-bounded Mr. CAP block).
+  const labelCollection = {
+    type: "FeatureCollection" as const,
+    features: GEO_DISTRICTS.map((d) => ({
+      type: "Feature" as const,
+      properties: { id: d.id, name: d.name },
+      geometry: { type: "Point" as const, coordinates: d.center },
+    })),
+  };
   if (!map.getSource("ism-districts")) {
     map.addSource("ism-districts", { type: "geojson", data: featureCollection });
+    map.addSource("ism-districts-label", { type: "geojson", data: labelCollection });
     map.addLayer({
       id: "ism-districts-fill",
       type: "fill",
@@ -455,13 +468,16 @@ function addOverlayLayers(map: maplibregl.Map) {
     map.addLayer({
       id: "ism-districts-label",
       type: "symbol",
-      source: "ism-districts",
+      source: "ism-districts-label",
       layout: {
         "text-field": ["get", "name"],
         "text-size": 12,
         "text-transform": "uppercase",
         "text-letter-spacing": 0.12,
         "text-anchor": "center",
+        "text-allow-overlap": false,
+        "text-ignore-placement": false,
+        "symbol-placement": "point",
       },
       paint: {
         "text-color": "#ffffff",
