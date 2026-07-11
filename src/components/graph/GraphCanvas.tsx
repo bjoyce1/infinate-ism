@@ -7,7 +7,12 @@ import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { useServerFn } from "@tanstack/react-start";
 import { setNodeImage } from "@/lib/setNodeImage.functions";
 import { toast } from "sonner";
-import { planNeighborhoods, applyNeighborhoodSeed, type NeighborhoodPlan } from "@/lib/graph/neighborhoodLayout";
+import {
+  planHybridKnowledgeLayout,
+  applyHybridSeed,
+  HUB_ID as HYBRID_HUB_ID,
+  type HybridPlan,
+} from "@/lib/graph/hybridKnowledgeLayout";
 
 type ForceGraphHandle = {
   centerAt: (x: number, y: number, ms?: number) => void;
@@ -17,12 +22,10 @@ type ForceGraphHandle = {
   d3ReheatSimulation: () => void;
 };
 
-const HUB_ID = "site_mrcap1_com";
+const HUB_ID = HYBRID_HUB_ID;
 
-// Radial-tree layout constants (world units). Hub at origin, mains on
-// concentric full-circle rings, children branch outward from their parent.
-const RING_BASE = 260;
-const RING_GAP = 190;
+// Hybrid hierarchical layout — HUB at origin, branch roots in stable
+// angular sectors, families packed radially within each sector.
 const HUB_OFFSET = 0;
 
 // Obsidian palette
@@ -30,11 +33,48 @@ const COLOR_BG = "#0a0a0f";
 const COLOR_LINK = "rgba(124,156,255,0.14)";
 const COLOR_LINK_HI = "rgba(61,237,208,0.75)";
 const COLOR_LINK_DIM = "rgba(255,255,255,0.025)";
+const COLOR_CROSSLINK = "rgba(124,156,255,0.06)";
 const COLOR_NODE = "#7c9cff";
 const COLOR_NODE_HI = "#3dedd0";
 const COLOR_LABEL = "#c9d1e0";
 const COLOR_IMG_BORDER = "#3dedd0";
 const COLOR_IMG_GLOW = "#7c9cff";
+
+// Deterministic per-branch tint (low opacity) — used for family hulls.
+const BRANCH_TINTS = [
+  [124, 156, 255],
+  [61, 237, 208],
+  [242, 165, 96],
+  [217, 119, 217],
+  [122, 211, 143],
+  [255, 191, 130],
+  [155, 187, 255],
+  [255, 129, 172],
+];
+const branchTint = (branchId: string, alpha: number) => {
+  let h = 0;
+  for (let i = 0; i < branchId.length; i++) h = (h * 31 + branchId.charCodeAt(i)) >>> 0;
+  const [r, g, b] = BRANCH_TINTS[h % BRANCH_TINTS.length];
+  return `rgba(${r},${g},${b},${alpha})`;
+};
+
+// Persist user drag offsets locally (never to Supabase). Keyed by node id
+// relative to the deterministic planner target for that node.
+const DRAG_STORAGE_KEY = "infinite-ism:2d-drag-offsets";
+type DragOffsets = Record<string, { dx: number; dy: number }>;
+function loadDragOffsets(): DragOffsets {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(DRAG_STORAGE_KEY);
+    if (!raw) return {};
+    const v = JSON.parse(raw) as DragOffsets;
+    return v && typeof v === "object" ? v : {};
+  } catch { return {}; }
+}
+function saveDragOffsets(v: DragOffsets) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(DRAG_STORAGE_KEY, JSON.stringify(v)); } catch { /* ignore */ }
+}
 
 // Legacy `SolarPlan` replaced by the pure neighborhood planner in
 // `src/lib/graph/neighborhoodLayout.ts`. Kept here as a comment to note the
@@ -102,11 +142,10 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     fgRef.current?.d3ReheatSimulation();
   }, [linkStrength, chargeStrength, collideRadius, centroidPull, ringSpacing, ringCount, sunArcSpread, childHaloRadius, parentAttract]);
 
-  // Build the solar-system plan: rank main nodes by degree, spread them across
-  // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
-  // node is attached to its most-connected main-node neighbor.
-  const neighborhoodPlan = useMemo<NeighborhoodPlan>(
-    () => planNeighborhoods(graph, layoutSeed),
+  // Hybrid hierarchical plan: HUB at (0,0) → major branches in stable
+  // sectors → each branch packed as its own family neighborhood.
+  const neighborhoodPlan = useMemo<HybridPlan>(
+    () => planHybridKnowledgeLayout(graph, layoutSeed),
     [graph, layoutSeed, layoutResetToken],
   );
   const planRef = useRef(neighborhoodPlan);
@@ -345,8 +384,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   // Seed positions on the EXACT cloned node objects the force-graph receives.
   // This must happen before the renderer initializes those nodes so they
   // spawn in a readable grouped state without needing "Reset Layout".
+  // User drag offsets — persisted locally so a manually-adjusted family
+  // stays where the user left it across reloads.
+  const dragOffsetsRef = useRef<DragOffsets>(loadDragOffsets());
+
   useEffect(() => {
-    applyNeighborhoodSeed(data.nodes, neighborhoodPlan);
+    applyHybridSeed(data.nodes, neighborhoodPlan);
+    // Apply persisted user drag offsets on top of the deterministic seed.
+    const offs = dragOffsetsRef.current;
+    for (const n of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+      const o = offs[n.id];
+      if (o && n.x != null && n.y != null) { n.x += o.dx; n.y += o.dy; }
+    }
     fgRef.current?.d3ReheatSimulation();
   }, [data, neighborhoodPlan, layoutResetToken]);
 
@@ -368,8 +417,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     if (!anchor) return null;
     const set = new Set<string>([anchor]);
     for (const nb of graph.neighbors.get(anchor) ?? []) set.add(nb);
+    // Ancestor path back to HUB — always highlighted on hover/select so the
+    // hierarchy up to Infinite ISM is visually explicit.
+    for (const a of neighborhoodPlan.ancestorsOf(anchor)) set.add(a);
+    // Direct children too.
+    for (const c of neighborhoodPlan.childrenOf.get(anchor) ?? []) set.add(c);
     return set;
-  }, [hoveredId, selectedId, graph.neighbors]);
+  }, [hoveredId, selectedId, graph.neighbors, neighborhoodPlan]);
 
   // Keyboard nav: Esc clears selection, F toggles focus mode, arrows jump to
   // a neighbor of the current selection.
@@ -462,7 +516,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     const t = typeof link.target === "string" ? link.target : link.target.id;
     if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return COLOR_LINK_HI;
     if (highlightSet) return COLOR_LINK_DIM;
-    return COLOR_LINK;
+    // Structural (primary parent-child) links get full weight; cross-links
+    // are drawn dim so families read as distinct neighborhoods.
+    return neighborhoodPlan.isStructural(s, t) ? COLOR_LINK : COLOR_CROSSLINK;
   };
 
   return (
@@ -507,35 +563,62 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             ctx.save();
             ctx.lineWidth = 0.6 / globalScale;
             if (showOrbitArcs) {
-              // Translucent neighborhood halos behind each top-level parent.
-              for (const rootId of plan.roots) {
-                const t = plan.targets.get(rootId);
-                const r = plan.radius.get(rootId);
-                if (!t || !r) continue;
+              // Rounded organic family hulls for each top-level branch —
+              // sized to actual descendant positions in `data.nodes`.
+              const branchPts = new Map<string, Array<{ x: number; y: number }>>();
+              for (const n of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+                if (n.id === HUB_ID) continue;
+                if (n.x == null || n.y == null) continue;
+                const b = plan.branchOf.get(n.id);
+                if (!b) continue;
+                let arr = branchPts.get(b);
+                if (!arr) { arr = []; branchPts.set(b, arr); }
+                arr.push({ x: n.x, y: n.y });
+              }
+              for (const [branchId, pts] of branchPts) {
+                if (pts.length < 2) continue;
+                // Bounding disc: centroid + max-radius padded.
+                let cx = 0, cy = 0;
+                for (const p of pts) { cx += p.x; cy += p.y; }
+                cx /= pts.length; cy /= pts.length;
+                let rr = 0;
+                for (const p of pts) {
+                  const d = Math.hypot(p.x - cx, p.y - cy);
+                  if (d > rr) rr = d;
+                }
+                rr = Math.max(60, rr + 34);
+                const fill = branchTint(branchId, 0.055);
+                const stroke = branchTint(branchId, 0.22);
                 ctx.beginPath();
-                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
-                const grad = ctx.createRadialGradient(t.x, t.y, r * 0.2, t.x, t.y, r * 1.9);
-                grad.addColorStop(0, "rgba(124,156,255,0.06)");
-                grad.addColorStop(1, "rgba(124,156,255,0)");
-                ctx.fillStyle = grad;
+                ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+                ctx.fillStyle = fill;
                 ctx.fill();
-                ctx.setLineDash([2 / globalScale, 4 / globalScale]);
-                ctx.strokeStyle = "rgba(124,156,255,0.10)";
-                ctx.beginPath();
-                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
+                ctx.setLineDash([3 / globalScale, 5 / globalScale]);
+                ctx.lineWidth = 0.9 / globalScale;
+                ctx.strokeStyle = stroke;
                 ctx.stroke();
                 ctx.setLineDash([]);
+                // Branch label near the top edge of the hull.
+                if (globalScale > 0.6) {
+                  const label = (graph.byId.get(branchId)?.label ?? branchId).slice(0, 40);
+                  const fontSize = Math.max(7, Math.min(16, 11 / globalScale + 2));
+                  ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
+                  ctx.textAlign = "center";
+                  ctx.textBaseline = "bottom";
+                  ctx.fillStyle = branchTint(branchId, 0.9);
+                  ctx.fillText(label, cx, cy - rr - 4);
+                }
               }
             }
             if (showSunGlow) {
-              // Hub glow — cool cyan/violet
-              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 140);
-              grad.addColorStop(0, "rgba(61,237,208,0.35)");
-              grad.addColorStop(0.5, "rgba(124,156,255,0.15)");
+              // Subtle centered ambient glow behind Infinite ISM.
+              const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 220);
+              grad.addColorStop(0, "rgba(61,237,208,0.20)");
+              grad.addColorStop(0.5, "rgba(124,156,255,0.08)");
               grad.addColorStop(1, "rgba(124,156,255,0)");
               ctx.fillStyle = grad;
               ctx.beginPath();
-              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 140, 0, Math.PI * 2);
+              ctx.arc(0, 0, 220, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
@@ -587,6 +670,46 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           onBackgroundClick={() => select(null)}
           onNodeDoubleClick={() => {
             if (!focusMode) toggleFocus();
+          }}
+          onNodeDrag={(node: GraphNode & { x?: number; y?: number; __dragPrev?: { x: number; y: number } }) => {
+            // Parent hubs drag their entire subtree with them.
+            const kids = neighborhoodPlan.childrenOf.get(node.id) ?? [];
+            if (kids.length === 0) return;
+            if (node.x == null || node.y == null) return;
+            const prev = node.__dragPrev ?? { x: node.x, y: node.y };
+            const dx = node.x - prev.x;
+            const dy = node.y - prev.y;
+            if (dx === 0 && dy === 0) { node.__dragPrev = { x: node.x, y: node.y }; return; }
+            const family = neighborhoodPlan.descendantsOf(node.id);
+            for (const other of data.nodes as (GraphNode & { x?: number; y?: number; vx?: number; vy?: number })[]) {
+              if (other.id === node.id) continue;
+              if (!family.has(other.id)) continue;
+              if (other.x == null || other.y == null) continue;
+              other.x += dx; other.y += dy;
+              other.vx = 0; other.vy = 0;
+            }
+            node.__dragPrev = { x: node.x, y: node.y };
+          }}
+          onNodeDragEnd={(node: GraphNode & { x?: number; y?: number; __dragPrev?: { x: number; y: number } }) => {
+            delete node.__dragPrev;
+            // Persist offsets against the planner target so reload restores
+            // the user-adjusted position without touching Supabase.
+            if (node.x == null || node.y == null) return;
+            const t = neighborhoodPlan.targets.get(node.id);
+            if (!t) return;
+            const offs = { ...dragOffsetsRef.current };
+            offs[node.id] = { dx: node.x - t.x, dy: node.y - t.y };
+            // If the node is a parent hub, remember offsets for its descendants too.
+            const family = neighborhoodPlan.descendantsOf(node.id);
+            for (const other of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+              if (!family.has(other.id)) continue;
+              if (other.x == null || other.y == null) continue;
+              const ot = neighborhoodPlan.targets.get(other.id);
+              if (!ot) continue;
+              offs[other.id] = { dx: other.x - ot.x, dy: other.y - ot.y };
+            }
+            dragOffsetsRef.current = offs;
+            saveDragOffsets(offs);
           }}
           onNodeRightClick={(
             node: GraphNode,
