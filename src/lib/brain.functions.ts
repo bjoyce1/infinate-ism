@@ -437,3 +437,38 @@ export const seedBrainRings = createServerFn({ method: "POST" })
     }
     return { created };
   });
+
+// ---------- Daily Briefing ----------
+
+export const dailyBriefing = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const staleCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    const [newCaps, recentPages, stalePages, tasksRes] = await Promise.all([
+      supabase.from("captures").select("id,title,source_url,status,created_at")
+        .eq("user_id", userId).eq("status", "inbox" as never)
+        .order("created_at", { ascending: false }).limit(8),
+      supabase.from("brain_pages").select("id,slug,title,type,department,updated_at")
+        .eq("user_id", userId).gte("updated_at", since)
+        .order("updated_at", { ascending: false }).limit(8),
+      supabase.from("brain_pages").select("id,slug,title,updated_at")
+        .eq("user_id", userId).lt("updated_at", staleCutoff)
+        .order("updated_at", { ascending: true }).limit(3),
+      supabase.from("tasks").select("id,title,due_date,priority,status")
+        .eq("user_id", userId).neq("status", "done")
+        .or(`due_date.is.null,due_date.lte.${todayISO}`)
+        .order("due_date", { ascending: true, nullsFirst: false }).limit(6),
+    ]);
+
+    return {
+      generatedAt: new Date().toISOString(),
+      newCaptures: newCaps.data ?? [],
+      recentPages: recentPages.data ?? [],
+      stalePages: stalePages.data ?? [],
+      openTasks: tasksRes.data ?? [],
+    };
+  });
