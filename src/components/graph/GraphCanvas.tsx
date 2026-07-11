@@ -516,7 +516,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     const t = typeof link.target === "string" ? link.target : link.target.id;
     if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return COLOR_LINK_HI;
     if (highlightSet) return COLOR_LINK_DIM;
-    return COLOR_LINK;
+    // Structural (primary parent-child) links get full weight; cross-links
+    // are drawn dim so families read as distinct neighborhoods.
+    return neighborhoodPlan.isStructural(s, t) ? COLOR_LINK : COLOR_CROSSLINK;
   };
 
   return (
@@ -668,6 +670,46 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           onBackgroundClick={() => select(null)}
           onNodeDoubleClick={() => {
             if (!focusMode) toggleFocus();
+          }}
+          onNodeDrag={(node: GraphNode & { x?: number; y?: number; __dragPrev?: { x: number; y: number } }) => {
+            // Parent hubs drag their entire subtree with them.
+            const kids = neighborhoodPlan.childrenOf.get(node.id) ?? [];
+            if (kids.length === 0) return;
+            if (node.x == null || node.y == null) return;
+            const prev = node.__dragPrev ?? { x: node.x, y: node.y };
+            const dx = node.x - prev.x;
+            const dy = node.y - prev.y;
+            if (dx === 0 && dy === 0) { node.__dragPrev = { x: node.x, y: node.y }; return; }
+            const family = neighborhoodPlan.descendantsOf(node.id);
+            for (const other of data.nodes as (GraphNode & { x?: number; y?: number; vx?: number; vy?: number })[]) {
+              if (other.id === node.id) continue;
+              if (!family.has(other.id)) continue;
+              if (other.x == null || other.y == null) continue;
+              other.x += dx; other.y += dy;
+              other.vx = 0; other.vy = 0;
+            }
+            node.__dragPrev = { x: node.x, y: node.y };
+          }}
+          onNodeDragEnd={(node: GraphNode & { x?: number; y?: number; __dragPrev?: { x: number; y: number } }) => {
+            delete node.__dragPrev;
+            // Persist offsets against the planner target so reload restores
+            // the user-adjusted position without touching Supabase.
+            if (node.x == null || node.y == null) return;
+            const t = neighborhoodPlan.targets.get(node.id);
+            if (!t) return;
+            const offs = { ...dragOffsetsRef.current };
+            offs[node.id] = { dx: node.x - t.x, dy: node.y - t.y };
+            // If the node is a parent hub, remember offsets for its descendants too.
+            const family = neighborhoodPlan.descendantsOf(node.id);
+            for (const other of data.nodes as (GraphNode & { x?: number; y?: number })[]) {
+              if (!family.has(other.id)) continue;
+              if (other.x == null || other.y == null) continue;
+              const ot = neighborhoodPlan.targets.get(other.id);
+              if (!ot) continue;
+              offs[other.id] = { dx: other.x - ot.x, dy: other.y - ot.y };
+            }
+            dragOffsetsRef.current = offs;
+            saveDragOffsets(offs);
           }}
           onNodeRightClick={(
             node: GraphNode,
