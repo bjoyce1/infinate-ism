@@ -306,8 +306,8 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const property = propertyId ? city.propertiesById.get(propertyId) ?? null : null;
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#04070f]">
-      <div ref={containerRef} className="absolute inset-0" />
+    <div className="absolute inset-0 overflow-hidden bg-[#04070f]">
+      <div ref={containerRef} className="absolute inset-0" style={{ width: "100%", height: "100%" }} />
 
       {/* Top-left HUD: breadcrumbs + controls */}
       <div className="pointer-events-none absolute left-3 top-3 z-10 flex max-w-[calc(100%-90px)] flex-wrap gap-2">
