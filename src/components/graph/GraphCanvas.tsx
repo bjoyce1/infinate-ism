@@ -498,18 +498,26 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
           nodeCanvasObject={nodeCanvasObject}
           onRenderFramePre={(ctx: CanvasRenderingContext2D, globalScale: number) => {
             if (!orbitLayout) return;
-            const plan = solarPlan;
-            const spacing = RING_GAP * ringSpacing;
-            const arc = plan.arc;
+            const plan = neighborhoodPlan;
             ctx.save();
             ctx.lineWidth = 0.6 / globalScale;
             if (showOrbitArcs) {
-              for (let r = 0; r < plan.ringCount; r++) {
-                const rr = RING_BASE + r * spacing;
-                ctx.strokeStyle = `rgba(124,156,255,${0.08 + (r % 2 === 0 ? 0.04 : 0)})`;
-                ctx.setLineDash([2 / globalScale, 4 / globalScale]);
+              // Translucent neighborhood halos behind each top-level parent.
+              for (const rootId of plan.roots) {
+                const t = plan.targets.get(rootId);
+                const r = plan.radius.get(rootId);
+                if (!t || !r) continue;
                 ctx.beginPath();
-                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, 0, Math.PI * 2);
+                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(t.x, t.y, r * 0.2, t.x, t.y, r * 1.9);
+                grad.addColorStop(0, "rgba(124,156,255,0.06)");
+                grad.addColorStop(1, "rgba(124,156,255,0)");
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.setLineDash([2 / globalScale, 4 / globalScale]);
+                ctx.strokeStyle = "rgba(124,156,255,0.10)";
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, r * 1.9, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
               }
