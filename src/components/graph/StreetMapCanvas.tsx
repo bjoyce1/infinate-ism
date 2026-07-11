@@ -697,8 +697,8 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         </button>
       </div>
 
-      {/* Right rail: district jump list */}
-      <div className="absolute top-4 right-4 flex flex-col gap-1 pointer-events-auto bg-obsidian-surface/60 backdrop-blur border border-white/10 rounded-md p-2 max-w-[220px]">
+      {/* District jump list (bottom-right so it doesn't collide with RightPanel) */}
+      <div className="absolute bottom-4 right-4 hidden md:flex flex-col gap-1 pointer-events-auto bg-obsidian-surface/70 backdrop-blur border border-white/10 rounded-md p-2 max-w-[220px]">
         <div className="text-[9px] font-mono uppercase tracking-widest text-white/40 px-1 mb-1">Districts</div>
         {DISTRICTS.map((d) => (
           <button
