@@ -46,6 +46,54 @@ export const CITY_BOUNDS: [LngLat, LngLat] = [
   [-95.05, 29.95], // NE
 ];
 
+// Mr. CAP Personal District: real street-bounded block enclosed by
+// Calhoun Rd (W), Old Spanish Trail (N), MLK Blvd (E) and Griggs Rd (S).
+// Ring traced from OpenStreetMap way geometry (WGS84, closed, CCW).
+export const MRCAP_PERSONAL_POLYGON: LngLat[] = [
+  [-95.343242, 29.706404],
+  [-95.344104, 29.703563],
+  [-95.343450, 29.700163],
+  [-95.343008, 29.699955],
+  [-95.342249, 29.699789],
+  [-95.341937, 29.699766],
+  [-95.341560, 29.699591],
+  [-95.341200, 29.699429],
+  [-95.340773, 29.699399],
+  [-95.340411, 29.699232],
+  [-95.340051, 29.699103],
+  [-95.339579, 29.698904],
+  [-95.339168, 29.698680],
+  [-95.338988, 29.698564],
+  [-95.338516, 29.698537],
+  [-95.338174, 29.698425],
+  [-95.337766, 29.698292],
+  [-95.335964, 29.701615],
+  [-95.334163, 29.704938],
+  [-95.334323, 29.705201],
+  [-95.334403, 29.705481],
+  [-95.334946, 29.706414],
+  [-95.335218, 29.706858],
+  [-95.335349, 29.707108],
+  [-95.335442, 29.707509],
+  [-95.335849, 29.708046],
+  [-95.336087, 29.708402],
+  [-95.336189, 29.708820],
+  [-95.336262, 29.708862],
+  [-95.336334, 29.708904],
+  [-95.336775, 29.708736],
+  [-95.337348, 29.708659],
+  [-95.337447, 29.708399],
+  [-95.338014, 29.708334],
+  [-95.338408, 29.708156],
+  [-95.338769, 29.708005],
+  [-95.339011, 29.707766],
+  [-95.340429, 29.707320],
+  [-95.341106, 29.707020],
+  [-95.342772, 29.706318],
+  [-95.343138, 29.706296],
+  [-95.343242, 29.706404],
+];
+
 export const GEO_DISTRICTS: GeoDistrict[] = [
   {
     id: "downtown",
@@ -97,14 +145,15 @@ export const GEO_DISTRICTS: GeoDistrict[] = [
   {
     id: "mrcap_personal",
     name: "Mr. CAP · Personal District",
-    // Third Ward / McGregor Park side, SE of Downtown.
-    center: [-95.3520, 29.7220],
-    radius: 1600,
+    // Real street-bounded block: Calhoun (W), OST (N), MLK (E), Griggs (S).
+    // Centroid of MRCAP_PERSONAL_POLYGON.
+    center: [-95.339223, 29.703617],
+    radius: 700,
     color: "#ffd66a",
     accent: "#ffb347",
     communityId: 203,
     landmark: "McGregor Archive",
-    polygon: polyAround([-95.3520, 29.7220], 0.020, 0.016),
+    polygon: MRCAP_PERSONAL_POLYGON,
   },
   {
     id: "cap_distributions",
