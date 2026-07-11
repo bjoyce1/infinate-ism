@@ -1,17 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { NormalizedGraph, GraphNode } from "@/lib/graph/types";
-import { CATEGORY_COLORS } from "@/lib/graph/loadGraph";
+import type { NormalizedGraph } from "@/lib/graph/types";
 import { filterGraph } from "@/lib/graph/filterGraph";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
-import { buildStreetLayout, type StreetLayout, type StreetRoad } from "@/lib/graph/streetLayout";
-import { CopyDirectionsButton, buildDirectionsText } from "./CopyDirectionsButton";
-import { RouteMap } from "./RouteMap";
-
-const HUB_ID = "site_mrcap1_com";
-
-function hubColorFor(n: GraphNode): string {
-  return n.color || CATEGORY_COLORS[n.category] || "#3DED97";
-}
+import { buildCityModel, type CityModel, type PropertyInstance, type CityRoad } from "@/lib/street/cityLayout";
+import {
+  DISTRICTS,
+  DISTRICT_BY_ID,
+  HIGHWAYS,
+  DOWNTOWN_ID,
+  CITY_BOUNDS,
+  type DistrictId,
+} from "@/lib/street/houstonCityConfig";
+import {
+  type Camera,
+  clampTilt,
+  clampYaw,
+  easeCam,
+  screenToWorld,
+  worldToScreen,
+} from "@/lib/street/cityProjection";
 
 // Shared cache of loaded <img> elements keyed by src URL. Kept module-scoped
 // so switching view modes doesn't re-download every asset.
@@ -32,42 +39,107 @@ function getImage(src: string, onReady: () => void): HTMLImageElement | null {
   return null;
 }
 
-// Sample a point along a polyline at parametric t in [0,1].
-function samplePolyline(points: { x: number; y: number }[], length: number, t: number) {
+type Palette = {
+  bgOuter: string;
+  bgInner: string;
+  grid: string;
+  district: string;
+  districtBorder: string;
+  highway: string;
+  highwayGlow: string;
+  loop: string;
+  road: string;
+  roadResidential: string;
+  bridge: string;
+  sameOwner: string;
+  landmark: string;
+  building: string;
+  house: string;
+  text: string;
+  textMuted: string;
+  window: string;
+  ambient: number; // 0..1 window-glow intensity
+};
+
+const NIGHT_PALETTE: Palette = {
+  bgOuter: "#04070f",
+  bgInner: "#0c1424",
+  grid: "rgba(140,180,220,0.05)",
+  district: "rgba(255,255,255,0.02)",
+  districtBorder: "rgba(255,255,255,0.12)",
+  highway: "#ffe082",
+  highwayGlow: "rgba(255,224,130,0.35)",
+  loop: "#7dd3fc",
+  road: "rgba(180,210,240,0.55)",
+  roadResidential: "rgba(150,180,220,0.35)",
+  bridge: "rgba(167,139,250,0.55)",
+  sameOwner: "#ffd66a",
+  landmark: "#8ce9ff",
+  building: "#1e2740",
+  house: "#2b3550",
+  text: "#e6ecf5",
+  textMuted: "rgba(220,225,235,0.55)",
+  window: "rgba(255,214,106,0.85)",
+  ambient: 1,
+};
+
+const DAY_PALETTE: Palette = {
+  bgOuter: "#dfe8f2",
+  bgInner: "#f2f5fa",
+  grid: "rgba(20,40,80,0.05)",
+  district: "rgba(20,40,80,0.03)",
+  districtBorder: "rgba(20,40,80,0.15)",
+  highway: "#e08a1a",
+  highwayGlow: "rgba(224,138,26,0.25)",
+  loop: "#2563eb",
+  road: "rgba(30,50,80,0.45)",
+  roadResidential: "rgba(30,50,80,0.28)",
+  bridge: "rgba(124,58,237,0.55)",
+  sameOwner: "#c47a00",
+  landmark: "#0369a1",
+  building: "#c8d4e6",
+  house: "#dbe4f0",
+  text: "#0f172a",
+  textMuted: "rgba(15,23,42,0.6)",
+  window: "rgba(30,64,175,0.4)",
+  ambient: 0.2,
+};
+
+function samplePolyline(points: { x: number; y: number }[], t: number) {
+  if (points.length < 2) return points[0];
+  let length = 0;
+  const segs: number[] = [];
+  for (let i = 1; i < points.length; i++) {
+    const s = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+    segs.push(s);
+    length += s;
+  }
   const target = t * length;
   let acc = 0;
   for (let i = 1; i < points.length; i++) {
-    const dx = points[i].x - points[i - 1].x;
-    const dy = points[i].y - points[i - 1].y;
-    const seg = Math.hypot(dx, dy);
-    if (acc + seg >= target) {
-      const k = (target - acc) / (seg || 1);
-      return { x: points[i - 1].x + dx * k, y: points[i - 1].y + dy * k };
+    if (acc + segs[i - 1] >= target) {
+      const k = (target - acc) / (segs[i - 1] || 1);
+      return {
+        x: points[i - 1].x + (points[i].x - points[i - 1].x) * k,
+        y: points[i - 1].y + (points[i].y - points[i - 1].y) * k,
+      };
     }
-    acc += seg;
+    acc += segs[i - 1];
   }
   return points[points.length - 1];
-}
-
-// Draw an orthogonal road with softly rounded corners.
-function traceRoad(ctx: CanvasRenderingContext2D, pts: { x: number; y: number }[], radius: number) {
-  if (pts.length < 2) return;
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length - 1; i++) {
-    ctx.arcTo(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, radius);
-  }
-  ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
 }
 
 export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 800, h: 600 });
-  const [selectedRoadId, setSelectedRoadId] = useState<string | null>(null);
+  const [dayMode, setDayMode] = useState(false);
+  const [propertyId, setPropertyId] = useState<string | null>(null); // instance id
+  const [breadcrumbDistrict, setBreadcrumbDistrict] = useState<DistrictId | null>(null);
+  const [hoveredRoadId, setHoveredRoadId] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
 
   const selectedId = useGraphStore((s) => s.selectedId);
-  const hoveredId = useGraphStore((s) => s.hoveredId);
   const focusMode = useGraphStore((s) => s.focusMode);
   const activeCommunity = useGraphStore((s) => s.activeCommunity);
   const activeCategories = useGraphStore((s) => s.activeCategories);
@@ -75,21 +147,18 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
-  const particleIntensity = useGraphStore((s) => s.particleIntensity);
-  const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const showLabels = useGraphStore((s) => s.showLabels);
   const labelSize = useGraphStore((s) => s.labelSize);
   const recenterToken = useGraphStore((s) => s.recenterToken);
   const cameraResetToken = useGraphStore((s) => s.cameraResetToken);
 
-  // Filtered graph → filtered layout.
+  // Filtered graph → city model.
   const filtered = useMemo(
     () => filterGraph(graph, { activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId }),
     [graph, activeCategories, hideCode, includeTsFiles, activeCommunity, focusMode, selectedId],
   );
 
-  const layout = useMemo<StreetLayout>(() => {
-    // Re-normalize filtered subset into a NormalizedGraph-shaped object for the layout.
+  const city = useMemo<CityModel>(() => {
     const nodes = filtered.nodes.map((n) => ({ ...n }));
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const neighbors = new Map<string, Set<string>>();
@@ -106,43 +175,50 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       communities: graph.communities,
       categoryCounts: graph.categoryCounts,
     };
-    return buildStreetLayout(sub, hubColorFor);
+    return buildCityModel(sub);
   }, [filtered, graph]);
 
-  // Camera (world → screen).  cam.zoom in css px per world unit.
-  const camRef = useRef({ x: 0, y: 0, zoom: 0.35, tx: 0, ty: 0, tzoom: 0.35 });
-  const draggingRef = useRef<{ x: number; y: number } | null>(null);
-  const hoverIdRef = useRef<string | null>(null);
-  const selectedRoadRef = useRef<string | null>(null);
-  useEffect(() => {
-    selectedRoadRef.current = selectedRoadId;
-  }, [selectedRoadId]);
+  // Camera state (current + target for smooth easing).
+  const camRef = useRef<Camera>({ x: 0, y: 0, zoom: 0.03, yaw: 0, tilt: 0.28 });
+  const targetRef = useRef<Camera>({ ...camRef.current });
+  const draggingRef = useRef<{ x: number; y: number; button: number } | null>(null);
+  const hoverPropRef = useRef<string | null>(null);
 
-  // Fit to layout bounds when layout changes.
-  const fitToBounds = () => {
-    const b = layout.bounds;
-    const w = Math.max(1, b.maxX - b.minX);
-    const h = Math.max(1, b.maxY - b.minY);
-    const zoom = Math.min((size.w - 60) / w, (size.h - 60) / h);
-    const cx = (b.minX + b.maxX) / 2;
-    const cy = (b.minY + b.maxY) / 2;
-    camRef.current.tx = cx;
-    camRef.current.ty = cy;
-    camRef.current.tzoom = zoom;
+  const fitCity = () => {
+    const b = CITY_BOUNDS;
+    const zoom = Math.min((size.w - 80) / (b.maxX - b.minX), (size.h - 80) / (b.maxY - b.minY));
+    targetRef.current = { x: 0, y: 0, zoom, yaw: 0, tilt: 0.28 };
+  };
+
+  const focusDistrict = (id: DistrictId) => {
+    const d = DISTRICT_BY_ID[id];
+    const zoom = Math.min(size.w, size.h) / (d.radius * 3.4);
+    targetRef.current = { x: d.center.x, y: d.center.y, zoom, yaw: 0, tilt: 0.32 };
+    setBreadcrumbDistrict(id);
+  };
+
+  const focusProperty = (inst: PropertyInstance) => {
+    targetRef.current = {
+      x: inst.x,
+      y: inst.y,
+      zoom: Math.min(size.w, size.h) / 400,
+      yaw: targetRef.current.yaw,
+      tilt: 0.42,
+    };
+    setPropertyId(inst.id);
+    setBreadcrumbDistrict(inst.districtId);
   };
 
   useEffect(() => {
-    fitToBounds();
+    fitCity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout, size.w, size.h, cameraResetToken]);
+  }, [size.w, size.h, cameraResetToken]);
 
   useEffect(() => {
-    const hub = layout.nodes.get(HUB_ID);
-    if (!hub) return;
-    camRef.current.tx = hub.x;
-    camRef.current.ty = hub.y;
-    camRef.current.tzoom = Math.max(0.35, camRef.current.tzoom);
-  }, [recenterToken, layout]);
+    focusDistrict(DOWNTOWN_ID);
+    setBreadcrumbDistrict(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recenterToken]);
 
   // Resize observer.
   useEffect(() => {
@@ -168,446 +244,329 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     canvas.style.height = `${size.h}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    const palette = dayMode ? DAY_PALETTE : NIGHT_PALETTE;
+
     let raf = 0;
     let last = performance.now();
 
-    // Per-road particle state (reset when road list changes).
-    const particleState = new Map<string, number[]>();
-    const particleCount = (r: StreetRoad) => {
-      const base = r.kind === "highway" ? 4 : r.kind === "street" ? 2 : 1;
-      return Math.max(1, Math.round(base * Math.max(0.3, particleIntensity)));
-    };
-    for (const r of layout.roads) {
-      const n = particleCount(r);
-      const arr: number[] = [];
-      for (let i = 0; i < n; i++) arr.push(Math.random());
-      particleState.set(r.id, arr);
-    }
-
-    // Roads leaving mrcap1 = "GPS routes" from downtown out to every hub.
-    const gpsRoads = layout.roads.filter((r) => r.from === HUB_ID || r.to === HUB_ID);
-
-    const worldToScreen = (x: number, y: number) => {
-      const c = camRef.current;
-      return {
-        x: (x - c.x) * c.zoom + size.w / 2,
-        y: (y - c.y) * c.zoom + size.h / 2,
-      };
-    };
+    const w2s = (x: number, y: number) => worldToScreen(x, y, camRef.current, size.w, size.h);
 
     const draw = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      easeCam(camRef.current, targetRef.current, dt, 5.5);
+      const cam = camRef.current;
 
-      // Ease camera toward target.
-      const c = camRef.current;
-      c.x += (c.tx - c.x) * Math.min(1, dt * 6);
-      c.y += (c.ty - c.y) * Math.min(1, dt * 6);
-      c.zoom += (c.tzoom - c.zoom) * Math.min(1, dt * 6);
-
-      // Selection highlight sets — connections and neighbors of selected node.
-      let highlightRoads: Set<string> | null = null;
-      let highlightNodes: Set<string> | null = null;
-      if (selectedId && layout.nodes.has(selectedId)) {
-        highlightRoads = new Set();
-        highlightNodes = new Set([selectedId]);
-        for (const r of layout.roads) {
-          if (r.from === selectedId || r.to === selectedId) {
-            highlightRoads.add(r.id);
-            highlightNodes.add(r.from === selectedId ? r.to : r.from);
-          }
-        }
-      }
-      // A clicked road adds itself + its endpoints to the highlight set.
-      const activeRoad = selectedRoadId ? layout.roads.find((r) => r.id === selectedRoadId) : null;
-      if (activeRoad) {
-        if (!highlightRoads) highlightRoads = new Set();
-        if (!highlightNodes) highlightNodes = new Set();
-        highlightRoads.add(activeRoad.id);
-        highlightNodes.add(activeRoad.from);
-        highlightNodes.add(activeRoad.to);
-      }
-      const dimmed = (id: string) => highlightRoads !== null && !highlightRoads.has(id);
-      const dimmedNode = (id: string) => highlightNodes !== null && !highlightNodes.has(id);
-
-      // Background — deep navy with subtle radial vignette (matches reference map).
+      // --- Background gradient ---
       const bg = ctx.createRadialGradient(size.w / 2, size.h / 2, 0, size.w / 2, size.h / 2, Math.max(size.w, size.h) * 0.7);
-      bg.addColorStop(0, "#0f1f38");
-      bg.addColorStop(1, "#050a17");
+      bg.addColorStop(0, palette.bgInner);
+      bg.addColorStop(1, palette.bgOuter);
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, size.w, size.h);
 
-      // Grid graticule (world-space, culled to viewport).
-      const step = 200;
-      const viewMinX = c.x - size.w / 2 / c.zoom;
-      const viewMaxX = c.x + size.w / 2 / c.zoom;
-      const viewMinY = c.y - size.h / 2 / c.zoom;
-      const viewMaxY = c.y + size.h / 2 / c.zoom;
-      ctx.strokeStyle = "rgba(120,170,220,0.05)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      const startX = Math.floor(viewMinX / step) * step;
-      const endX = Math.ceil(viewMaxX / step) * step;
-      for (let gx = startX; gx <= endX; gx += step) {
-        const a = worldToScreen(gx, viewMinY);
-        const b = worldToScreen(gx, viewMaxY);
-        ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-      }
-      const startY = Math.floor(viewMinY / step) * step;
-      const endY = Math.ceil(viewMaxY / step) * step;
-      for (let gy = startY; gy <= endY; gy += step) {
-        const a = worldToScreen(viewMinX, gy);
-        const b = worldToScreen(viewMaxX, gy);
-        ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
-      }
-      ctx.stroke();
+      // --- Highlights: property instances of currently selected canonical id ---
+      const ownerInsts = selectedId ? city.propertiesByCanonical.get(selectedId) ?? [] : [];
+      const ownerSet = new Set(ownerInsts.map((p) => p.id));
 
-      // District halos.
-      for (const d of layout.districts) {
-        const p = worldToScreen(d.cx, d.cy);
-        const r = d.radius * c.zoom;
-        const g = ctx.createRadialGradient(p.x, p.y, r * 0.1, p.x, p.y, r);
-        g.addColorStop(0, `${d.color}22`);
+      // --- District halos (soft polygons, not perfect circles) ---
+      for (const d of city.districts) {
+        const c0 = w2s(d.center.x, d.center.y);
+        const r = d.radius * cam.zoom;
+        const g = ctx.createRadialGradient(c0.x, c0.y, r * 0.1, c0.x, c0.y, r * 1.4);
+        g.addColorStop(0, `${d.color}33`);
+        g.addColorStop(0.6, `${d.color}18`);
         g.addColorStop(1, `${d.color}00`);
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        // Irregular parcel-ish blob using 8 anchor angles with per-district noise.
+        for (let i = 0; i < 32; i++) {
+          const a = (i / 32) * Math.PI * 2;
+          const noise = 1 + 0.15 * Math.sin(a * 3 + d.center.x);
+          const rr = r * noise;
+          const px = c0.x + Math.cos(a) * rr;
+          const py = c0.y + Math.sin(a) * rr * Math.cos(cam.tilt);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
         ctx.fill();
-      }
-
-      // Prepare screen-space polylines for roads.
-      const roadWidthFor = (r: StreetRoad) =>
-        r.kind === "highway" ? Math.max(4, 6 * c.zoom) :
-        r.kind === "street" ? Math.max(2.5, 3.5 * c.zoom) :
-        Math.max(1.5, 2 * c.zoom);
-
-      const cornerRadius = Math.max(4, 10 * c.zoom);
-
-      // 1. Faint base street lattice under everything (like the reference map's
-      // background street grid).  Drawn as thin cyan lines with low alpha.
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      for (const r of layout.roads) {
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        ctx.strokeStyle = "rgba(120,190,240,0.09)";
+        ctx.strokeStyle = palette.districtBorder;
         ctx.lineWidth = 1;
-        traceRoad(ctx, pts, cornerRadius);
         ctx.stroke();
       }
-      // 2. Bright glowing cyan routes for highways + streets (the "lit" arteries).
-      const pulse = 0.6 + 0.4 * Math.sin(now / 500);
-      for (const r of layout.roads) {
-        if (r.kind === "alley") continue;
-        const isGps = r.from === HUB_ID || r.to === HUB_ID;
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        const isHi = highlightRoads?.has(r.id);
-        ctx.globalAlpha = dimmed(r.id) ? 0.15 : 1;
-        const core = isHi ? "#ffe066" : isGps ? "#7df9ff" : "#22c8ff";
-        const glow = isHi ? "rgba(255,224,102," : isGps ? "rgba(125,249,255," : "rgba(34,200,255,";
+
+      // --- Highway skeleton ---
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (const hw of HIGHWAYS) {
+        const pts = hw.points.map((p) => w2s(p.x, p.y));
+        const isLoop = hw.tier === "loop";
+        const width = Math.max(isLoop ? 2 : 3, (isLoop ? 8 : 14) * cam.zoom);
         // Outer glow.
-        ctx.strokeStyle = `${glow}${(isHi ? 0.5 : isGps ? 0.22 : 0.14) * pulse})`;
-        ctx.lineWidth = roadWidthFor(r) + (isHi ? 18 : isGps ? 14 : 8);
-        traceRoad(ctx, pts, cornerRadius);
+        ctx.strokeStyle = palette.highwayGlow;
+        ctx.lineWidth = width + 8;
+        ctx.beginPath();
+        pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
         ctx.stroke();
-        // Mid glow.
-        ctx.strokeStyle = `${glow}${isHi ? 0.7 : isGps ? 0.35 : 0.22})`;
-        ctx.lineWidth = roadWidthFor(r) + 3;
-        traceRoad(ctx, pts, cornerRadius);
+        // Core.
+        ctx.strokeStyle = isLoop ? palette.loop : palette.highway;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
         ctx.stroke();
-        // Bright core.
-        ctx.strokeStyle = core;
-        ctx.lineWidth = Math.max(1.6, (isHi ? 3.2 : isGps ? 2.6 : 2) * c.zoom);
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-      // 3. Alleys as thin darker connectors.
-      for (const r of layout.roads) {
-        if (r.kind !== "alley") continue;
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        const isHi = highlightRoads?.has(r.id);
-        ctx.globalAlpha = dimmed(r.id) ? 0.15 : 1;
-        ctx.strokeStyle = isHi ? "rgba(255,224,102,0.85)" : "rgba(90,140,190,0.35)";
-        ctx.lineWidth = Math.max(1, 1.4 * c.zoom);
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // 3b. Walking routes — dashed amber footpaths overlaid on the map.
-      // Marching-ants animation makes the direction of travel obvious.
-      const dashOffset = -(now / 40) % 24;
-      for (const r of layout.roads) {
-        if (!r.walk) continue;
-        const pts = r.points.map((p) => worldToScreen(p.x, p.y));
-        const isActive = selectedRoadId === r.id;
-        ctx.globalAlpha = dimmed(r.id) ? 0.2 : 1;
-        // Soft glow underlay.
-        ctx.setLineDash([]);
-        ctx.strokeStyle = isActive ? "rgba(255,204,77,0.35)" : "rgba(255,204,77,0.15)";
-        ctx.lineWidth = (isActive ? 14 : 8) + Math.max(2, 2 * c.zoom);
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-        // Dashed footpath.
-        ctx.setLineDash([10, 8]);
-        ctx.lineDashOffset = dashOffset;
-        ctx.strokeStyle = isActive ? "#ffde7a" : "#ffcc4d";
-        ctx.lineWidth = Math.max(2, (isActive ? 3.2 : 2.2) * c.zoom);
-        traceRoad(ctx, pts, cornerRadius);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.lineDashOffset = 0;
-      }
-      ctx.globalAlpha = 1;
-
-      // 5. Traffic particles.
-      const particleGain = Math.max(0.4, particleIntensity);
-      for (const r of layout.roads) {
-        const arr = particleState.get(r.id);
-        if (!arr) continue;
-        const speed = (r.kind === "highway" ? 0.18 : r.kind === "street" ? 0.11 : 0.07) * particleGain;
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] += speed * dt;
-          if (arr[i] > 1) arr[i] -= 1;
-          const p = samplePolyline(r.points, r.length, arr[i]);
-          const s = worldToScreen(p.x, p.y);
-          const isGps = r.from === HUB_ID || r.to === HUB_ID;
-          ctx.fillStyle = isGps ? "#ffffff" : "#ffd66a";
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, isGps ? 2.4 : 1.8, 0, Math.PI * 2);
-          ctx.fill();
+        // Center dash for interstates.
+        if (!isLoop) {
+          ctx.setLineDash([Math.max(4, 8 * cam.zoom), Math.max(6, 12 * cam.zoom)]);
+          ctx.strokeStyle = dayMode ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.65)";
+          ctx.lineWidth = Math.max(0.6, width * 0.18);
+          ctx.stroke();
+          ctx.setLineDash([]);
         }
       }
 
-      // 6. Buildings / nodes.
-      layout.nodes.forEach((n) => {
-        const p = worldToScreen(n.x, n.y);
-        const isSelected = selectedId === n.id;
-        const isHover = hoveredId === n.id || hoverIdRef.current === n.id;
-        const color = hubColorFor(n.node);
-        ctx.globalAlpha = dimmedNode(n.id) ? 0.2 : 1;
-        const imgSrc = n.node.image || n.node.artwork;
-        const img = imgSrc ? getImage(imgSrc, () => {}) : null;
-
-        // Helper: draw a circular image clipped to a disc of radius r.
-        const drawAvatar = (cx: number, cy: number, r: number, ringColor: string) => {
-          if (!img) return false;
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.closePath();
-          ctx.clip();
-          // cover-fit the image into the circle.
-          const iw = img.naturalWidth || img.width;
-          const ih = img.naturalHeight || img.height;
-          const scale = Math.max((2 * r) / iw, (2 * r) / ih);
-          const dw = iw * scale;
-          const dh = ih * scale;
-          ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
-          ctx.restore();
-          // Ring around the avatar for the map-pin look.
-          ctx.strokeStyle = ringColor;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.strokeStyle = `${ringColor}55`;
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-          ctx.stroke();
-          return true;
-        };
-
-        if (n.kind === "downtown") {
-          const r = 18 + (isHover ? 3 : 0);
-          // Downtown halo (always visible even with image).
-          ctx.fillStyle = "rgba(61,237,151,0.18)";
-          ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.2, 0, Math.PI * 2); ctx.fill();
-          if (drawAvatar(p.x, p.y, r, "#3DED97")) return;
-          // Downtown = big star pin.
-          const rStar = 14 + (isHover ? 3 : 0);
-          ctx.fillStyle = "#3DED97";
-          ctx.strokeStyle = "#0b0d10";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          for (let i = 0; i < 10; i++) {
-            const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-            const rad = i % 2 === 0 ? rStar : rStar * 0.45;
-            const px = p.x + Math.cos(a) * rad;
-            const py = p.y + Math.sin(a) * rad;
-            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-        } else if (n.kind === "hub") {
-          const rOuter = 14 + (isSelected ? 3 : 0);
-          if (drawAvatar(p.x, p.y, rOuter, color)) return;
-          // Hub HQ = GPS destination pin: outer ring + inner dot in hub color.
-          const rPin = 11 + (isSelected ? 3 : 0);
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, rPin, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.strokeStyle = `${color}55`;
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, rPin + 4, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-          ctx.fill();
+      // --- Roads (LOD: hide residential at wide zoom) ---
+      const showResidential = cam.zoom > 0.08;
+      const showBridges = true;
+      for (const r of city.roads) {
+        if (r.tier === "residential" && !showResidential) continue;
+        if (r.tier === "main" && !showResidential) continue;
+        if (r.tier === "bridge" && !showBridges) continue;
+        const a = w2s(r.fromPoint.x, r.fromPoint.y);
+        const b = w2s(r.toPoint.x, r.toPoint.y);
+        const isOwner = r.relation === "same-owner" && (selectedId && (city.propertiesById.get(r.from)?.canonicalId === selectedId || city.propertiesById.get(r.to)?.canonicalId === selectedId));
+        const isHover = hoveredRoadId === r.id;
+        let color: string;
+        let width: number;
+        if (isOwner) {
+          color = palette.sameOwner;
+          width = 3;
+        } else if (r.tier === "highway") {
+          color = palette.highway;
+          width = Math.max(2, 4 * cam.zoom);
+        } else if (r.tier === "bridge") {
+          color = palette.bridge;
+          width = Math.max(1, 2 * cam.zoom);
+        } else if (r.tier === "main") {
+          color = palette.road;
+          width = Math.max(0.8, 1.6 * cam.zoom);
         } else {
-          // Building — if it has an image, show a small avatar; otherwise a chip.
-          const r = 8 + (isHover ? 2 : 0) + (isSelected ? 2 : 0);
-          if (drawAvatar(p.x, p.y, r, color)) return;
-          // Building.
-          const s = 6 + (isHover ? 2 : 0) + (isSelected ? 3 : 0);
-          ctx.fillStyle = color;
-          ctx.strokeStyle = "#0b0d10";
-          ctx.lineWidth = 1;
+          color = palette.roadResidential;
+          width = Math.max(0.5, 1.2 * cam.zoom);
+        }
+        if (isHover) width += 1.5;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+
+        // Owner routes: animated dash overlay.
+        if (isOwner) {
+          ctx.setLineDash([8, 6]);
+          ctx.lineDashOffset = -(now / 40) % 14;
+          ctx.strokeStyle = "#fff2b3";
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.lineDashOffset = 0;
+        }
+      }
+
+      // --- Properties (buildings) with tilt-based footprint ---
+      const tiltShift = Math.sin(cam.tilt) * 0.6;
+      // Sort back-to-front so tilt looks right (higher y renders later).
+      const sortedProps = [...city.properties].sort((a, b) => a.y - b.y);
+      for (const p of sortedProps) {
+        const s = w2s(p.x, p.y);
+        const parcelPx = p.parcelW * cam.zoom;
+        // Parcel footprint (subtle).
+        ctx.fillStyle = dayMode ? "rgba(30,50,80,0.06)" : "rgba(255,255,255,0.04)";
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y + parcelPx * 0.35, parcelPx * 0.55, parcelPx * 0.28, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const isSel = selectedId === p.canonicalId;
+        const isOwner = ownerSet.has(p.id);
+        const isProp = propertyId === p.id;
+        const scale = isSel || isProp ? 1.15 : 1;
+
+        // Building silhouette — pseudo-3D block.
+        const w = parcelPx * 0.55 * scale;
+        const h = parcelPx * 0.55 * scale;
+        const zH = (p.kind === "landmark" ? 90 : p.kind === "skyscraper" ? 70 : p.kind === "studio" ? 26 : 18) * cam.zoom * (1 + tiltShift);
+
+        // Side face (right).
+        ctx.fillStyle = shade(p.color || palette.building, dayMode ? -25 : -30);
+        ctx.beginPath();
+        ctx.moveTo(s.x + w / 2, s.y - h / 2);
+        ctx.lineTo(s.x + w / 2 + zH * 0.35, s.y - h / 2 - zH);
+        ctx.lineTo(s.x + w / 2 + zH * 0.35, s.y + h / 2 - zH);
+        ctx.lineTo(s.x + w / 2, s.y + h / 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Front/top face.
+        ctx.fillStyle = p.color || palette.building;
+        ctx.beginPath();
+        ctx.moveTo(s.x - w / 2, s.y - h / 2);
+        ctx.lineTo(s.x - w / 2 + zH * 0.35, s.y - h / 2 - zH);
+        ctx.lineTo(s.x + w / 2 + zH * 0.35, s.y - h / 2 - zH);
+        ctx.lineTo(s.x + w / 2, s.y - h / 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Face outline + window rows for taller buildings.
+        ctx.strokeStyle = dayMode ? "rgba(15,23,42,0.35)" : "rgba(0,0,0,0.6)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(s.x - w / 2, s.y - h / 2, w, h);
+
+        if (zH > 8) {
+          const rows = Math.max(2, Math.floor(zH / 8));
+          const cols = Math.max(1, Math.floor(w / 6));
+          ctx.fillStyle = palette.window;
+          ctx.globalAlpha = palette.ambient * 0.9;
+          for (let ry = 0; ry < rows; ry++) {
+            for (let cx = 0; cx < cols; cx++) {
+              // Deterministic on/off based on hash.
+              const on = ((ry * 7 + cx * 11 + p.canonicalId.length) % 3) !== 0;
+              if (!on) continue;
+              const wx = s.x - w / 2 + 2 + cx * 6;
+              const wy = s.y - h / 2 - (ry + 1) * (zH / rows) + 2;
+              ctx.fillRect(wx, wy, 2, Math.max(1, zH / rows - 3));
+            }
+          }
+          ctx.globalAlpha = 1;
+        }
+
+        // Selected / owner rings.
+        if (isSel || isOwner || isProp) {
+          ctx.strokeStyle = isProp ? "#ffde7a" : palette.sameOwner;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.roundRect(p.x - s / 2, p.y - s / 2, s, s, 1.5);
-          ctx.fill();
+          ctx.arc(s.x, s.y + parcelPx * 0.35, parcelPx * 0.65 + Math.sin(now / 280) * 2, 0, Math.PI * 2);
           ctx.stroke();
         }
-      });
-      ctx.globalAlpha = 1;
 
-      // 7. Labels (zoom-gated, no overlap check for perf — just prioritize).
+        // Optional avatar puck for hubs/landmarks.
+        const imgSrc = p.node.image || p.node.artwork;
+        if (p.isLandmark && imgSrc) {
+          const img = getImage(imgSrc, () => {});
+          if (img) {
+            const rr = w * 0.6;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(s.x, s.y - h / 2 - zH - rr - 4, rr, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            const iw = img.naturalWidth || img.width;
+            const ih = img.naturalHeight || img.height;
+            const scaleImg = Math.max((2 * rr) / iw, (2 * rr) / ih);
+            ctx.drawImage(img, s.x - (iw * scaleImg) / 2, s.y - h / 2 - zH - rr - 4 - (ih * scaleImg) / 2, iw * scaleImg, ih * scaleImg);
+            ctx.restore();
+            ctx.strokeStyle = p.color || palette.landmark;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y - h / 2 - zH - rr - 4, rr, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // --- District & building labels ---
       if (showLabels) {
         ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        const drawLabel = (x: number, y: number, text: string, color: string, sizePx: number, bold = false) => {
-          ctx.font = `${bold ? "700 " : "600 "}${sizePx}px 'Space Grotesk','Sora',sans-serif`;
-          const w = ctx.measureText(text).width;
-          ctx.fillStyle = "rgba(11,13,16,0.85)";
-          ctx.fillRect(x - w / 2 - 4, y, w + 8, sizePx + 4);
-          ctx.fillStyle = color;
-          ctx.fillText(text, x, y + 2);
-        };
-        // Downtown always labeled.
-        const dt = layout.nodes.get(HUB_ID);
-        if (dt) {
-          const p = worldToScreen(dt.x, dt.y);
-          drawLabel(p.x, p.y + 18, "MRCAP1 · DOWNTOWN", "#3DED97", 11 * labelSize, true);
-        }
-        // Hubs when zoomed above 0.25.
-        if (c.zoom > 0.22) {
-          layout.nodes.forEach((n) => {
-            if (n.kind !== "hub") return;
-            const p = worldToScreen(n.x, n.y);
-            drawLabel(p.x, p.y + 14, (n.node.label || n.id).toUpperCase(), "#e6ecf5", 10 * labelSize, true);
-          });
-        }
-        // Buildings only when very close.
-        if (c.zoom > 0.9) {
-          layout.nodes.forEach((n) => {
-            if (n.kind !== "building") return;
-            const p = worldToScreen(n.x, n.y);
-            drawLabel(p.x, p.y + 8, n.node.label || n.id, "rgba(220,225,235,0.85)", 9 * labelSize);
-          });
-        }
-      }
-
-      // 8. Selected pin marker (drop-pin style) on top.
-      if (selectedId) {
-        const sel = layout.nodes.get(selectedId);
-        if (sel) {
-          const p = worldToScreen(sel.x, sel.y);
-          ctx.strokeStyle = "#ffcc4d";
-          ctx.lineWidth = 2;
+        ctx.textBaseline = "middle";
+        for (const d of city.districts) {
+          const c0 = w2s(d.center.x, d.center.y - d.radius * 0.85);
+          const fs = Math.max(11, Math.min(22, 14 * labelSize + cam.zoom * 40));
+          ctx.font = `800 ${fs}px 'Space Grotesk','Sora',sans-serif`;
+          const w = ctx.measureText(d.name.toUpperCase()).width + 20;
+          ctx.fillStyle = dayMode ? "rgba(255,255,255,0.85)" : "rgba(10,15,25,0.75)";
+          ctx.strokeStyle = d.color;
+          ctx.lineWidth = 1;
+          const rectX = c0.x - w / 2;
+          const rectY = c0.y - fs / 2 - 4;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 18 + Math.sin(now / 300) * 3, 0, Math.PI * 2);
+          if (ctx.roundRect) ctx.roundRect(rectX, rectY, w, fs + 8, 6);
+          else ctx.rect(rectX, rectY, w, fs + 8);
+          ctx.fill();
           ctx.stroke();
+          ctx.fillStyle = d.color;
+          ctx.fillText(d.name.toUpperCase(), c0.x, c0.y);
         }
-      }
-
-      // 8b. Selected walking route: end-cap pins pulsing on both endpoints.
-      if (activeRoad) {
-        const a = layout.nodes.get(activeRoad.from);
-        const b = layout.nodes.get(activeRoad.to);
-        for (const end of [a, b]) {
-          if (!end) continue;
-          const p = worldToScreen(end.x, end.y);
-          ctx.strokeStyle = "#ffde7a";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 14 + Math.sin(now / 240) * 3, 0, Math.PI * 2);
-          ctx.stroke();
+        if (cam.zoom > 0.15) {
+          ctx.font = `600 ${10 * labelSize}px 'Space Grotesk','Sora',sans-serif`;
+          ctx.fillStyle = palette.textMuted;
+          for (const p of city.properties) {
+            if (!p.isLandmark && p.kind !== "skyscraper" && cam.zoom < 0.35) continue;
+            const s = w2s(p.x, p.y);
+            ctx.fillText(p.label, s.x, s.y + p.parcelH * cam.zoom * 0.55);
+          }
         }
-      }
-
-      // Intensity: link intensity applied to overall overlay dimming when < 1.
-      if (linkIntensity < 1) {
-        ctx.fillStyle = `rgba(11,13,16,${(1 - linkIntensity) * 0.4})`;
-        ctx.fillRect(0, 0, size.w, size.h);
       }
 
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [layout, size.w, size.h, selectedId, hoveredId, selectedRoadId, showLabels, labelSize, particleIntensity, linkIntensity]);
+  }, [city, size.w, size.h, selectedId, propertyId, hoveredRoadId, dayMode, showLabels, labelSize]);
 
-  // Interactions.
-  const screenToWorld = (sx: number, sy: number) => {
-    const c = camRef.current;
-    return {
-      x: (sx - size.w / 2) / c.zoom + c.x,
-      y: (sy - size.h / 2) / c.zoom + c.y,
-    };
-  };
+  // Interactions ------------------------------------------------------------
+  const s2w = (sx: number, sy: number) => screenToWorld(sx, sy, camRef.current, size.w, size.h);
 
-  const hitTest = (sx: number, sy: number): string | null => {
-    const w = screenToWorld(sx, sy);
-    let bestId: string | null = null;
+  const hitTestProperty = (sx: number, sy: number): PropertyInstance | null => {
+    const w = s2w(sx, sy);
+    let best: PropertyInstance | null = null;
     let bestDist = Infinity;
-    layout.nodes.forEach((n) => {
-      const r = n.kind === "downtown" ? 18 : n.kind === "hub" ? 14 : 8;
-      const dr = r / camRef.current.zoom;
-      const d = Math.hypot(n.x - w.x, n.y - w.y);
-      if (d <= dr && d < bestDist) {
+    for (const p of city.properties) {
+      const r = (p.parcelW * 0.5) / 1; // world units
+      const d = Math.hypot(p.x - w.x, p.y - w.y);
+      if (d <= r && d < bestDist) {
+        best = p;
         bestDist = d;
-        bestId = n.id;
-      }
-    });
-    return bestId;
-  };
-
-  // Distance from a world-point to a road's polyline (world units).
-  const roadHitTest = (sx: number, sy: number): string | null => {
-    const w = screenToWorld(sx, sy);
-    const tol = 12 / camRef.current.zoom; // ~12px click tolerance
-    let bestId: string | null = null;
-    let bestDist = Infinity;
-    for (const r of layout.roads) {
-      if (!r.walk) continue; // only walkable routes are clickable
-      const pts = r.points;
-      for (let i = 1; i < pts.length; i++) {
-        const ax = pts[i - 1].x, ay = pts[i - 1].y;
-        const bx = pts[i].x, by = pts[i].y;
-        const dx = bx - ax, dy = by - ay;
-        const len2 = dx * dx + dy * dy || 1;
-        let t = ((w.x - ax) * dx + (w.y - ay) * dy) / len2;
-        t = Math.max(0, Math.min(1, t));
-        const px = ax + dx * t, py = ay + dy * t;
-        const d = Math.hypot(w.x - px, w.y - py);
-        if (d <= tol && d < bestDist) {
-          bestDist = d;
-          bestId = r.id;
-        }
       }
     }
-    return bestId;
+    return best;
   };
 
-  const activeRoadInfo = selectedRoadId ? layout.roads.find((r) => r.id === selectedRoadId) : null;
-  const activeRoadFrom = activeRoadInfo ? layout.nodes.get(activeRoadInfo.from)?.node : null;
-  const activeRoadTo = activeRoadInfo ? layout.nodes.get(activeRoadInfo.to)?.node : null;
+  const hitTestRoad = (sx: number, sy: number): CityRoad | null => {
+    const w = s2w(sx, sy);
+    const tol = 10 / camRef.current.zoom;
+    let best: CityRoad | null = null;
+    let bestDist = Infinity;
+    for (const r of city.roads) {
+      const ax = r.fromPoint.x, ay = r.fromPoint.y;
+      const bx = r.toPoint.x, by = r.toPoint.y;
+      const dx = bx - ax, dy = by - ay;
+      const len2 = dx * dx + dy * dy || 1;
+      let t = ((w.x - ax) * dx + (w.y - ay) * dy) / len2;
+      t = Math.max(0, Math.min(1, t));
+      const px = ax + dx * t, py = ay + dy * t;
+      const d = Math.hypot(w.x - px, w.y - py);
+      if (d <= tol && d < bestDist) {
+        best = r;
+        bestDist = d;
+      }
+    }
+    return best;
+  };
+
+  const activeProperty = propertyId ? city.propertiesById.get(propertyId) ?? null : null;
+  const hoveredRoad = hoveredRoadId ? city.roads.find((r) => r.id === hoveredRoadId) ?? null : null;
+  const roadEndpointLabel = (id: string) => {
+    if (id === "downtown") return "Downtown";
+    const p = city.propertiesById.get(id);
+    if (p) return p.label;
+    const d = DISTRICTS.find((x) => x.id === (id as DistrictId));
+    return d?.name ?? id;
+  };
+  const roadTierLabel = (t: CityRoad["tier"]) =>
+    t === "highway" ? "Highway" :
+    t === "interstate" ? "Interstate" :
+    t === "main" ? "Main road" :
+    t === "residential" ? "Residential street" :
+    "Bridge";
 
   return (
     <div
@@ -615,147 +574,223 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       className="absolute inset-0 overflow-hidden touch-none cursor-grab active:cursor-grabbing"
       onPointerDown={(e) => {
         (e.target as Element).setPointerCapture(e.pointerId);
-        draggingRef.current = { x: e.clientX, y: e.clientY };
+        draggingRef.current = { x: e.clientX, y: e.clientY, button: e.button };
       }}
       onPointerUp={(e) => {
         const drag = draggingRef.current;
         draggingRef.current = null;
         if (!drag) return;
         const moved = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
-        if (moved < 4) {
-          const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-          const id = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-          if (id) {
-            select(id);
-            setSelectedRoadId(null);
-            const n = layout.nodes.get(id);
-            if (n) {
-              camRef.current.tx = n.x;
-              camRef.current.ty = n.y;
-              camRef.current.tzoom = Math.max(camRef.current.tzoom, 0.9);
-            }
-          } else {
-            // No node hit — try a walking-route polyline hit.
-            const rid = roadHitTest(e.clientX - rect.left, e.clientY - rect.top);
-            if (rid) {
-              setSelectedRoadId(rid);
-            } else {
-              setSelectedRoadId(null);
-              select(null);
-            }
-          }
+        if (moved >= 4) return;
+        const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+        const hit = hitTestProperty(e.clientX - rect.left, e.clientY - rect.top);
+        if (hit) {
+          focusProperty(hit);
+        } else {
+          setPropertyId(null);
+          select(null);
         }
       }}
       onPointerMove={(e) => {
         const drag = draggingRef.current;
         const c = camRef.current;
+        const t = targetRef.current;
         if (drag) {
-          const dx = (e.clientX - drag.x) / c.zoom;
-          const dy = (e.clientY - drag.y) / c.zoom;
-          c.tx -= dx; c.ty -= dy;
-          c.x -= dx; c.y -= dy;
-          draggingRef.current = { x: e.clientX, y: e.clientY };
+          // Right button / shift = yaw+tilt drag.
+          if (drag.button === 2 || e.shiftKey) {
+            const dxr = (e.clientX - drag.x) * 0.005;
+            const dyr = (e.clientY - drag.y) * 0.004;
+            t.yaw = clampYaw(t.yaw + dxr);
+            t.tilt = clampTilt(t.tilt + dyr);
+            c.yaw = t.yaw;
+            c.tilt = t.tilt;
+          } else {
+            const cos = Math.cos(-c.yaw), sin = Math.sin(-c.yaw);
+            const dxs = (e.clientX - drag.x) / c.zoom;
+            const dys = (e.clientY - drag.y) / (c.zoom * Math.max(0.01, Math.cos(c.tilt)));
+            const dx = dxs * cos - dys * sin;
+            const dy = dxs * sin + dys * cos;
+            t.x -= dx; t.y -= dy;
+            c.x -= dx; c.y -= dy;
+          }
+          draggingRef.current = { x: e.clientX, y: e.clientY, button: drag.button };
         } else {
           const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-          const id = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-          if (id !== hoverIdRef.current) {
-            hoverIdRef.current = id;
-            hover(id);
+          const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+          const hit = hitTestProperty(sx, sy);
+          hoverPropRef.current = hit?.id ?? null;
+          hover(hit?.canonicalId ?? null);
+          if (!hit) {
+            const rd = hitTestRoad(sx, sy);
+            setHoveredRoadId(rd?.id ?? null);
+            setHoverPos(rd ? { x: sx, y: sy } : null);
+          } else {
+            setHoveredRoadId(null);
+            setHoverPos(null);
           }
         }
       }}
+      onContextMenu={(e) => e.preventDefault()}
       onWheel={(e) => {
         e.preventDefault();
         const c = camRef.current;
+        const t = targetRef.current;
         const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
-        const before = screenToWorld(px, py);
+        const before = s2w(px, py);
         const factor = Math.exp(-e.deltaY * 0.0015);
-        c.tzoom = Math.max(0.08, Math.min(4, c.tzoom * factor));
-        c.zoom = Math.max(0.08, Math.min(4, c.zoom * factor));
-        const after = screenToWorld(px, py);
-        c.tx += before.x - after.x;
-        c.ty += before.y - after.y;
+        t.zoom = Math.max(0.01, Math.min(4, t.zoom * factor));
+        c.zoom = Math.max(0.01, Math.min(4, c.zoom * factor));
+        const after = s2w(px, py);
+        t.x += before.x - after.x;
+        t.y += before.y - after.y;
         c.x += before.x - after.x;
         c.y += before.y - after.y;
       }}
     >
       <canvas ref={canvasRef} />
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none bg-obsidian-surface/70 backdrop-blur border border-neon-primary/30 rounded-full px-4 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neon-primary">
-        CAPISM · STREET VIEW
+
+      {/* Top HUD: breadcrumbs + title */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center gap-1.5">
+        <div className="bg-obsidian-surface/70 backdrop-blur border border-neon-primary/30 rounded-full px-4 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neon-primary">
+          CAPISM · Street View · Houston Grid
+        </div>
+        <div className="bg-obsidian-surface/60 backdrop-blur border border-white/10 rounded-full px-3 py-1 text-[11px] font-mono text-white/80 flex items-center gap-1.5 pointer-events-auto">
+          <button className="hover:text-white transition" onClick={() => { fitCity(); setBreadcrumbDistrict(null); setPropertyId(null); }}>City</button>
+          {breadcrumbDistrict && (
+            <>
+              <span className="text-white/30">›</span>
+              <button className="hover:text-white transition" onClick={() => { focusDistrict(breadcrumbDistrict); setPropertyId(null); }}>
+                {DISTRICT_BY_ID[breadcrumbDistrict].name}
+              </button>
+            </>
+          )}
+          {activeProperty && (
+            <>
+              <span className="text-white/30">›</span>
+              <span className="text-neon-primary truncate max-w-[220px]">{activeProperty.label}</span>
+            </>
+          )}
+        </div>
       </div>
-      {activeRoadInfo?.walk && (
-        <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md bg-obsidian-surface/95 backdrop-blur border border-[#ffcc4d]/40 rounded-xl p-4 shadow-2xl pointer-events-auto">
+
+      {/* Left rail: navigation controls */}
+      <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-auto">
+        <button
+          className="bg-obsidian-surface/80 backdrop-blur border border-neon-primary/40 rounded-md px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-neon-primary hover:bg-neon-primary/10 transition"
+          onClick={() => { focusDistrict(DOWNTOWN_ID); setPropertyId(null); }}
+        >
+          ⌂ Downtown
+        </button>
+        <button
+          className="bg-obsidian-surface/80 backdrop-blur border border-white/15 rounded-md px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-white/80 hover:bg-white/5 transition"
+          onClick={() => { fitCity(); setBreadcrumbDistrict(null); setPropertyId(null); }}
+        >
+          ⤢ Fit City
+        </button>
+        <button
+          className="bg-obsidian-surface/80 backdrop-blur border border-white/15 rounded-md px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-white/80 hover:bg-white/5 transition"
+          onClick={() => setDayMode((d) => !d)}
+        >
+          {dayMode ? "☾ Night" : "☀ Day"}
+        </button>
+      </div>
+
+      {/* Right rail: district jump list */}
+      <div className="absolute top-4 right-4 flex flex-col gap-1 pointer-events-auto bg-obsidian-surface/60 backdrop-blur border border-white/10 rounded-md p-2 max-w-[220px]">
+        <div className="text-[9px] font-mono uppercase tracking-widest text-white/40 px-1 mb-1">Districts</div>
+        {DISTRICTS.map((d) => (
+          <button
+            key={d.id}
+            className="flex items-center gap-2 px-2 py-1 text-[11px] rounded hover:bg-white/5 transition text-left"
+            onClick={() => { focusDistrict(d.id); setPropertyId(null); }}
+          >
+            <span className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+            <span className="text-white/90 truncate">{d.name}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Road hover tooltip */}
+      {hoveredRoad && hoverPos && (
+        <div
+          className="absolute pointer-events-none bg-obsidian-surface/95 backdrop-blur border border-white/15 rounded-md px-2.5 py-1.5 text-[11px] shadow-xl"
+          style={{ left: hoverPos.x + 14, top: hoverPos.y + 14 }}
+        >
+          <div className="text-[9px] font-mono uppercase tracking-widest text-neon-primary">
+            {roadTierLabel(hoveredRoad.tier)}
+            {hoveredRoad.relation ? ` · ${hoveredRoad.relation}` : ""}
+          </div>
+          <div className="text-white/90">
+            {roadEndpointLabel(hoveredRoad.from)} <span className="text-white/40">→</span> {roadEndpointLabel(hoveredRoad.to)}
+          </div>
+        </div>
+      )}
+
+      {/* Property-level panel */}
+      {activeProperty && (
+        <div className="absolute bottom-4 left-4 right-4 md:right-auto md:max-w-md bg-obsidian-surface/95 backdrop-blur border border-neon-primary/40 rounded-xl p-4 shadow-2xl pointer-events-auto">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-[#ffcc4d] mb-1">
-                🚶 Walking route
+              <div className="text-[9px] font-mono uppercase tracking-widest text-neon-primary/80 mb-1">
+                {DISTRICT_BY_ID[activeProperty.districtId].name} · {activeProperty.kind.replace("_", " ")}
               </div>
-              <div className="text-sm font-semibold text-white truncate">
-                {activeRoadFrom?.label ?? activeRoadInfo.from}
-                <span className="text-white/40 mx-1.5">→</span>
-                {activeRoadTo?.label ?? activeRoadInfo.to}
+              <div className="text-base font-semibold text-white truncate">{activeProperty.label}</div>
+              <div className="mt-0.5 text-[11px] font-mono text-white/50">
+                #{Math.abs(activeProperty.x | 0)} · {Math.abs(activeProperty.y | 0)} {activeProperty.y < 0 ? "N" : "S"} {activeProperty.x < 0 ? "W" : "E"}
               </div>
-              {(activeRoadInfo.walk.distance || activeRoadInfo.walk.duration) && (
-                <div className="mt-1 text-[11px] font-mono text-white/60">
-                  {activeRoadInfo.walk.distance ?? "—"} · {activeRoadInfo.walk.duration ?? "—"}
+              {city.propertiesByCanonical.get(activeProperty.canonicalId)!.length > 1 && (
+                <div className="mt-1 text-[10px] font-mono text-[#ffd66a]">
+                  ★ Owner has {city.propertiesByCanonical.get(activeProperty.canonicalId)!.length} properties in the city
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <CopyDirectionsButton
-                text={buildDirectionsText(
-                  `${activeRoadFrom?.label ?? activeRoadInfo.from} → ${activeRoadTo?.label ?? activeRoadInfo.to}`,
-                  activeRoadInfo.walk.distance,
-                  activeRoadInfo.walk.duration,
-                  activeRoadInfo.walk.directions,
-                  activeRoadInfo.walk.days,
-                )}
-              />
-              <button
-                type="button"
-                onClick={() => setSelectedRoadId(null)}
-                className="text-white/50 hover:text-white text-lg leading-none px-1"
-                aria-label="Close route preview"
-              >
-                ×
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setPropertyId(null)}
+              className="text-white/50 hover:text-white text-lg leading-none px-1"
+              aria-label="Close property view"
+            >
+              ×
+            </button>
           </div>
-          {activeRoadInfo.walk.directions && (
-            <p className="mt-2 text-xs text-white/80 leading-relaxed">
-              {activeRoadInfo.walk.directions}
-            </p>
-          )}
-          <div className="mt-3">
-            <RouteMap
-              from={activeRoadFrom?.label ?? activeRoadInfo.from}
-              to={activeRoadTo?.label ?? activeRoadInfo.to}
-              directions={activeRoadInfo.walk.directions}
-              distance={activeRoadInfo.walk.distance}
-              duration={activeRoadInfo.walk.duration}
-              days={activeRoadInfo.walk.days}
-              height={140}
-            />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className="px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest bg-neon-primary/20 border border-neon-primary/50 text-neon-primary rounded-md hover:bg-neon-primary/30 transition"
+              onClick={() => {
+                select(activeProperty.canonicalId);
+              }}
+            >
+              Open Details →
+            </button>
+            <button
+              className="px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest border border-white/15 text-white/80 rounded-md hover:bg-white/5 transition"
+              onClick={() => { focusDistrict(activeProperty.districtId); setPropertyId(null); }}
+            >
+              ← Neighborhood
+            </button>
+            <button
+              className="px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest border border-white/15 text-white/80 rounded-md hover:bg-white/5 transition"
+              onClick={() => { fitCity(); setBreadcrumbDistrict(null); setPropertyId(null); }}
+            >
+              ← City
+            </button>
           </div>
-          {activeRoadInfo.walk.days && activeRoadInfo.walk.days.length > 0 && (
-            <ol className="mt-3 space-y-2 border-t border-white/10 pt-2 max-h-48 overflow-y-auto pr-1">
-              {activeRoadInfo.walk.days.map((d, i) => (
-                <li key={i} className="text-[11px] text-white/75 leading-relaxed">
-                  <div className="font-mono uppercase tracking-wider text-[#ffcc4d]">
-                    {d.label ?? `Day ${i + 1}`}
-                  </div>
-                  <div className="text-white/50 font-mono">
-                    {d.distance ?? "—"} · {d.duration ?? "—"}
-                  </div>
-                  {d.directions && <div className="mt-0.5">{d.directions}</div>}
-                </li>
-              ))}
-            </ol>
-          )}
         </div>
       )}
     </div>
   );
+}
+
+// --- utilities ---
+function shade(hex: string, delta: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const clamp = (v: number) => Math.max(0, Math.min(255, v));
+  const r = clamp(((n >> 16) & 0xff) + delta);
+  const g = clamp(((n >> 8) & 0xff) + delta);
+  const b = clamp((n & 0xff) + delta);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
