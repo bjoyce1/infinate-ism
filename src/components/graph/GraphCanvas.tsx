@@ -18,10 +18,22 @@ type ForceGraphHandle = {
 
 const HUB_ID = "site_mrcap1_com";
 
-// Solar-system layout constants (world units).
-const RING_BASE = 220;
-const RING_GAP = 150;
-const HUB_OFFSET = 0; // Sun at origin; planets in upper-right arc naturally place Sun at bottom-left of the fitted view
+// Radial-tree layout constants (world units). Hub at origin, mains on
+// concentric full-circle rings, children branch outward from their parent.
+const RING_BASE = 260;
+const RING_GAP = 190;
+const HUB_OFFSET = 0;
+
+// Obsidian palette
+const COLOR_BG = "#0a0a0f";
+const COLOR_LINK = "rgba(124,156,255,0.14)";
+const COLOR_LINK_HI = "rgba(61,237,208,0.75)";
+const COLOR_LINK_DIM = "rgba(255,255,255,0.025)";
+const COLOR_NODE = "#7c9cff";
+const COLOR_NODE_HI = "#3dedd0";
+const COLOR_LABEL = "#c9d1e0";
+const COLOR_IMG_BORDER = "#3dedd0";
+const COLOR_IMG_GLOW = "#7c9cff";
 
 type SolarPlan = {
   ringOf: Map<string, { ring: number; angle: number }>;
@@ -47,6 +59,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
   const hover = useGraphStore((s) => s.hover);
+  const toggleFocus = useGraphStore((s) => s.toggleFocus);
   const particleIntensity = useGraphStore((s) => s.particleIntensity);
   const linkIntensity = useGraphStore((s) => s.linkIntensity);
   const recenterToken = useGraphStore((s) => s.recenterToken);
@@ -94,11 +107,19 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   // concentric rings arcing up-and-to-the-right of the Sun (hub). Each non-main
   // node is attached to its most-connected main-node neighbor.
   const solarPlan = useMemo<SolarPlan>(() => {
-    const arc = (Math.PI / 2) * sunArcSpread;
+    // Radial-tree layout: hub at center, main nodes distributed on
+    // concentric FULL-CIRCLE rings, grouped by community for angular
+    // coherence. Children branch outward from their parent's angle.
+    const arc = Math.PI * 2; // full circle
     const mains = graph.nodes
       .filter((n) => n.id !== HUB_ID && (n.is_hub || n.image))
       .slice()
-      .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0));
+      .sort((a, b) => {
+        const ca = a.community ?? 999;
+        const cb = b.community ?? 999;
+        if (ca !== cb) return ca - cb;
+        return (b.degree ?? 0) - (a.degree ?? 0);
+      });
     const effectiveRingCount = Math.max(1, Math.min(mains.length, ringCount));
     const perRing = Math.ceil(mains.length / effectiveRingCount);
     const ringOf = new Map<string, { ring: number; angle: number }>();
@@ -107,11 +128,12 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const idxInRing = i % perRing;
       const countInRing = Math.min(perRing, mains.length - ring * perRing);
       const spacing = arc / Math.max(countInRing, 1);
-      const angle = -arc + spacing * (idxInRing + 0.5);
+      // Offset alternate rings so nodes don't align radially and links don't overlap.
+      const ringOffset = (ring % 2) * spacing * 0.5;
+      const angle = spacing * idxInRing + ringOffset;
       ringOf.set(mains[i].id, { ring, angle });
     }
-    // Anchor Paul Wall next to Swishahouse on the same ring so they consistently
-    // start close without overlapping. Angular offset ≈ 90 world units at ring r.
+    // Keep Paul Wall adjacent to Swishahouse.
     const swisha = ringOf.get("site_swishahouse");
     if (swisha && ringOf.has("artist_paul_wall")) {
       const rr = RING_BASE + swisha.ring * RING_GAP;
@@ -135,7 +157,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       if (best) parentOf.set(n.id, best);
     }
     return { ringOf, parentOf, ringCount: effectiveRingCount, arc };
-  }, [graph, sunArcSpread, ringCount]);
+  }, [graph, ringCount]);
   const solarPlanRef = useRef(solarPlan);
   useEffect(() => { solarPlanRef.current = solarPlan; }, [solarPlan]);
   const orbitLayoutRef = useRef(orbitLayout);
@@ -184,13 +206,14 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const parent = plan.parentOf.get(n.id);
         const p = parent ? plan.ringOf.get(parent) : null;
         if (p) {
+          // Branch radially OUTWARD from the parent along its ring angle,
+          // with a small angular spread — gives a clean tree silhouette.
           const rr = RING_BASE + p.ring * spacing;
-          const px = Math.cos(p.angle) * rr;
-          const py = Math.sin(p.angle) * rr;
-          const localA = hash(n.id + "|a") * Math.PI * 2;
-          const localR = halo * (0.4 + hash(n.id + "|r") * 0.8);
-          n.x = px + Math.cos(localA) * localR;
-          n.y = py + Math.sin(localA) * localR;
+          const angularSpread = 0.35; // radians
+          const branchAngle = p.angle + (hash(n.id + "|a") - 0.5) * angularSpread;
+          const branchDist = rr + halo * (0.5 + hash(n.id + "|r") * 1.6);
+          n.x = Math.cos(branchAngle) * branchDist;
+          n.y = Math.sin(branchAngle) * branchDist;
         } else {
           // Untethered nodes: park near the hub in a loose cloud.
           const a = hash(n.id) * Math.PI * 2;
@@ -320,10 +343,13 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
         const parentId = plan.parentOf.get(n.id);
         const p = parentId ? planetPos.get(parentId) : undefined;
         if (p) {
-          // Always pull child toward parent. Inside the halo we still apply a
-          // gentle pull so the cluster stays cohesive; outside the halo the
-          // pull scales with overshoot to snap stragglers back in.
-          const dx = p.x - n.x; const dy = p.y - n.y;
+          // Pull child toward a target point that sits OUTWARD along the
+          // parent's radial direction — this keeps the tree branching outward
+          // from the hub instead of collapsing on top of the parent.
+          const pr = Math.hypot(p.x, p.y) || 1;
+          const outX = p.x + (p.x / pr) * halo * 1.2;
+          const outY = p.y + (p.y / pr) * halo * 1.2;
+          const dx = outX - n.x; const dy = outY - n.y;
           const d = Math.hypot(dx, dy) || 1;
           const inside = Math.min(d, halo);
           const overshoot = Math.max(0, d - halo);
@@ -467,6 +493,29 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     return set;
   }, [hoveredId, selectedId, graph.neighbors]);
 
+  // Keyboard nav: Esc clears selection, F toggles focus mode, arrows jump to
+  // a neighbor of the current selection.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      if (e.key === "Escape") { select(null); return; }
+      if (e.key === "f" || e.key === "F") { toggleFocus(); return; }
+      if (!selectedId) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "ArrowDown") {
+        const nbrs = Array.from(graph.neighbors.get(selectedId) ?? []);
+        if (!nbrs.length) return;
+        const dir = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1;
+        const idx = nbrs.indexOf(selectedId);
+        const next = nbrs[((idx + dir) % nbrs.length + nbrs.length) % nbrs.length] ?? nbrs[0];
+        select(next);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, graph.neighbors, select, toggleFocus]);
+
   const nodeCanvasObject = (
     node: GraphNode & { x?: number; y?: number },
     ctx: CanvasRenderingContext2D,
@@ -484,8 +533,8 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
     ctx.globalAlpha = dim ? 0.15 : 1;
     const img = node.image ? getImage(node.image) : null;
     if (img) {
-      ctx.shadowColor = "#F5D33F";
-      ctx.shadowBlur = isAnchor ? 32 : 18;
+      ctx.shadowColor = isAnchor ? COLOR_IMG_BORDER : COLOR_IMG_GLOW;
+      ctx.shadowBlur = isAnchor ? 26 : 14;
       ctx.save();
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
@@ -496,15 +545,16 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.shadowBlur = 0;
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-      ctx.strokeStyle = "#C99A56";
-      ctx.lineWidth = 1.25;
+      ctx.strokeStyle = isAnchor ? COLOR_IMG_BORDER : "rgba(124,156,255,0.55)";
+      ctx.lineWidth = isAnchor ? 1.75 : 1;
       ctx.stroke();
     } else {
+      const fill = isAnchor ? COLOR_NODE_HI : (isHub ? COLOR_NODE : color);
       ctx.beginPath();
       ctx.arc(node.x, node.y, base, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = isAnchor ? 18 : 6;
+      ctx.fillStyle = fill;
+      ctx.shadowColor = fill;
+      ctx.shadowBlur = isAnchor ? 16 : 4;
       ctx.fill();
       ctx.shadowBlur = 0;
     }
@@ -513,7 +563,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       const ring = base + 4 + t * 14;
       ctx.beginPath();
       ctx.arc(node.x, node.y, ring, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(252, 211, 77, ${0.85 * (1 - t)})`;
+      ctx.strokeStyle = `rgba(61, 237, 208, ${0.85 * (1 - t)})`;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -523,7 +573,7 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       ctx.font = `${fontSize}px "IBM Plex Mono", monospace`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.fillStyle = "#E4E4E7";
+      ctx.fillStyle = isAnchor ? COLOR_NODE_HI : COLOR_LABEL;
       ctx.fillText(label.slice(0, 40), node.x, node.y + base + 2);
     }
     ctx.globalAlpha = 1;
@@ -532,9 +582,9 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
   const linkColor = (link: { source: GraphNode | string; target: GraphNode | string }) => {
     const s = typeof link.source === "string" ? link.source : link.source.id;
     const t = typeof link.target === "string" ? link.target : link.target.id;
-    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return "rgba(232,192,138,0.55)";
-    if (highlightSet) return "rgba(255,255,255,0.03)";
-    return "rgba(139,123,255,0.10)";
+    if (highlightSet && (highlightSet.has(s) && highlightSet.has(t))) return COLOR_LINK_HI;
+    if (highlightSet) return COLOR_LINK_DIM;
+    return COLOR_LINK;
   };
 
   return (
@@ -543,24 +593,18 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
       className="absolute inset-0 overflow-hidden"
       onContextMenu={(e) => e.preventDefault()}
     >
-      {/* Static starfield background — never rotates or orbits with the nodes */}
+      {/* Obsidian backdrop — near-black with a subtle dot grid + cool radial haze */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundColor: "#050508",
+          backgroundColor: COLOR_BG,
           backgroundImage: [
-            "radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.45), transparent 60%)",
-            "radial-gradient(1px 1px at 78% 32%, rgba(255,255,255,0.4), transparent 60%)",
-            "radial-gradient(1.2px 1.2px at 44% 74%, rgba(232,192,138,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 88% 82%, rgba(255,255,255,0.3), transparent 60%)",
-            "radial-gradient(1px 1px at 26% 58%, rgba(255,255,255,0.35), transparent 60%)",
-            "radial-gradient(1.5px 1.5px at 62% 12%, rgba(139,123,255,0.35), transparent 60%)",
-            "radial-gradient(1px 1px at 8% 88%, rgba(255,255,255,0.25), transparent 60%)",
-            "radial-gradient(1px 1px at 96% 54%, rgba(255,255,255,0.3), transparent 60%)",
-            "radial-gradient(circle at 50% 45%, rgba(139,123,255,0.10), transparent 70%)",
+            "radial-gradient(rgba(124,156,255,0.06) 1px, transparent 1px)",
+            "radial-gradient(circle at 50% 50%, rgba(61,237,208,0.06), transparent 65%)",
+            "radial-gradient(circle at 50% 50%, rgba(124,156,255,0.08), transparent 80%)",
           ].join(", "),
-          backgroundSize: "600px 600px, 720px 720px, 540px 540px, 800px 800px, 660px 660px, 700px 700px, 620px 620px, 580px 580px, 100% 100%",
+          backgroundSize: "22px 22px, 100% 100%, 100% 100%",
         }}
       />
       <div
@@ -589,23 +633,23 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             if (showOrbitArcs) {
               for (let r = 0; r < plan.ringCount; r++) {
                 const rr = RING_BASE + r * spacing;
-                ctx.strokeStyle = `rgba(201,154,86,${0.10 + (r % 2 === 0 ? 0.03 : 0)})`;
+                ctx.strokeStyle = `rgba(124,156,255,${0.08 + (r % 2 === 0 ? 0.04 : 0)})`;
                 ctx.setLineDash([2 / globalScale, 4 / globalScale]);
                 ctx.beginPath();
-                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, -arc - 0.15, 0.15);
+                ctx.arc(-HUB_OFFSET, HUB_OFFSET, rr, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
               }
             }
             if (showSunGlow) {
-              // Sun glow
-              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 110);
-              grad.addColorStop(0, "rgba(245,211,63,0.42)");
-              grad.addColorStop(0.5, "rgba(209,138,58,0.18)");
-              grad.addColorStop(1, "rgba(209,138,58,0)");
+              // Hub glow — cool cyan/violet
+              const grad = ctx.createRadialGradient(-HUB_OFFSET, HUB_OFFSET, 0, -HUB_OFFSET, HUB_OFFSET, 140);
+              grad.addColorStop(0, "rgba(61,237,208,0.35)");
+              grad.addColorStop(0.5, "rgba(124,156,255,0.15)");
+              grad.addColorStop(1, "rgba(124,156,255,0)");
               ctx.fillStyle = grad;
               ctx.beginPath();
-                ctx.arc(-HUB_OFFSET, HUB_OFFSET, 110, 0, Math.PI * 2);
+              ctx.arc(-HUB_OFFSET, HUB_OFFSET, 140, 0, Math.PI * 2);
               ctx.fill();
             }
             ctx.restore();
@@ -643,18 +687,21 @@ export function GraphCanvas({ graph }: { graph: NormalizedGraph }) {
             return highlightSet.has(s) && highlightSet.has(t) ? 2.4 * particleIntensity : 0;
           }}
           linkDirectionalParticleColor={(link: { source: GraphNode | string; target: GraphNode | string }) => {
-            if (!highlightSet) return "rgba(232,192,138,0.55)";
+            if (!highlightSet) return "rgba(124,156,255,0.45)";
             const s = typeof link.source === "string" ? link.source : link.source.id;
             const t = typeof link.target === "string" ? link.target : link.target.id;
-            return highlightSet.has(s) && highlightSet.has(t) ? "#F5D33F" : "rgba(232,192,138,0)";
+            return highlightSet.has(s) && highlightSet.has(t) ? COLOR_NODE_HI : "rgba(124,156,255,0)";
           }}
-          cooldownTicks={Infinity}
-          d3AlphaDecay={0}
-          d3AlphaMin={0}
-          d3VelocityDecay={0.65}
+          cooldownTicks={300}
+          d3AlphaDecay={0.03}
+          d3AlphaMin={0.002}
+          d3VelocityDecay={0.55}
           onNodeClick={(node: GraphNode) => select(node.id)}
           onNodeHover={(node: GraphNode | null) => hover(node ? node.id : null)}
           onBackgroundClick={() => select(null)}
+          onNodeDoubleClick={() => {
+            if (!focusMode) toggleFocus();
+          }}
           onNodeRightClick={(
             node: GraphNode,
             event: MouseEvent,
