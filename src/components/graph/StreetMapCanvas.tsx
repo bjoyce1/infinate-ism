@@ -9,6 +9,13 @@ import {
   type PropertyInstance,
 } from "@/lib/street/geoCityModel";
 import {
+  resolveRoutes,
+  measurePolyline,
+  pointAlong,
+  type PolylineMetrics,
+} from "@/lib/street/routeStreets";
+import type { LngLat } from "@/lib/street/houstonGeoConfig";
+import {
   DISTRICT_BY_ID,
   DOWNTOWN_BUILDINGS,
   DOWNTOWN_ID,
@@ -158,6 +165,10 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const styleReadyRef = useRef(false);
+  const routesRef = useRef<Map<string, LngLat[]>>(new Map());
+  const metricsRef = useRef<Map<string, PolylineMetrics>>(new Map());
+  const rafRef = useRef<number | null>(null);
+  const particleStartRef = useRef<number>(0);
 
   const [dayMode, setDayMode] = useState(false);
   const [propertyId, setPropertyId] = useState<string | null>(null);
@@ -263,7 +274,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     if (!map) return;
     const setup = () => {
       updateDistrictLabels(map, city);
-      updateRoads(map, city, selectedId);
+      updateRoads(map, city, selectedId, routesRef.current);
       updateMarkers(map, city, markersRef, setHoverProp, (inst) => {
         setPropertyId(inst.id);
         setBreadcrumbDistrict(inst.districtId);
@@ -274,6 +285,89 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     if (styleReadyRef.current) setup();
     else map.once("load", setup);
   }, [city, selectedId, select]);
+
+  // Resolve real-street routes for connections, then re-render road lines.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const signal = { aborted: false };
+    const routableRoads = city.roads.filter(
+      (r) => r.tier === "bridge" || r.tier === "sameOwner",
+    );
+    resolveRoutes(routableRoads, () => {
+      // Live update as routes stream in.
+      const combined = new Map(routesRef.current);
+      // no-op — resolveRoutes populates its own map, we merge below.
+    }, signal).then((resolved) => {
+      if (signal.aborted) return;
+      const merged = new Map(routesRef.current);
+      const metrics = new Map(metricsRef.current);
+      for (const [id, coords] of resolved) {
+        merged.set(id, coords);
+        metrics.set(id, measurePolyline(coords));
+      }
+      routesRef.current = merged;
+      metricsRef.current = metrics;
+      if (styleReadyRef.current) updateRoads(map, city, selectedId, merged);
+    });
+    return () => { signal.aborted = true; };
+  }, [city, selectedId]);
+
+  // Particle flow animation along resolved routes.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    particleStartRef.current = performance.now();
+
+    const tick = () => {
+      if (cancelled) return;
+      rafRef.current = requestAnimationFrame(tick);
+      if (document.visibilityState === "hidden") return;
+      const src = map.getSource("ism-particles") as maplibregl.GeoJSONSource | undefined;
+      if (!src) return;
+      const now = performance.now();
+      const features: any[] = [];
+      const routableRoads = city.roads.filter(
+        (r) => r.tier === "bridge" || r.tier === "sameOwner",
+      );
+      for (const r of routableRoads) {
+        const coords = routesRef.current.get(r.id) ?? [r.fromCoord, r.toCoord];
+        let metrics = metricsRef.current.get(r.id);
+        if (!metrics) {
+          metrics = measurePolyline(coords);
+          metricsRef.current.set(r.id, metrics);
+        }
+        const isOwnerSelected =
+          r.tier === "sameOwner" && selectedId != null && r.id.startsWith(`own:${selectedId}:`);
+        if (r.tier === "sameOwner" && !isOwnerSelected) continue;
+        // Animation speed: complete a cycle every ~4s for short, ~10s for long routes.
+        const cycleMs = Math.min(12000, Math.max(3500, metrics.total * 1.6));
+        const particleCount = isOwnerSelected ? 4 : 2;
+        const color = r.tier === "sameOwner" ? "#ffd66a" : "#a78bfa";
+        for (let p = 0; p < particleCount; p++) {
+          const phase = ((now - particleStartRef.current) / cycleMs + p / particleCount) % 1;
+          const pt = pointAlong(coords, metrics, phase);
+          // Fade in/out near endpoints.
+          const fade =
+            phase < 0.08 ? phase / 0.08 :
+            phase > 0.92 ? (1 - phase) / 0.08 : 1;
+          features.push({
+            type: "Feature",
+            properties: { color, opacity: fade, selected: isOwnerSelected },
+            geometry: { type: "Point", coordinates: pt },
+          });
+        }
+      }
+      src.setData({ type: "FeatureCollection", features });
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      cancelled = true;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [city, selectedId]);
 
   // Recentre when user asks.
   useEffect(() => {
