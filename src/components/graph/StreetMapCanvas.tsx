@@ -610,7 +610,12 @@ function updateDistrictLabels(_map: maplibregl.Map, _city: GeoCityModel) {
   // District layer is static (from config); nothing to update per graph change.
 }
 
-function updateRoads(map: maplibregl.Map, city: GeoCityModel, selectedId: string | null) {
+function updateRoads(
+  map: maplibregl.Map,
+  city: GeoCityModel,
+  selectedId: string | null,
+  routes: Map<string, LngLat[]>,
+) {
   const src = map.getSource("ism-roads") as maplibregl.GeoJSONSource | undefined;
   if (!src) return;
   const features = city.roads
@@ -618,10 +623,11 @@ function updateRoads(map: maplibregl.Map, city: GeoCityModel, selectedId: string
     .map((r) => {
       const isOwnerSelected =
         r.tier === "sameOwner" && selectedId != null && r.id.startsWith(`own:${selectedId}:`);
+      const coords = routes.get(r.id) ?? [r.fromCoord, r.toCoord];
       return {
         type: "Feature" as const,
         properties: { tier: r.tier, selected: isOwnerSelected },
-        geometry: { type: "LineString" as const, coordinates: [r.fromCoord, r.toCoord] },
+        geometry: { type: "LineString" as const, coordinates: coords },
       };
     });
   src.setData({ type: "FeatureCollection", features });
