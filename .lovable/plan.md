@@ -1,66 +1,44 @@
 ## Goal
 
-Turn the Mr. CAP Personal District from a symmetric rectangle around `[-95.3520, 29.7220]` into an irregular polygon whose edges follow the actual road geometry of:
+On the Street View, replace straight-line connections between properties with routes that follow the actual Houston street network, then animate glowing particles flowing along those routes.
 
-- Calhoun Rd (west edge)
-- Old Spanish Trail / OST (north edge)
-- Martin Luther King Blvd (east edge)
-- Griggs Rd (south edge)
+## Approach
 
-All Personal District properties/nodes must sit inside that real polygon, and every road/link drawn from those nodes must originate at each node's true coordinate inside it.
+Use OSRM's public routing API (`https://router.project-osrm.org/route/v1/driving/{coords}?geometries=geojson&overview=full`) to convert every road pair (from `city.roads`) into a real street-following polyline. Cache results in-memory (Map keyed by `fromCoord|toCoord`) and in `localStorage` (`ism.streetRoutes.v1`) so we only hit OSRM once per unique pair.
 
-## Files to change
+Fallback: if OSRM fails or is rate-limited, fall back to the current straight line for that pair so nothing disappears.
 
-1. `src/lib/street/houstonGeoConfig.ts`
-   - Remove the `polyAround(...)` call for `mrcap_personal`.
-   - Add a new exported constant `MRCAP_PERSONAL_POLYGON: LngLat[]` containing a hand-traced ring (~30–60 vertices) that follows the four named streets. Coordinates sourced from OpenStreetMap (Overpass) way geometry for:
-     - Calhoun Rd between OST and Griggs
-     - OST between Calhoun and MLK
-     - MLK Blvd between OST and Griggs
-     - Griggs Rd between MLK and Calhoun
-     Ring is closed (first == last), WGS84 `[lon, lat]`, wound counter-clockwise.
-   - Recompute `center` as the polygon centroid (or a labeled anchor inside it) and set a `radius` that matches the polygon's inradius so downstream code using `radius` still behaves.
-   - Keep `id`, `name`, `communityId`, `color`, `accent`, `landmark` unchanged so existing wiring keeps working.
+## File changes
 
-2. `src/lib/street/geoCityModel.ts`
-   - `scatterCoord()` currently derives placement from a district's axis-aligned bounding rectangle, which will push points outside a non-rectangular polygon.
-   - Add a small helper `pointInPolygon(coord, ring)` (standard ray-cast).
-   - Replace the bbox math with:
-     - Compute the polygon bbox once per district.
-     - Sample a candidate inside that bbox using the existing deterministic hash-based angle/radius (so layout stays stable per node id).
-     - Reject-and-retry (bounded, e.g. 12 attempts with jittered seed) until the candidate is inside `dist.polygon`; on final failure, snap to the polygon centroid.
-   - The landmark/hub still anchors at `dist.center`, which is now guaranteed to be inside the polygon.
-   - No change to road generation: roads already use each property's final `coord`, so once properties are inside the polygon, `fromCoord` / `toCoord` for every link automatically originate at real in-district positions.
+1. **New `src/lib/street/routeStreets.ts`**
+   - `fetchStreetRoute(from: LngLat, to: LngLat): Promise<LngLat[]>` — memoised + localStorage-cached OSRM call.
+   - `resolveRoutes(roads: CityRoad[]): Promise<Map<roadId, LngLat[]>>` — batches with small concurrency (e.g. 6 parallel), skips duplicates, returns straight-line fallback on error.
+   - No new npm dep.
 
-3. `src/components/graph/StreetMapCanvas.tsx`
-   - No behavioral change required — the district GeoJSON overlay reads `district.polygon` directly, so the new irregular ring renders as-is (dashed boundary + fill).
-   - Verify the polygon source uses the ring verbatim (no `polyAround`-style regeneration) and that the "jump to district" fit-bounds call recomputes bounds from the new polygon extent, not from `center ± radius`.
+2. **`src/components/graph/StreetMapCanvas.tsx`**
+   - After building `city`, kick off `resolveRoutes(city.roads)` in an effect; store resulting geometry in a ref/state keyed by roadId.
+   - `updateRoads` writes each feature's `LineString` as the resolved route (fallback to `[fromCoord, toCoord]` while pending).
+   - Add a **particle flow layer**:
+     - New GeoJSON source `ism-particles` populated on a `requestAnimationFrame` loop.
+     - Each active road (bridge + sameOwner) emits 2–3 particles animated along its polyline using `@turf/along`-style linear interpolation (implemented inline over the polyline segments — no dep needed).
+     - Rendered as a `circle` layer with additive glow: `circle-color` matching tier (`#a78bfa` bridges, `#ffd66a` same-owner), `circle-radius` ~3–4 px, `circle-blur` 0.8, `circle-opacity` fading in/out along the trajectory.
+     - Rendered above roads, below markers.
+   - RAF ticker updates particle positions ~30fps; clean up on unmount and on view change.
+   - Selected sameOwner routes get more/brighter particles.
 
-4. `src/lib/street/__tests__/geoCityModel.test.ts`
-   - Add one test: every property with `districtId === "mrcap_personal"` must satisfy `pointInPolygon(prop.coord, MRCAP_PERSONAL_POLYGON)`.
-   - Keep existing tests green (downtown skyline, secondary properties, gold routes).
+3. **No other files touched.** Route metadata, tests, and district geometry are untouched.
 
-## Coordinate sourcing
+## Technical notes
 
-Pull the four road centerlines from OpenStreetMap via an Overpass query at build/plan time (offline capture, not a runtime dependency), then hand-stitch them into one closed ring at their intersections:
-
-- Calhoun Rd ∩ OST (NW corner)
-- OST ∩ MLK Blvd (NE corner)
-- MLK Blvd ∩ Griggs Rd (SE corner)
-- Griggs Rd ∩ Calhoun Rd (SW corner)
-
-Densify each edge with the intermediate OSM way nodes so the outline is visibly irregular, not four straight segments. Target ~40 vertices total.
-
-## Non-goals
-
-- No change to other districts' shapes.
-- No change to marker icons, colors, or the `PropertyInstance` shape.
-- No change to how "same-owner gold routes" are computed.
-- No new npm dependencies (`pointInPolygon` is ~10 lines inline).
+- `polyline distance` and `along` implemented as ~30 lines of pure JS (haversine per segment, walk cumulative length). Keeps bundle small.
+- Cache key rounds coordinates to 5 decimals so tiny numerical drift doesn't miss the cache.
+- Concurrency limit prevents OSRM 429s on first load with hundreds of roads.
+- Particle animation pauses when the tab is hidden (`document.visibilityState`).
 
 ## Acceptance
 
-- `mrcap_personal` overlay on the map visibly follows Calhoun / OST / MLK / Griggs and is not a rectangle.
-- Every Personal District marker sits inside the new polygon; zero markers land on or outside the four boundary streets.
-- Links from Personal District nodes start exactly at each marker's coordinate.
-- All existing Street View tests pass; the new containment test passes.
+- Bridge and same-owner connections visibly bend along Houston streets, not straight through buildings.
+- Small glowing dots continuously travel along each route from source to destination.
+- Selected node's owner routes glow gold with denser particles.
+- First render still shows straight lines while OSRM resolves, then smoothly upgrades to real routes.
+- No new dependencies; existing Street View tests remain green.
