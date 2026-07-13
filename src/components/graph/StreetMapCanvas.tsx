@@ -604,6 +604,36 @@ function addOverlayLayers(map: maplibregl.Map) {
       },
     });
   }
+
+  // Particle flow layer — animated dots streaming along routes.
+  if (!map.getSource("ism-particles")) {
+    map.addSource("ism-particles", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    map.addLayer({
+      id: "ism-particles-glow",
+      type: "circle",
+      source: "ism-particles",
+      paint: {
+        "circle-color": ["get", "color"],
+        "circle-radius": ["case", ["get", "selected"], 9, 7],
+        "circle-blur": 1.1,
+        "circle-opacity": ["*", 0.55, ["get", "opacity"]],
+      },
+    });
+    map.addLayer({
+      id: "ism-particles-core",
+      type: "circle",
+      source: "ism-particles",
+      paint: {
+        "circle-color": ["get", "color"],
+        "circle-radius": ["case", ["get", "selected"], 3.2, 2.4],
+        "circle-blur": 0.2,
+        "circle-opacity": ["get", "opacity"],
+      },
+    });
+  }
 }
 
 function updateDistrictLabels(_map: maplibregl.Map, _city: GeoCityModel) {
