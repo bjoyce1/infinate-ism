@@ -273,7 +273,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         setPropertyId(inst.id);
         setBreadcrumbDistrict(inst.districtId);
         select(inst.canonicalId);
-        map.easeTo({ center: inst.coord, zoom: 16.5, pitch: 45, duration: 900 });
+        map.easeTo({ center: inst.coord, zoom: 16.5, pitch: 0, duration: 900 });
       });
     };
     if (styleReadyRef.current) setup();
@@ -367,7 +367,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 45, bearing: -8, duration: 900 });
+    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: -8, duration: 900 });
     setPropertyId(null);
     setBreadcrumbDistrict(null);
   }, [recenterToken]);
@@ -376,13 +376,13 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     const d = DISTRICT_BY_ID[id];
     setBreadcrumbDistrict(id);
     setPropertyId(null);
-    mapRef.current?.easeTo({ center: d.center, zoom: 13.4, pitch: 45, duration: 900 });
+    mapRef.current?.easeTo({ center: d.center, zoom: 13.4, pitch: 0, duration: 900 });
   };
 
   const backToCity = () => {
     setBreadcrumbDistrict(null);
     setPropertyId(null);
-    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 45, bearing: -8, duration: 900 });
+    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: -8, duration: 900 });
   };
 
   const backToDistrict = () => {
@@ -469,7 +469,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
                       onClick={() => {
                         setPropertyId(d.id);
                         setBreadcrumbDistrict(d.districtId);
-                        mapRef.current?.easeTo({ center: d.coord, zoom: 16, pitch: 45, duration: 900 });
+                        mapRef.current?.easeTo({ center: d.coord, zoom: 16, pitch: 0, duration: 900 });
                       }}
                     >
                       {DISTRICT_BY_ID[d.districtId].name}
