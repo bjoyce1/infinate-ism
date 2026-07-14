@@ -56,49 +56,6 @@ export function StreetControlsPanel({ graph }: { graph: NormalizedGraph }) {
 
   return (
     <div className="p-3 space-y-4 text-white/85 text-xs">
-      {/* Breadcrumbs */}
-      <div className="flex flex-wrap items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1.5">
-        <button className="rounded px-1 hover:text-white text-white/70" onClick={() => actions?.backToCity()}>
-          Houston
-        </button>
-        {breadcrumbDistrict && (
-          <>
-            <span className="text-white/40">›</span>
-            <button className="rounded px-1 hover:text-white text-white/70" onClick={() => actions?.backToDistrict()}>
-              {DISTRICT_BY_ID[breadcrumbDistrict].name}
-            </button>
-          </>
-        )}
-        {property && (
-          <>
-            <span className="text-white/40">›</span>
-            <span className="rounded px-1 text-white">{property.label}</span>
-          </>
-        )}
-      </div>
-
-      {/* View toggles */}
-      <div className="flex gap-1">
-        <button
-          className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
-          onClick={() => actions?.backToCity()}
-        >
-          Fit
-        </button>
-        <button
-          className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
-          onClick={() => actions?.focusDistrict(DOWNTOWN_ID)}
-        >
-          Downtown
-        </button>
-        <button
-          className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
-          onClick={() => setDayMode((d) => !d)}
-        >
-          {dayMode ? "Night" : "Day"}
-        </button>
-      </div>
-
       {/* District jump list */}
       <div>
         <div className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Districts</div>
@@ -113,6 +70,54 @@ export function StreetControlsPanel({ graph }: { graph: NormalizedGraph }) {
               <span className="whitespace-nowrap">{d.name}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Overlay controls — grouped beneath Districts */}
+      <div className="space-y-2">
+        <div className="text-[10px] uppercase tracking-widest text-white/40">Controls</div>
+
+        {/* Breadcrumbs */}
+        <div className="flex flex-wrap items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1.5">
+          <button className="rounded px-1 hover:text-white text-white/70" onClick={() => actions?.backToCity()}>
+            Houston
+          </button>
+          {breadcrumbDistrict && (
+            <>
+              <span className="text-white/40">›</span>
+              <button className="rounded px-1 hover:text-white text-white/70" onClick={() => actions?.backToDistrict()}>
+                {DISTRICT_BY_ID[breadcrumbDistrict].name}
+              </button>
+            </>
+          )}
+          {property && (
+            <>
+              <span className="text-white/40">›</span>
+              <span className="rounded px-1 text-white">{property.label}</span>
+            </>
+          )}
+        </div>
+
+        {/* View toggles */}
+        <div className="flex gap-1">
+          <button
+            className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
+            onClick={() => actions?.backToCity()}
+          >
+            Fit
+          </button>
+          <button
+            className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
+            onClick={() => actions?.focusDistrict(DOWNTOWN_ID)}
+          >
+            Downtown
+          </button>
+          <button
+            className="flex-1 rounded border border-white/10 bg-white/[0.03] px-2 py-1 hover:bg-white/10"
+            onClick={() => setDayMode((d) => !d)}
+          >
+            {dayMode ? "Night" : "Day"}
+          </button>
         </div>
       </div>
 
