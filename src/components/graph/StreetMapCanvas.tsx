@@ -367,7 +367,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: -8, duration: 900 });
+    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: 0, duration: 900 });
     setPropertyId(null);
     setBreadcrumbDistrict(null);
   }, [recenterToken]);
@@ -382,7 +382,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const backToCity = () => {
     setBreadcrumbDistrict(null);
     setPropertyId(null);
-    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: -8, duration: 900 });
+    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: 0, duration: 900 });
   };
 
   const backToDistrict = () => {
