@@ -171,7 +171,6 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const rafRef = useRef<number | null>(null);
   const particleStartRef = useRef<number>(0);
 
-  const [dayMode, setDayMode] = useState(false);
   const [hoverProp, setHoverProp] = useState<PropertyInstance | null>(null);
 
   const dayMode = useStreetPanel((s) => s.dayMode);
