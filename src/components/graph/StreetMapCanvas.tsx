@@ -18,7 +18,6 @@ import type { LngLat } from "@/lib/street/houstonGeoConfig";
 import {
   DISTRICT_BY_ID,
   DOWNTOWN_BUILDINGS,
-  DOWNTOWN_ID,
   GEO_DISTRICTS,
   HOUSTON_CENTER,
   type DistrictId,
@@ -187,7 +186,6 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const hideCode = useGraphStore((s) => s.hideCode);
   const includeTsFiles = useGraphStore((s) => s.includeTsFiles);
   const select = useGraphStore((s) => s.select);
-  const setRightPanel = useGraphStore((s) => s.setRightPanel);
   const recenterToken = useGraphStore((s) => s.recenterToken);
 
   const filtered = useMemo(
