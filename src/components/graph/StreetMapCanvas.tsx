@@ -217,13 +217,16 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       style: STYLE_URL,
       center: HOUSTON_CENTER,
       zoom: 10.2,
-      pitch: 45,
-      bearing: -8,
-      maxPitch: 60,
+      pitch: 0,
+      bearing: 0,
+      maxPitch: 0,
+      pitchWithRotate: false,
+      dragRotate: false,
       attributionControl: { compact: true },
     });
     mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: false, showCompass: false }), "top-right");
+    map.touchZoomRotate.disableRotation();
 
     // Ensure map resizes once its container settles.
     const ro = new ResizeObserver(() => {
@@ -238,16 +241,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
       styleReadyRef.current = true;
       applyDarkStyle(map);
       addOverlayLayers(map);
-      // Reasonable pitch/bearing clamp.
-      map.on("pitchend", () => {
-        const p = map.getPitch();
-        if (p > 45) map.easeTo({ pitch: 45, duration: 200 });
-      });
-      map.on("rotateend", () => {
-        const b = ((map.getBearing() + 540) % 360) - 180;
-        if (b > 25) map.easeTo({ bearing: 25, duration: 200 });
-        else if (b < -25) map.easeTo({ bearing: -25, duration: 200 });
-      });
+      // 2D lock — no pitch, no rotation.
     });
 
     return () => {
@@ -279,7 +273,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
         setPropertyId(inst.id);
         setBreadcrumbDistrict(inst.districtId);
         select(inst.canonicalId);
-        map.easeTo({ center: inst.coord, zoom: 16.5, pitch: 45, duration: 900 });
+        map.easeTo({ center: inst.coord, zoom: 16.5, pitch: 0, duration: 900 });
       });
     };
     if (styleReadyRef.current) setup();
@@ -373,7 +367,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 45, bearing: -8, duration: 900 });
+    map.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: 0, duration: 900 });
     setPropertyId(null);
     setBreadcrumbDistrict(null);
   }, [recenterToken]);
@@ -382,13 +376,13 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     const d = DISTRICT_BY_ID[id];
     setBreadcrumbDistrict(id);
     setPropertyId(null);
-    mapRef.current?.easeTo({ center: d.center, zoom: 13.4, pitch: 45, duration: 900 });
+    mapRef.current?.easeTo({ center: d.center, zoom: 13.4, pitch: 0, duration: 900 });
   };
 
   const backToCity = () => {
     setBreadcrumbDistrict(null);
     setPropertyId(null);
-    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 45, bearing: -8, duration: 900 });
+    mapRef.current?.easeTo({ center: HOUSTON_CENTER, zoom: 10.2, pitch: 0, bearing: 0, duration: 900 });
   };
 
   const backToDistrict = () => {
@@ -475,7 +469,7 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
                       onClick={() => {
                         setPropertyId(d.id);
                         setBreadcrumbDistrict(d.districtId);
-                        mapRef.current?.easeTo({ center: d.coord, zoom: 16, pitch: 45, duration: 900 });
+                        mapRef.current?.easeTo({ center: d.coord, zoom: 16, pitch: 0, duration: 900 });
                       }}
                     >
                       {DISTRICT_BY_ID[d.districtId].name}
