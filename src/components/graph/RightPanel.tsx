@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { useGraphStore } from "@/lib/graph/useGraphStore";
 import { DetailPanel } from "./DetailPanel";
 import { NotesPanel } from "./NotesPanel";
 import { AskPanel } from "./AskPanel";
 import { CapismHud } from "./CapismPanel";
+import { StreetControlsPanel } from "./StreetControlsPanel";
 import { ResizeHandle } from "./ResizeHandle";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 
-type Tab = "info" | "notes" | "ask" | "capism";
+type Tab = "map" | "info" | "notes" | "ask" | "capism";
 
 export function RightPanel({ graph }: { graph: NormalizedGraph }) {
   const [tab, setTab] = useState<Tab>("info");
@@ -16,7 +17,32 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
   const setOpen = useGraphStore((s) => s.setRightPanel);
   const width = useGraphStore((s) => s.rightPanelWidth);
   const setWidth = useGraphStore((s) => s.setRightPanelWidth);
+  const viewMode = useGraphStore((s) => s.viewMode);
   const isDesktop = useIsDesktop();
+  const isStreet = viewMode === "street";
+
+  // When entering Street view, jump to the Map tab and open the panel.
+  useEffect(() => {
+    if (isStreet) {
+      setTab("map");
+      setOpen(true);
+    } else if (tab === "map") {
+      setTab("info");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreet]);
+
+  const tabs: Tab[] = isStreet
+    ? ["map", "info", "notes", "ask", "capism"]
+    : ["info", "notes", "ask", "capism"];
+
+  const labelFor = (t: Tab) =>
+    t === "map" ? "Map" :
+    t === "info" ? "Info" :
+    t === "notes" ? "Notes" :
+    t === "ask" ? "Ask AI" :
+    "◈ HUD";
+
   return (
     <>
       {open && (
@@ -35,7 +61,7 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
       >
       <ResizeHandle side="right" width={width} onChange={setWidth} min={260} max={640} />
       <div className="flex border-b border-obsidian-border shrink-0">
-        {(["info", "notes", "ask", "capism"] as const).map((t) => (
+        {tabs.map((t) => (
           <button
             key={t}
             type="button"
@@ -46,11 +72,16 @@ export function RightPanel({ graph }: { graph: NormalizedGraph }) {
                 : "text-muted-text hover:text-white"
             }`}
           >
-            {t === "info" ? "Info" : t === "notes" ? "Notes" : t === "ask" ? "Ask AI" : "◈ HUD"}
+            {labelFor(t)}
           </button>
         ))}
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
+        {tab === "map" && (
+          <div className="h-full overflow-y-auto">
+            <StreetControlsPanel graph={graph} />
+          </div>
+        )}
         {tab === "info" && (
           <div className="h-full overflow-y-auto">
             <DetailPanel graph={graph} />
