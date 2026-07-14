@@ -23,6 +23,7 @@ import {
   HOUSTON_CENTER,
   type DistrictId,
 } from "@/lib/street/houstonGeoConfig";
+import { useStreetPanel } from "@/lib/street/useStreetPanel";
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
@@ -171,9 +172,14 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
   const particleStartRef = useRef<number>(0);
 
   const [dayMode, setDayMode] = useState(false);
-  const [propertyId, setPropertyId] = useState<string | null>(null);
-  const [breadcrumbDistrict, setBreadcrumbDistrict] = useState<DistrictId | null>(null);
   const [hoverProp, setHoverProp] = useState<PropertyInstance | null>(null);
+
+  const dayMode = useStreetPanel((s) => s.dayMode);
+  const propertyId = useStreetPanel((s) => s.propertyId);
+  const breadcrumbDistrict = useStreetPanel((s) => s.breadcrumbDistrict);
+  const setPropertyId = useStreetPanel((s) => s.setPropertyId);
+  const setBreadcrumbDistrict = useStreetPanel((s) => s.setBreadcrumbDistrict);
+  const registerActions = useStreetPanel((s) => s.registerActions);
 
   const selectedId = useGraphStore((s) => s.selectedId);
   const focusMode = useGraphStore((s) => s.focusMode);
@@ -391,107 +397,29 @@ export function StreetMapCanvas({ graph }: { graph: NormalizedGraph }) {
     focusDistrict(breadcrumbDistrict);
   };
 
+  // Expose these actions to the nested right-panel controls.
+  useEffect(() => {
+    registerActions({
+      focusDistrict,
+      backToCity,
+      backToDistrict,
+      easeToProperty: (id: string) => {
+        const inst = city.propertiesById.get(id);
+        if (!inst) return;
+        setPropertyId(inst.id);
+        setBreadcrumbDistrict(inst.districtId);
+        mapRef.current?.easeTo({ center: inst.coord, zoom: 16, pitch: 0, duration: 900 });
+      },
+    });
+    return () => registerActions(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, breadcrumbDistrict]);
+
   const property = propertyId ? city.propertiesById.get(propertyId) ?? null : null;
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#04070f]">
       <div ref={containerRef} className="absolute inset-0" style={{ width: "100%", height: "100%" }} />
-
-      {/* Top-left HUD: breadcrumbs + controls */}
-      <div className="pointer-events-none absolute left-3 top-3 z-10 flex max-w-[calc(100%-90px)] flex-wrap gap-2">
-        <div className="pointer-events-auto flex items-center gap-1 rounded-md border border-white/10 bg-black/55 px-2 py-1 text-xs text-white/80 backdrop-blur">
-          <button className="rounded px-1 hover:text-white" onClick={backToCity}>Houston</button>
-          {breadcrumbDistrict && (
-            <>
-              <span className="text-white/40">›</span>
-              <button className="rounded px-1 hover:text-white" onClick={backToDistrict}>
-                {DISTRICT_BY_ID[breadcrumbDistrict].name}
-              </button>
-            </>
-          )}
-          {property && (
-            <>
-              <span className="text-white/40">›</span>
-              <span className="rounded px-1 text-white">{property.label}</span>
-            </>
-          )}
-        </div>
-
-        <div className="pointer-events-auto flex gap-1 rounded-md border border-white/10 bg-black/55 px-1 py-1 text-xs text-white/80 backdrop-blur">
-          <button className="rounded px-2 py-0.5 hover:bg-white/10" onClick={backToCity}>Fit</button>
-          <button className="rounded px-2 py-0.5 hover:bg-white/10" onClick={() => focusDistrict(DOWNTOWN_ID)}>Downtown</button>
-          <button className="rounded px-2 py-0.5 hover:bg-white/10" onClick={() => setDayMode((d) => !d)}>
-            {dayMode ? "Night" : "Day"}
-          </button>
-        </div>
-      </div>
-
-      {/* Right district jump list */}
-      <div className="pointer-events-auto absolute right-3 top-16 z-10 flex flex-col gap-1 rounded-md border border-white/10 bg-black/55 p-1 text-[11px] text-white/80 backdrop-blur">
-        {GEO_DISTRICTS.map((d) => (
-          <button
-            key={d.id}
-            className="flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-white/10"
-            onClick={() => focusDistrict(d.id)}
-          >
-            <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-            <span className="whitespace-nowrap">{d.name}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Property panel */}
-      {property && (
-        <div className="pointer-events-auto absolute bottom-3 left-3 z-10 w-[320px] rounded-lg border border-white/10 bg-black/70 p-3 text-sm text-white/90 backdrop-blur">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-white/50">
-                {DISTRICT_BY_ID[property.districtId].name}
-              </div>
-              <div className="text-base font-semibold" style={{ color: property.color }}>{property.label}</div>
-            </div>
-            <button className="rounded px-2 py-0.5 text-xs text-white/60 hover:bg-white/10" onClick={() => setPropertyId(null)}>✕</button>
-          </div>
-          <div className="mt-1 text-xs text-white/60">
-            {property.kind} · {property.coord[1].toFixed(4)}°, {property.coord[0].toFixed(4)}°
-          </div>
-          {(() => {
-            const dupes = city.propertiesByCanonical.get(property.canonicalId) ?? [];
-            if (dupes.length < 2) return null;
-            return (
-              <div className="mt-2 text-xs">
-                <div className="mb-1 text-white/60">Also owns property in:</div>
-                <div className="flex flex-wrap gap-1">
-                  {dupes.filter((d) => d.id !== property.id).map((d) => (
-                    <button
-                      key={d.id}
-                      className="rounded border border-white/10 px-2 py-0.5 hover:bg-white/10"
-                      onClick={() => {
-                        setPropertyId(d.id);
-                        setBreadcrumbDistrict(d.districtId);
-                        mapRef.current?.easeTo({ center: d.coord, zoom: 16, pitch: 0, duration: 900 });
-                      }}
-                    >
-                      {DISTRICT_BY_ID[d.districtId].name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-          <div className="mt-3 flex gap-2">
-            <button
-              className="rounded bg-white/10 px-3 py-1 text-xs hover:bg-white/20"
-              onClick={() => { select(property.canonicalId); setRightPanel(true); }}
-            >
-              Open Details
-            </button>
-            <button className="rounded border border-white/15 px-3 py-1 text-xs hover:bg-white/10" onClick={backToDistrict}>
-              Back to Neighborhood
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Hover tooltip */}
       {hoverProp && !property && (
