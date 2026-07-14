@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import type { NormalizedGraph } from "@/lib/graph/types";
 import { buildGeoCityModel } from "@/lib/street/geoCityModel";
 import { filterGraph } from "@/lib/graph/filterGraph";
+import { TopBarActions } from "./TopBarActions";
 
 function useStreetCity(graph: NormalizedGraph): GeoCityModel {
   const selectedId = useGraphStore((s) => s.selectedId);
@@ -56,6 +57,14 @@ export function StreetControlsPanel({ graph }: { graph: NormalizedGraph }) {
 
   return (
     <div className="p-3 space-y-4 text-white/85 text-xs">
+      {/* Global toolbar actions — moved off the map */}
+      <div>
+        <div className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Actions</div>
+        <div className="rounded-md border border-white/10 bg-white/[0.03] p-2">
+          <TopBarActions graph={graph} layout="stack" />
+        </div>
+      </div>
+
       {/* District jump list */}
       <div>
         <div className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Districts</div>
